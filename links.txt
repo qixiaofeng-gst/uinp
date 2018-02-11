@@ -1,0 +1,5 @@
+# 开发信息
+#* 图解开源协议 https://www.cnblogs.com/KruceCoder/p/7991052.html
+
+# 常用指令
+# 软链接 ln -s target_to_link link_name
