@@ -2,6 +2,14 @@ gst() {
   ssh qixiaofeng@112.126.73.197
 }
 
+enhance_git() {
+  git config --global alias.st "status"
+  git config --global alias.ci "commit -m"
+  git config --global alias.co "checkout"
+  git config --global alias.plom "pull origin master"
+  git config --global alias.psom "push origin master"
+}
+
 init_ssh() {
   env=~/.ssh/agent.env
 
