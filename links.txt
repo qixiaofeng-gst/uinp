@@ -1,5 +1,9 @@
 # 开发信息
 #* 图解开源协议 https://www.cnblogs.com/KruceCoder/p/7991052.html
 
+# 代码链接
+#* SVN http://earth.bao.ac.cn/svn/gsegment/trunk/***
+#* GIT git@github.com:qixiaofeng/***
+
 # 常用指令
 # 软链接 ln -s target_to_link link_name
