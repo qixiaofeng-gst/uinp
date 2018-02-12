@@ -6,4 +6,15 @@
 #* GIT git@github.com:qixiaofeng/***
 
 # 常用指令
-# 软链接 ln -s target_to_link link_name
+#* 软链接 ln -s target_to_link link_name
+
+# Windows 中安装 MongoDB 服务
+#* 创建数据文件和日志文件目录；
+#* 以下列格式创建配置：
+systemLog:
+  destination: file
+  path: c:\data\log\mongod.log
+storage:
+  dbPath: c:\data\db
+#* 安装服务：mongod.exe --config "config/file/path" --install
+#* 启动：net start MongoDB

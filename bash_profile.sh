@@ -2,6 +2,11 @@ gst() {
   ssh qixiaofeng@112.126.73.197
 }
 
+setup_git() {
+  git config --global user.email "qixiaofeng@gsegment.com"
+  git config --global user.name "XiaofengQi"
+}
+
 enhance_git() {
   git config --global alias.st "status"
   git config --global alias.ci "commit -m"
