@@ -7,6 +7,9 @@
 
 # 常用指令
 #* 软链接 ln -s target_to_link link_name
+#* GIT 推送本地工程到远程空工程
+git remote add origin git@blablabla:url
+git push -u origin master
 
 # Windows 中安装 MongoDB 服务
 #* 创建数据文件和日志文件目录；
@@ -18,3 +21,5 @@ storage:
   dbPath: c:\data\db
 #* 安装服务：mongod.exe --config "config/file/path" --install
 #* 启动：net start MongoDB
+
+
