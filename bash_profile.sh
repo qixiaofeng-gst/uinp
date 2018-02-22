@@ -2,6 +2,18 @@ gst() {
   ssh qixiaofeng@112.126.73.197
 }
 
+d() {
+  gpg -o "${1/.gpg/.txt}" -d "$1"
+}
+
+c() {
+  gpg -o "${1/.txt/.gpg}" -c "$1"
+}
+
+wx_rm() { # Used to remove a page from WeiXin project.
+  svn rm --force "$1.js" "$1.json" "$1.wxml" "$1.wxss"
+}
+
 setup_git() {
   git config --global user.email "qixiaofeng@gsegment.com"
   git config --global user.name "XiaofengQi"
