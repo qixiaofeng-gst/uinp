@@ -10,6 +10,23 @@ c() {
   gpg -o "${1/.txt/.gpg}" -c "$1"
 }
 
+to_mp4() { # iphone7 1334x750
+  ffmpeg -i $1 -s 667x375 -vcodec mpeg4 -b:v 1024k -acodec aac -scodec copy "$2.mp4"
+}
+
+uinp_up() { # Only used under windows.
+  local curr=`pwd`
+  local bpFile="$curr/bash_profile.sh"
+  if [ ! -f $bpFile ]; then
+    echo "Must execute this under uinp project root."
+    return $E_CONFFILE
+  fi
+  cd ~
+  ln -fs $bpFile .bash_profile
+  cd $curr
+  echo ".bash_profile updated. Restart bash to take effect."
+}
+
 wx_rm() { # Used to remove a page from WeiXin project.
   svn rm --force "$1.js" "$1.json" "$1.wxml" "$1.wxss"
 }
