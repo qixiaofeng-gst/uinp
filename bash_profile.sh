@@ -11,7 +11,7 @@ c() {
 }
 
 to_mp4() { # iphone7 1334x750
-  ffmpeg -i $1 -s 667x375 -vcodec mpeg4 -b:v 1024k -acodec aac -scodec copy "$2.mp4"
+  ffmpeg -i $1 -s 667x375 -vcodec mpeg4 -b:v 2048k -acodec aac -scodec copy "$2.mp4"
 }
 
 uinp_up() { # Only used under windows.
