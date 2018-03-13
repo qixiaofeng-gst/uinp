@@ -35,6 +35,16 @@ wx_rm() { # Used to remove a page from WeiXin project.
   svn rm --force "$1.js" "$1.json" "$1.wxml" "$1.wxss"
 }
 
+git_up() {
+  for url in `git remote -v`; do
+    if [ 'git@github.com' == ${url:0:14} ]; then
+      git remote set-url origin ${url/qixiaofeng-tsmount/qixiaofeng-gst}
+      git remote -v
+      return
+    fi
+  done
+}
+
 setup_git() {
   git config --global user.email "qixiaofeng@gsegment.com"
   git config --global user.name "XiaofengQi"
