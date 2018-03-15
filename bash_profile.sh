@@ -1,12 +1,20 @@
 list() { ## Used to list all commands available in .bash_profile.
   local sps="        "
   while read line; do
-    if [[ $line =~ ^[a-z0-9_]+\(\)[[:blank:]]{[[:blank:]]## ]] ; then
+    if [[ $line =~ ^[a-z0-9_]+\(\)[[:blank:]]'{'[[:blank:]]'##' ]] ; then
       local name=`expr "$line" : '\([a-z0-9_]\{1,32\}()[[:blank:]]{[[:blank:]]##\)'`
-      echo "${name%%'() { ##'}"
+      echo `expr "$name" : '\([a-z0-9_]\{1,32\}\)'`
       echo "${line/$name/$sps}"
     fi
   done < ~/.bash_profile
+}
+
+svn_mkdir() { ## Make directory on gsegment svn trunk.
+  svn mkdir "http://earth.bao.ac.cn/svn/gsegment/trunk/$1" -m "Make $1"
+}
+
+svn_co() { ## Check out from gsegment svn trunk.
+  svn co "http://earth.bao.ac.cn/svn/gsegment/trunk/$1"
 }
 
 gst() { ## Connect me to gsegment server.
