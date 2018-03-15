@@ -1,24 +1,36 @@
-gst() {
+list() { ## Used to list all commands available in .bash_profile.
+  local sps="        "
+  while read line; do
+    if [[ $line =~ ^[a-z0-9_]+\(\)[[:blank:]]{[[:blank:]]## ]] ; then
+      local name=`expr "$line" : '\([a-z0-9_]\{1,32\}()[[:blank:]]{[[:blank:]]##\)'`
+      echo "${name%%'() { ##'}"
+      echo "${line/$name/$sps}"
+    fi
+  done < ~/.bash_profile
+}
+
+gst() { ## Connect me to gsegment server.
   ssh qixiaofeng@112.126.73.197
 }
 
-d() {
+d() { ## Decrypt.
   gpg -o "${1/.gpg/.txt}" -d "$1"
 }
 
-c() {
+c() { ## Encrypt.
   gpg -o "${1/.txt/.gpg}" -c "$1"
 }
 
-t1_mp4() { # iphone7 1334x750
+# iphone7 1334x750
+t1_mp4() { ## Convert to mp4 with bitrate 1024k.
   ffmpeg -i $1 -s 667x375 -vcodec mpeg4 -b:v 1024k -acodec aac -scodec copy "$2.mp4"
 }
 
-t2_mp4() { # iphone7 1334x750
+t2_mp4() { ## Convert to mp4 with bitrate 2048k.
   ffmpeg -i $1 -s 667x375 -vcodec mpeg4 -b:v 2048k -acodec aac -scodec copy "$2.mp4"
 }
 
-uinp_up() { # Only used under windows.
+uinp_up() { ## Only used under windows.
   local curr=`pwd`
   local bpFile="$curr/bash_profile.sh"
   if [ ! -f $bpFile ]; then
@@ -31,11 +43,11 @@ uinp_up() { # Only used under windows.
   echo ".bash_profile updated. Restart bash to take effect."
 }
 
-wx_rm() { # Used to remove a page from WeiXin project.
+wx_rm() { ## Used to remove a page from WeiXin project.
   svn rm --force "$1.js" "$1.json" "$1.wxml" "$1.wxss"
 }
 
-git_up() {
+git_up() { ## Used to update the git remote url.
   for url in `git remote -v`; do
     if [ 'git@github.com' == ${url:0:14} ]; then
       git remote set-url origin ${url/qixiaofeng-tsmount/qixiaofeng-gst}
@@ -45,12 +57,12 @@ git_up() {
   done
 }
 
-setup_git() {
+setup_git() { ## Used to set my email and name for git.
   git config --global user.email "qixiaofeng@gsegment.com"
   git config --global user.name "XiaofengQi"
 }
 
-enhance_git() {
+enhance_git() { ## Used to set several convenient alias for git.
   git config --global alias.st "status"
   git config --global alias.ci "commit -m"
   git config --global alias.co "checkout"
