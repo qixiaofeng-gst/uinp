@@ -55,6 +55,11 @@ wx_rm() { ## Used to remove a page from WeiXin project.
   svn rm --force "$1.js" "$1.json" "$1.wxml" "$1.wxss"
 }
 
+git_link() { ## Used to link local with remote repo.
+  git remote add origin $1
+  git plom --allow-unrelated-histories
+}
+
 git_up() { ## Used to update the git remote url.
   for url in `git remote -v`; do
     if [ 'git@github.com' == ${url:0:14} ]; then
