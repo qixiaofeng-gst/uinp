@@ -1,0 +1,14 @@
+{
+  "name": "encryptor_js",
+  "version": "1.0.0",
+  "description": "Used to encrypt anything.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+	"bin": {
+		"js_encrypt": "./index.js"
+	},
+  "author": "",
+  "license": "ISC"
+}

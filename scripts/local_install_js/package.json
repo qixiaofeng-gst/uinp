@@ -1,0 +1,15 @@
+{
+  "name": "local_install_js",
+  "version": "1.0.0",
+  "description": "Install local module to global.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "js_install_l2g": "index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
