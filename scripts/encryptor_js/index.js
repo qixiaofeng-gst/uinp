@@ -38,31 +38,44 @@ const cmd_read = (prompt, cb) => {
 	process.stdin.on(event_data, on_data)
 }
 
-const read_password = cb => cmd_read('Password plz:', pswd => {
-	cmd_read('Repeat plz:', again => {
-		if (pswd === again) {
-			process.stdout.write('Correct.\n')
-			cb && cb(pswd)
-		} else {
-			process.stdout.write('Not match.\n')
-			read_password(cb)
-		}
-	})
+const read_password = (cb, repeat=true) => cmd_read('Code plz:', pswd => {
+	if (repeat) {
+		cmd_read('Repeat plz:', again => {
+			if (pswd === again) {
+				process.stdout.write('Correct.\n')
+				cb && cb(pswd)
+			} else {
+				process.stdout.write('Not match.\n')
+				read_password(cb)
+			}
+		})
+	} else {
+		cb && cb(pswd)
+	}
 })
 
 const { length } = process.argv
 const file_ext = '.encrypted'
 const target = process.argv[length - 1]
+const is_encrypted = target.endsWith(file_ext)
+const tmp = {}
+const output = is_encrypted ? (
+	tmp.output = target.substr(0, target.length - file_ext.length),
+	(fs.existsSync(tmp.output) ? (tmp.output + '.decrypted') : tmp.output)
+) : (target + file_ext)
 if (fs.existsSync(target) && false === target.endsWith('index.js')) {
 	read_password(code => {
 		const mask = Buffer.from(code)
-		console.log('==== code:', mask[0], mask.length)
+		const { length: len } = mask
 		const rs = fs.createReadStream(target)
-		const ws = fs.createWriteStream(target + file_ext)
+		const ws = fs.createWriteStream(output)
 		const trans = () => {
-			const data = rs.read(1)
+			const data = rs.read(len)
 			if (data) {
-				data[0] = (data[0] ^ mask[0])
+				for (let i = data.length; i > 0; --i) {
+					const idx = i - 1
+					data[idx] = (data[idx] ^ mask[idx])
+				}
 				ws.write(data, trans)
 			} else {
 				rs.destroy()
@@ -70,7 +83,7 @@ if (fs.existsSync(target) && false === target.endsWith('index.js')) {
 			}
 		}
 		rs.on('readable', trans)
-	})
+	}, false === is_encrypted)
 } else {
 	process.stdout.write('The last argument has to be a existing file.')
 }
