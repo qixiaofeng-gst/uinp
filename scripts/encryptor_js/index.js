@@ -54,6 +54,27 @@ const read_password = (cb, repeat=true) => cmd_read('Code plz:', pswd => {
 	}
 })
 
+const encrypt = (code, target, output) => {
+	const mask = Buffer.from(code)
+	const { length: len } = mask
+	const rs = fs.createReadStream(target)
+	const ws = fs.createWriteStream(output)
+	const trans = () => {
+		const data = rs.read(len)
+		if (data) {
+			for (let i = data.length; i > 0; --i) {
+				const idx = i - 1
+				data[idx] = (data[idx] ^ mask[idx])
+			}
+			ws.write(data, trans)
+		} else {
+			rs.destroy()
+			ws.destroy()
+		}
+	}
+	rs.on('readable', trans)
+}
+
 const { length } = process.argv
 const file_ext = '.encrypted'
 const target = process.argv[length - 1]
@@ -64,26 +85,7 @@ const output = is_encrypted ? (
 	(fs.existsSync(tmp.output) ? (tmp.output + '.decrypted') : tmp.output)
 ) : (target + file_ext)
 if (fs.existsSync(target) && false === target.endsWith('index.js')) {
-	read_password(code => {
-		const mask = Buffer.from(code)
-		const { length: len } = mask
-		const rs = fs.createReadStream(target)
-		const ws = fs.createWriteStream(output)
-		const trans = () => {
-			const data = rs.read(len)
-			if (data) {
-				for (let i = data.length; i > 0; --i) {
-					const idx = i - 1
-					data[idx] = (data[idx] ^ mask[idx])
-				}
-				ws.write(data, trans)
-			} else {
-				rs.destroy()
-				ws.destroy()
-			}
-		}
-		rs.on('readable', trans)
-	}, false === is_encrypted)
+	read_password(code => encrypt(code, target, output), !is_encrypted)
 } else {
 	process.stdout.write('The last argument has to be a existing file.')
 }
