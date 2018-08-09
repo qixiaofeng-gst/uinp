@@ -29,6 +29,11 @@ c() { ## Encrypt.
   gpg -o "${1/.txt/.gpg}" -c "$1"
 }
 
+cut_video() { ## Cut video with(time in seconds): cut_video <file> <start_time> <end_time>
+  ffmpeg -ss "${2}" -to "${3}" -i "${1}" "cut_${1}"
+  echo "Output to: cut_${1}"
+}
+
 # iphone7 1334x750
 t1_mp4() { ## Convert to mp4 with bitrate 1024k.
   ffmpeg -i $1 -s 667x375 -vcodec mpeg4 -b:v 1024k -acodec aac -scodec copy "$2.mp4"
