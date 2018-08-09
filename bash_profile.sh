@@ -30,7 +30,7 @@ c() { ## Encrypt.
 }
 
 cut_video() { ## Cut video with(time in seconds): cut_video <file> <start_time> <end_time>
-  ffmpeg -ss "${2}" -to "${3}" -i "${1}" "cut_${1}"
+  ffmpeg -ss "${2}" -to "${3}" -i "${1}" -vcodec copy -acodec aac -scodec copy "cut_${1}"
   echo "Output to: cut_${1}"
 }
 
