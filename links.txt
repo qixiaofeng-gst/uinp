@@ -26,4 +26,5 @@ storage:
 #* 安装服务：mongod.exe --config "config/file/path" --install
 #* 启动：net start MongoDB
 
-
+# 常用正则
+#* 分节删除：\r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n
