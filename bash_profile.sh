@@ -18,7 +18,7 @@ svn_co() { ## Check out from gsegment svn trunk.
 }
 
 gst() { ## Connect me to gsegment server.
-  ssh qixiaofeng@112.126.73.197
+  ssh -o ServerAliveInterval=60 qixiaofeng@112.126.73.197
 }
 
 d() { ## Decrypt.
