@@ -28,3 +28,7 @@ storage:
 
 # 常用正则
 #* 分节删除：\r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n
+
+# Web 前端开发跨域 Chrome 设置
+"C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --disable-web-security --user-data-dir="D:/TempDocs/chrome_data/"
+Windows 下可创建快捷方式并添加参数
