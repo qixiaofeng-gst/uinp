@@ -113,3 +113,5 @@ init_ssh() {
 }
 
 init_ssh
+
+[ -r ~/.bashrc ] && . ~/.bashrc
