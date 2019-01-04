@@ -1,0 +1,52 @@
+Statistcs:
+-------
+const avg = arr => {
+  const { length } = arr
+  if (0 === length) {
+    return 0
+  }
+  let sum = 0
+  for (const num of arr) {
+    sum += num
+  }
+  return sum / length
+}
+const sd = arr => {
+  const arrAvg = avg(arr)
+  if (0 === arrAvg) {
+    return 0
+  }
+  let bias2sum = 0
+  for (const num of arr) {
+    const bias = num - arrAvg
+    const bias2 = bias * bias
+    bias2sum += bias2
+  }
+  const { length } = arr
+  const d2sum = bias2sum / length
+  return Math.sqrt(d2sum)
+}
+const en_sd = arr => {
+  const arrSd = sd(arr)
+  const arrAvg = avg(arr)
+  return arr.map(num => (num - arrAvg) / arrSd)
+}
+const r = arr2 => {
+  const { length } = arr2
+  if (0 === length) {
+    return 0
+  }
+  const xArr = []
+  const yArr = []
+  for (const [x, y] of arr2) {
+    xArr.push(x)
+    yArr.push(y)
+  }
+  const xInStandardUnits = en_sd(xArr)
+  const yInStandardUnits = en_sd(yArr)
+  let sum = 0
+  for (let i = 0; i < length; ++i) {
+    sum += (xInStandardUnits[i] * yInStandardUnits[i])
+  }
+  return sum / length
+}
