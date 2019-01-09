@@ -1,14 +1,31 @@
 const request = require('request')
 
+const {
+  fields
+} = require('./libs/db')
+
 const req = request.defaults({ jar: true })
 
 const pankou = 'https://xueqiu.com/stock/pankou.json?symbol='
 const quote = 'https://xueqiu.com/v4/stock/quotec.json?code='
 const for_chart = 'https://xueqiu.com/stock/forchart/stocklist.json?symbol=x&period=1d'
 
+const spaces = num => {
+  let s = ''
+  for (let i = 0; i < num; ++i) {
+    s += ' '
+  }
+  return s
+}
+const fill_to = (str, num) => {
+  return str + spaces(num - str.length)
+}
+
+let help_margin = 0
 const set_fn_as_key = obj => {
   for (const k in obj) {
     obj[k].key = k
+    help_margin = Math.max(help_margin, k.length)
   }
 }
 const cmds = {
@@ -18,14 +35,85 @@ const cmds = {
     handle: params => new Promise((resolve, reject) => {
       for (const k in cmds) {
         const c = cmds[k]
-        console.log(`${k}, ${c.name}, ${c.desc}`)
+        console.log(`${fill_to(k, help_margin)} ${c.name}`)
+        console.log(`${spaces(help_margin)} - ${c.desc}`)
       }
       resolve()
+    })
+  },
+  fields: {
+    name: '查看可获取的字段全集',
+    desc: '列出所有字段中文名，代码名，字段数目统计，有变更的字段数目',
+    handle: () => new Promise((resolve, reject) => {
+      req({
+        url: 'https://xueqiu.com/stock/screener/fields.json',
+        qs: {
+          category: 'SH',
+          _: Date.now()
+        },
+        json: true
+      }, (err, resp, body) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        const all_fields = []
+        for (const category in body) {
+          const arr = body[category]
+          if (
+            false === Array.isArray(arr) ||
+            undefined === arr[0].name
+          ) {
+            console.log(`忽略复杂类别 ${category}`)
+            continue
+          }
+          console.log(`${category} 有 ${arr.length} 个`)
+          all_fields.splice(all_fields.length, 0, ...(arr.map(o => ({
+            ...o,
+            category
+          }))))
+        }
+        console.log(`所有字段共计 ${all_fields.length} 个`)
+        for (const { name, field } of all_fields) {
+          console.log(`${name} ${field}`)
+        }
+        resolve()
+      })
     })
   },
   list: {
     name: '列出目标',
     desc: '列出涨幅前列的股票代码以及相应涨幅',
+    handle: params => new Promise((resolve, reject) => {
+      let orderBy = 'percent'
+      if (params && params.length) {
+        orderBy = params[0]
+      }
+      req({
+        url: 'https://xueqiu.com/stock/quote_order.json',
+        json: true,
+        qs: {
+          stockType: 'sha', // 可用值 sha:沪A, sza:深A, cyb:创业板, zxb:中小板
+          orderBy,
+          order: 'desc', // 可用值 asc:升序, desc:降序
+          size: 5,
+          page: 1,
+          column: 'symbol,name,current,chg,percent,volume,amount',
+          _: Date.now()
+        }
+      }, (err, resp, body) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        console.log(body)
+        resolve()
+      })
+    })
+  },
+  local: {
+    name: '列出本地已存储数据',
+    desc: '列出代码，以及已存储的时间范围',
     handle: params => new Promise((resolve, reject) => {
       resolve()
     })
@@ -61,7 +149,7 @@ const read_cmd = () => {
     input: process.stdin,
     output: process.stdout
   })
-  rl.question('下面做:', cmd => {
+  rl.question('指令:', cmd => {
     rl.close()
     const parts = cmd.split(/\s+/)
     const cmd_str = parts.splice(0, 1)[0]
@@ -69,11 +157,14 @@ const read_cmd = () => {
     if (real_cmd) {
       const ts = Date.now()
       real_cmd.handle(parts).then(() => {
-        console.log(`做完了 ${cmd_str}，耗时 ${Date.now() - ts} 毫秒`)
+        console.log(`指令 ${cmd_str} 执行完毕，耗时 ${Date.now() - ts} 毫秒\n`)
+      }).catch(err => {
+        console.log(`指令 ${cmd_str} 执行失败，耗时 ${Date.now() - ts} 毫秒\n`)
+      }).finally(() => {
         read_cmd()
       })
     } else {
-      console.log(`不支持命令 ${cmd_str}`)
+      console.log(`不支持 ${cmd_str} 指令`)
       read_cmd()
     }
   })
@@ -114,6 +205,6 @@ req({
     console.log('初始化会话时发生错误:', err)
     return
   }
-  console.log('证券 APP 命令行模式启动。help 指令可获取帮助。')
+  console.log('证券 APP 命令行模式启动，help 指令可获取帮助\n')
   read_cmd()
 })

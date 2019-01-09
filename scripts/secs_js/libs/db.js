@@ -1,5 +1,7 @@
 /** Database Infrastructure. (Based on mongodb) */
-const { MongoClient:db, ObjectID:OID } = require('mongodb')
+const {
+  MongoClient:db
+} = require('mongodb')
 
 let connect_promise = false
 
@@ -97,8 +99,8 @@ const DB_Table = table_name => {
   })
 }
 
-const db_name = 'task_server'
+const db_name = 'secs_js'
 module.exports = {
-  user: DB_Table('user'),
-  task: DB_Table('task')
+  fields: DB_Table('fields'),
+  stocks: DB_Table('stocks')
 }
