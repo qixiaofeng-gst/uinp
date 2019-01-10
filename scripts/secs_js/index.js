@@ -65,11 +65,15 @@ const cmds = {
   fields: {
     name: '查看可获取的字段全集',
     desc: '列出所有字段中文名，代码名，字段数目统计，有变更的字段数目',
-    handle: () => new Promise((resolve, reject) => {
+    handle: params => new Promise((resolve, reject) => {
+      let category = 'US'
+      if (params && params.length) {
+        category = params[0]
+      }
       req({
         url: 'https://xueqiu.com/stock/screener/fields.json',
         qs: {
-          category: 'SH',
+          category, // 可选值: SH、US
           _: Date.now()
         },
         json: true
@@ -114,7 +118,7 @@ const cmds = {
         url: 'https://xueqiu.com/stock/quote_order.json',
         json: true,
         qs: {
-          stockType: 'sha', // 可用值 sha:沪A, sza:深A, cyb:创业板, zxb:中小板
+          stockType: 'us', // 可用值 sha:沪A, sza:深A, cyb:创业板, zxb:中小板, us:美股
           orderBy,
           order: 'desc', // 可用值 asc:升序, desc:降序
           size: 5,
