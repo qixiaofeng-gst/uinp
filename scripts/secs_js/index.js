@@ -6,9 +6,30 @@ const {
 
 const req = request.defaults({ jar: true })
 
+const one_second = 1000
+const one_minute = 60 * one_second
+const one_hour = 60 * one_minute
+const one_day = 24 * one_hour
+
 const pankou = 'https://xueqiu.com/stock/pankou.json?symbol='
 const quote = 'https://xueqiu.com/v4/stock/quotec.json?code='
 const for_chart = 'https://xueqiu.com/stock/forchart/stocklist.json?symbol=x&period=1d'
+
+const today_quotes = params => new Promise((resolve, reject) => {
+  req({
+    url: 'https://stock.xueqiu.com/v5/stock/chart/minute.json',
+    json: true,
+    qs: {
+      symbol: 'SH600190',
+      period: '1d'
+    }
+  }, (err, resp, body) => {
+    console.log(body.data.items.length)
+    console.log(body.data.items[0])
+    console.log(new Date(body.data.items[0].timestamp).toLocaleString())
+    resolve()
+  })
+})
 
 const spaces = num => {
   let s = ''
@@ -122,7 +143,24 @@ const cmds = {
     name: '取得历史数据',
     desc: '获取历史数据，输出条目总数、来源和耗时（第一次取得的将存到本地，以后再取就从本地取得），耗时操作',
     handle: params => new Promise((resolve, reject) => {
-      resolve()
+      req({
+        url: 'https://stock.xueqiu.com/v5/stock/chart/kline.json',
+        json: true,
+        qs: {
+          symbol: 'SZ300760',
+          begin: 1547114028289,
+          period: '1m',
+          type: 'before',
+          count: -142,
+          indicator: 'kline,ma,macd,kdj,boll,rsi,wr,bias,cci,psy'
+        }
+      }, (err, resp, body) => {
+        console.log(body.data.item.length)
+        console.log(body.data.item[0])
+        console.log(new Date(body.data.item[0].timestamp).toLocaleString())
+        console.log(new Date(1547114028289).toLocaleString())
+        resolve()
+      })
     })
   },
   bt: {
