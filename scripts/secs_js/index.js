@@ -1,35 +1,60 @@
 const request = require('request')
+const moment = require('moment-timezone')
+
+const tz = {
+  cn: 'Asia/Shanghai',
+  us: 'America/New_York'
+}
+const df = 'YYYYMMDD' // date format
+const get_ts = date => {
+  return parseInt(date)
+}
+const last_30_days = () => {
+  const current = moment().tz(tz.us)
+  const open_days = []
+  for (let i = 1; i < 30; ++i) {
+    current.subtract(1, 'd')
+    if (0 === current.day() || 6 === current.day()) {
+      continue
+    }
+    open_days.push(current.format(df))
+  }
+  return open_days
+}
 
 const {
-  fields
+  set_fn_as_key,
+  calc_margin,
+  calc_margin_arr
+} = require('./libs/obj_utils')
+const {
+  symbol_types
+} = require('./libs/consts')
+const {
+  histories
 } = require('./libs/db')
 
 const req = request.defaults({ jar: true })
+const get = (api, params) => new Promise((resolve, reject) => {
+  req({
+    url: `https://api.iextrading.com/1.0${api}`,
+    json: true,
+    qs: {
+      ...params
+    }
+  }, (err, resp, body) => {
+    if (err) {
+      reject(err)
+    } else {
+      resolve(body)
+    }
+  })
+})
 
 const one_second = 1000
 const one_minute = 60 * one_second
 const one_hour = 60 * one_minute
 const one_day = 24 * one_hour
-
-const pankou = 'https://xueqiu.com/stock/pankou.json?symbol='
-const quote = 'https://xueqiu.com/v4/stock/quotec.json?code='
-const for_chart = 'https://xueqiu.com/stock/forchart/stocklist.json?symbol=x&period=1d'
-
-const today_quotes = params => new Promise((resolve, reject) => {
-  req({
-    url: 'https://stock.xueqiu.com/v5/stock/chart/minute.json',
-    json: true,
-    qs: {
-      symbol: 'SH600190',
-      period: '1d'
-    }
-  }, (err, resp, body) => {
-    console.log(body.data.items.length)
-    console.log(body.data.items[0])
-    console.log(new Date(body.data.items[0].timestamp).toLocaleString())
-    resolve()
-  })
-})
 
 const spaces = num => {
   let s = ''
@@ -42,13 +67,6 @@ const fill_to = (str, num) => {
   return str + spaces(num - str.length)
 }
 
-let help_margin = 0
-const set_fn_as_key = obj => {
-  for (const k in obj) {
-    obj[k].key = k
-    help_margin = Math.max(help_margin, k.length)
-  }
-}
 const cmds = {
   help: {
     name: '帮助命令',
@@ -62,77 +80,91 @@ const cmds = {
       resolve()
     })
   },
-  fields: {
-    name: '查看可获取的字段全集',
-    desc: '列出所有字段中文名，代码名，字段数目统计，有变更的字段数目',
-    handle: params => new Promise((resolve, reject) => {
-      let category = 'US'
-      if (params && params.length) {
-        category = params[0]
+  types: {
+    name: 'List Types Command',
+    desc: 'List all symbol types',
+    handle: () => new Promise(resolve => {
+      for (const k in symbol_types) {
+        const t = symbol_types[k]
+        console.log(`${fill_to(k, type_margin)} ${t.desc}`)
+        if (t.explain) {
+          console.log(`${spaces(type_margin)} - ${t.explain}`)
+        }
       }
-      req({
-        url: 'https://xueqiu.com/stock/screener/fields.json',
-        qs: {
-          category, // 可选值: SH、US
-          _: Date.now()
-        },
-        json: true
-      }, (err, resp, body) => {
-        if (err) {
-          reject(err)
-          return
-        }
-        const all_fields = []
-        for (const category in body) {
-          const arr = body[category]
-          if (
-            false === Array.isArray(arr) ||
-            undefined === arr[0].name
-          ) {
-            console.log(`忽略复杂类别 ${category}`)
-            continue
-          }
-          console.log(`${category} 有 ${arr.length} 个`)
-          all_fields.splice(all_fields.length, 0, ...(arr.map(o => ({
-            ...o,
-            category
-          }))))
-        }
-        console.log(`所有字段共计 ${all_fields.length} 个`)
-        for (const { name, field } of all_fields) {
-          console.log(`${name} ${field}`)
-        }
+      resolve()
+    })
+  },
+  symbols: {
+    name: 'List symbols',
+    desc: 'Retreive the symbol represented in INET(Nasdaq Integrated symbology), print the count, cost 3~15 seconds',
+    handle: params => new Promise((resolve, reject) => {
+      get('/ref-data/symbols').then(data => {
+        console.log('Count:', data.length)
         resolve()
+      }).catch(err => {
+        reject(err)
       })
     })
   },
   list: {
-    name: '列出目标',
-    desc: '列出涨幅前列的股票代码以及相应涨幅',
+    name: 'List Command',
+    desc: 'List top 10 symbols according to the passed parameter',
     handle: params => new Promise((resolve, reject) => {
-      let orderBy = 'percent'
+      let sorter = 'gainers' // available values: mostactive, gainers, losers, iexvolume, iexpercent, infocus
       if (params && params.length) {
-        orderBy = params[0]
+        sorter = params[0]
       }
-      req({
-        url: 'https://xueqiu.com/stock/quote_order.json',
-        json: true,
-        qs: {
-          stockType: 'us', // 可用值 sha:沪A, sza:深A, cyb:创业板, zxb:中小板, us:美股
-          orderBy,
-          order: 'desc', // 可用值 asc:升序, desc:降序
-          size: 5,
-          page: 1,
-          column: 'symbol,name,current,chg,percent,volume,amount',
-          _: Date.now()
+      get(`/stock/market/list/${sorter}`).then(data => {
+        const margin = calc_margin_arr(data, 'symbol')
+        for (let i = 0; i < data.length; ++i) {
+          const q = data[i]
+          console.log(`${fill_to(q.symbol, margin)} ${q.changePercent} ${q.change}`)
         }
-      }, (err, resp, body) => {
-        if (err) {
-          reject(err)
-          return
-        }
-        console.log(body)
         resolve()
+      }).catch(err => {
+        reject(err)
+      })
+    })
+  },
+  fetch: {
+    name: 'Fetch History Command',
+    desc: 'Fetch history of specific symbol at specific date.',
+    handle: params => new Promise((resolve, reject) => {
+      let symbol = 'aapl' // yeah it is the iphone's apple
+      let date = '20190110'
+      if (params && params.length) {
+        symbol = params[0]
+        date = params[1] || date
+      }
+      histories.get({
+        date: parseInt(date),
+        symbol
+      }).then(history => {
+        if (history) {
+          console.log('====', history.data.length)
+          resolve(history.data)
+        } else {
+          get(`/stock/${symbol}/chart/date/${date}`).then(data => {
+            console.log('====', data.length)
+            if (data.length > 0) {
+              histories.insert({
+                date: parseInt(date),
+                symbol,
+                data
+              }).then(result => {
+                console.log(`Injection success for ${symbol} ${date}`)
+                resolve(data)
+              }).catch(err => {
+                console.log(`Injection failed for ${symbol} ${date}`)
+                resolve(data)
+              })
+            }
+          }).catch(err => {
+            reject(err)
+          })
+        }
+      }).catch(err => {
+        reject(err)
       })
     })
   },
@@ -141,30 +173,6 @@ const cmds = {
     desc: '列出代码，以及已存储的时间范围',
     handle: params => new Promise((resolve, reject) => {
       resolve()
-    })
-  },
-  fetch: {
-    name: '取得历史数据',
-    desc: '获取历史数据，输出条目总数、来源和耗时（第一次取得的将存到本地，以后再取就从本地取得），耗时操作',
-    handle: params => new Promise((resolve, reject) => {
-      req({
-        url: 'https://stock.xueqiu.com/v5/stock/chart/kline.json',
-        json: true,
-        qs: {
-          symbol: 'SZ300760',
-          begin: 1547114028289,
-          period: '1m',
-          type: 'before',
-          count: -142,
-          indicator: 'kline,ma,macd,kdj,boll,rsi,wr,bias,cci,psy'
-        }
-      }, (err, resp, body) => {
-        console.log(body.data.item.length)
-        console.log(body.data.item[0])
-        console.log(new Date(body.data.item[0].timestamp).toLocaleString())
-        console.log(new Date(1547114028289).toLocaleString())
-        resolve()
-      })
     })
   },
   bt: {
@@ -184,6 +192,8 @@ const cmds = {
   },
 }
 set_fn_as_key(cmds)
+const help_margin = calc_margin(cmds)
+const type_margin = calc_margin(symbol_types)
 
 const readline = require('readline')
 const read_cmd = () => {
@@ -191,7 +201,7 @@ const read_cmd = () => {
     input: process.stdin,
     output: process.stdout
   })
-  rl.question('指令:', cmd => {
+  rl.question('Command:', cmd => {
     rl.close()
     const parts = cmd.split(/\s+/)
     const cmd_str = parts.splice(0, 1)[0]
@@ -199,14 +209,15 @@ const read_cmd = () => {
     if (real_cmd) {
       const ts = Date.now()
       real_cmd.handle(parts).then(() => {
-        console.log(`指令 ${cmd_str} 执行完毕，耗时 ${Date.now() - ts} 毫秒\n`)
+        console.log(`Command ${cmd_str} 执行完毕，耗时 ${Date.now() - ts} 毫秒\n`)
       }).catch(err => {
-        console.log(`指令 ${cmd_str} 执行失败，耗时 ${Date.now() - ts} 毫秒\n`)
+        console.log(`Command ${cmd_str} 执行失败，耗时 ${Date.now() - ts} 毫秒\n`)
+        console.log(err)
       }).finally(() => {
         read_cmd()
       })
     } else {
-      console.log(`不支持 ${cmd_str} 指令`)
+      console.log(`不支持 ${cmd_str} Command`)
       read_cmd()
     }
   })
@@ -240,13 +251,5 @@ const test_method = () => req({
   })
 })
 
-req({
-  url: 'https://xueqiu.com/hq/screener'
-}, (err, resp, body) => {
-  if (err) {
-    console.log('初始化会话时发生错误:', err)
-    return
-  }
-  console.log('证券 APP 命令行模式启动，help 指令可获取帮助\n')
-  read_cmd()
-})
+console.log('证券 APP 命令行模式启动，help Command可获取帮助\n')
+read_cmd()

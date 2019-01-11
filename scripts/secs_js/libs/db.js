@@ -102,5 +102,6 @@ const DB_Table = table_name => {
 const db_name = 'secs_js'
 module.exports = {
   fields: DB_Table('fields'),
-  stocks: DB_Table('stocks')
+  symbols: DB_Table('symbols'),
+  histories: DB_Table('histories'),
 }
