@@ -1,6 +1,32 @@
 const request = require('request')
 const moment = require('moment-timezone')
 
+// M(B/S)C: Market buy/sell commission
+// L(B/S)C: Limit buy/sell commission
+// EX: Exchange
+// SS: Session, a buy-then-sell turn
+// p_pre: price prediciton: fut_t, p_rng and exp_p
+// fut_t: future timestamp
+// p_rng: price range
+// exp_p: price expectation
+// c_m_p: current market price
+// e_p_r: expected profit ratio, = e_c_r + n_p_r
+// e_c_r: exchange cost ratio
+// n_p_r: net profit ratio
+// stp_p: stop price
+// exc_p: exchange price
+// pp_sq: p_pre sequence
+/*
+Logic for buy:
+1. Contineously check c_m_p and update the p_pre
+   - If (exp_p - c_m_p) > e_p_r, then set LBC
+   - If there is a valley on the pp_sq, then set LBC //TODO here need more details
+Logic for sell:
+1. Immediately set LSC with (exc_p * (1 + e_p_r)) after EX
+2. If LSC is conducted, then SS complete, else contineously check c_m_p and update the p_pre
+   - If (exp_p < stp_p) && (c_m_p < stp_p), then set a LC with max(c_m_p, exp_p)
+*/
+
 const tz = {
   cn: 'Asia/Shanghai',
   us: 'America/New_York'
