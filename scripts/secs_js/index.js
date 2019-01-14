@@ -47,6 +47,64 @@ const last_30_days = () => {
   }
   return open_days
 }
+const fetch_history = (symbol, date) => new Promise((resolve, reject) => {
+  date = parseInt(date)
+  histories.get({
+    date,
+    symbol
+  }).then(history => {
+    if (history) {
+      console.log(`自缓存中取得 ${symbol} ${date}`)
+      resolve(history.data)
+    } else {
+      get(`/stock/${symbol}/chart/date/${date}`).then(data => {
+        if (data.length > 0) {
+          console.log(`取得 ${symbol} ${date} 成功`)
+          histories.insert({
+            date,
+            symbol,
+            data
+          }).then(result => {
+            console.log(`缓存 ${symbol} ${date} 成功`)
+            resolve(data)
+          }).catch(err => {
+            console.log(`缓存 ${symbol} ${date} 失败`)
+            resolve(data)
+          })
+        } else {
+          const msg = `取得 ${symbol} ${date} 数据为空`
+          console.log(msg)
+          reject({ msg })
+        }
+      }).catch(err => {
+        console.log(`取得 ${symbol} ${date} 失败`)
+        console.log(err)
+        reject(err)
+      })
+    }
+  }).catch(err => {
+    reject(err)
+  })
+})
+const fetch_last_30 = symbol => new Promise(resolve => {
+  const results = []
+  const l30d = last_30_days()
+  const recursively_do = index => {
+    index = index || 0
+    if (index < l30d.length) {
+      fetch_history(symbol, l30d[index]).then(data => {
+        results.push(data)
+        recursively_do(index + 1)
+      }).catch(err => {
+        recursively_do(index + 1)
+      })
+    } else {
+      resolve(results)
+      return
+    }
+  }
+  recursively_do()
+})
 
 const {
   set_fn_as_key,
@@ -157,40 +215,12 @@ const cmds = {
     desc: 'Fetch history of specific symbol at specific date.',
     handle: params => new Promise((resolve, reject) => {
       let symbol = 'aapl' // yeah it is the iphone's apple
-      let date = '20190110'
       if (params && params.length) {
         symbol = params[0]
-        date = params[1] || date
       }
-      histories.get({
-        date: parseInt(date),
-        symbol
-      }).then(history => {
-        if (history) {
-          console.log('====', history.data.length)
-          resolve(history.data)
-        } else {
-          get(`/stock/${symbol}/chart/date/${date}`).then(data => {
-            console.log('====', data.length)
-            if (data.length > 0) {
-              histories.insert({
-                date: parseInt(date),
-                symbol,
-                data
-              }).then(result => {
-                console.log(`Injection success for ${symbol} ${date}`)
-                resolve(data)
-              }).catch(err => {
-                console.log(`Injection failed for ${symbol} ${date}`)
-                resolve(data)
-              })
-            }
-          }).catch(err => {
-            reject(err)
-          })
-        }
-      }).catch(err => {
-        reject(err)
+      fetch_last_30(symbol).then(results => {
+        console.log(`共取得 ${results.length} 天数据`)
+        resolve(results)
       })
     })
   },
@@ -198,7 +228,18 @@ const cmds = {
     name: '列出本地已存储数据',
     desc: '列出代码，以及已存储的时间范围',
     handle: params => new Promise((resolve, reject) => {
-      resolve()
+      histories.exec().then(({ table, log_ts }) => table.aggregate([
+        { $group: { _id: '$symbol', day_count: { $sum: 1 } } }
+      ]).toArray().then(results => {
+        for (const { _id, day_count } of results) {
+          console.log(`本地 ${_id} 有 ${day_count} 天`)
+        }
+        resolve(results)
+      }).catch(err => {
+        reject(err)
+      })).catch(err => {
+        reject(err)
+      })
     })
   },
   bt: {
