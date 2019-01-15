@@ -153,8 +153,8 @@ const fill_to = (str, num) => {
 
 const cmds = {
   help: {
-    name: '帮助命令',
-    desc: '打印本帮助',
+    name: 'Help Command',
+    desc: 'Show this help information',
     handle: params => new Promise((resolve, reject) => {
       for (const k in cmds) {
         const c = cmds[k]
@@ -218,6 +218,7 @@ const cmds = {
       if (params && params.length) {
         symbol = params[0]
       }
+      symbol = symbol.toLowerCase()
       fetch_last_30(symbol).then(results => {
         console.log(`共取得 ${results.length} 天数据`)
         resolve(results)
@@ -225,9 +226,9 @@ const cmds = {
     })
   },
   local: {
-    name: '列出本地已存储数据',
-    desc: '列出代码，以及已存储的时间范围',
-    handle: params => new Promise((resolve, reject) => {
+    name: 'List Local Command',
+    desc: 'List locally cached symbols',
+    handle: () => new Promise((resolve, reject) => {
       histories.exec().then(({ table, log_ts }) => table.aggregate([
         { $group: { _id: '$symbol', day_count: { $sum: 1 } } }
       ]).toArray().then(results => {
@@ -243,15 +244,15 @@ const cmds = {
     })
   },
   bt: {
-    name: '回测',
-    desc: '使用历史数据测试策略，传一个代码作为参数，属于耗时操作',
+    name: 'Back Test Command',
+    desc: 'Use history data to test specified strategies',
     handle: params => new Promise((resolve, reject) => {
       resolve()
     })
   },
   exit: {
-    name: '退出',
-    desc: '退出进程',
+    name: 'Exit Command',
+    desc: 'End the process',
     handle: params => new Promise((resolve, reject) => {
       process.exit(0)
       resolve()
@@ -289,34 +290,6 @@ const read_cmd = () => {
     }
   })
 }
-
-const test_method = () => req({
-  url: 'https://xueqiu.com/stock/screener/screen.json',
-  qs: {
-    category: 'SH',
-    orderby: 'chgpct1m',
-    order: 'desc',
-    current: 'ALL',
-    pct: 'ALL',
-    page: 1,
-    chgpct1m: '0_142.9878',
-    _: Date.now()
-  },
-  json: true
-}, (err, resp, body) => {
-  console.log(body.list.length, '====', body.list.map(o => o.chgpct1m))
-  const { symbol } = body.list[0]
-  req({
-    url: 'https://stock.xueqiu.com/v5/stock/chart/minute.json',
-    qs: {
-      symbol,
-      period: '5d'
-    },
-    json: true
-  }, (err, resp, body) => {
-    console.log(body.data.items.length, '==== inner')
-  })
-})
 
 console.log('证券 APP 命令行模式启动，help Command可获取帮助\n')
 read_cmd()
