@@ -50,7 +50,7 @@
   */
   "use strict"
   ///////////////// worker thread code ///////////////////
-  const water = noWorkers => {
+  const water = () => {
     "use strict"
     let canvas, ctx
     let pointer = { x: 0, y: 0, isDown: false }
@@ -65,7 +65,7 @@
       }
     }
     // ---- messages from the main thread ----
-    const message = e => {
+    onmessage = e => {
       switch (e.data.msg) {
         case "pointerMove":
           pointer.x = e.data.x | 0
@@ -161,43 +161,33 @@
         wave(pointer.x, pointer.y, 16)
       }
     }
-    // ---- main thread vs. worker
-    if (noWorkers) {
-      // ---- map postMessage ----
-      return {
-        postMessage(data) {
-          message({ data: data })
-        }
-      }
-    } else {
-      // ---- worker messaging ----
-      onmessage = message
-    }
   }
   ///////////////// main thread code ///////////////////
-  let worker = null
-  const createWorker = fn => {
-    const URL = window.URL || window.webkitURL
-    console.log("(" + fn + ")()", `${fn}`)
-    return new Worker(URL.createObjectURL(new Blob(["(" + fn + ")()"])))
-  }
   // ---- init canvas ----
   const canvas = document.querySelector("canvas")
   canvas.width = canvas.offsetWidth
   canvas.height = canvas.offsetHeight
-  // ---- source image ----
-  const img = document.getElementById("texture")
   const texture = document.createElement("canvas")
   texture.width = canvas.width
   texture.height = canvas.height
   const ctx = texture.getContext("2d")
+  // ---- source image ----
+  const img = document.getElementById("texture")
   ctx.drawImage(img, 0, 0)
   const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height)
   // ---- instanciate worker ----
-  worker = createWorker(water)
+  const worker = new Worker(
+    URL.createObjectURL(
+      new Blob(
+        [`(${water})()`]
+      )
+    )
+  )
   const offscreen = canvas.transferControlToOffscreen()
   worker.postMessage({
-    msg: "start", elem: offscreen, imgData: imgData
+    msg: "start",
+    elem: offscreen,
+    imgData: imgData
   }, [
     offscreen
   ])
