@@ -34,5 +34,5 @@ storage:
 "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --disable-web-security --user-data-dir="D:/TempDocs/chrome_data/"
 Windows 下可创建快捷方式并添加参数
 
-# Java 执行指定 jar 包中的指定 class 的命令行：
-java -cp xxx.jar xxx.class
+# Java 执行指定 jar 包中的指定 class 和 library path 的命令行：
+java -Djava.library.path=dir/path -cp xxx.jar xxx.xxx.ClassName
