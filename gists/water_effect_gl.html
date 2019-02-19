@@ -56,7 +56,13 @@ const create_shader_program = (vs_id, fs_id) => {
     return null
   }
 }
-const main = () => {
+const first_prog = create_shader_program('vs', 'fs')
+const init_scene = () => {
+  gl.clearColor(0, 0, 0, 1)
+  gl.clear(gl.COLOR_BUFFER_BIT)
+  //=======
+}
+const main_loop = () => {
 
 }
 console.log(
@@ -76,7 +82,7 @@ const looper = cb => {
     looper(cb)
   })
 }
-looper(main)
+looper(main_loop)
   })</script>
 
   <script type="text/x-shader" id='vs'>
