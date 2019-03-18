@@ -1,8 +1,9 @@
+=======
 officer 25223 Rufus
 
 =======
 瑞亚策略游戏开发相关
-ssh: root@192.168.1250 9ol.=[;. 日志目录：/usr/docker/game/game_logs
+ssh: root@192.168.250 9ol.=[;. 日志目录：/usr/docker/game/game_logs
 ftp: 192.168.1.253 传输方式为主动 share:无密码
 http://192.168.1.253:8899 wiki
 http://192.168.1.253:8888 jira qixiaofeng
@@ -14,77 +15,6 @@ https://192.168.1.253/svn/project/wastland_survivor/client
 电脑端 wasteland wars 解压后，luaframework 要拷贝到 C 盘根目录
 redis.index 用 4
 最后一个可运行的 game server 的 svn revision 是 23366
-
-=======
-服务端开发相关
-- 运行电脑端后，选了开发测试服务器，用户名 qixiaofeng
-- 玩到一半时，不知怎么跳出了日志 console，不会关闭
-  - 一个不稳定重现的方法：在大地图界面反复的点击右上角购物车
-  - 貌似是长按右上角某处可以使其消失
-- free 和 unlock 按钮的区别
-  - 5 分钟以内的建造任务可以 free (不产生 fatigue) 完成，否则想要不产生 fatigue 需要视时间长度支付对应的 coins
-- 本地建立 game server 的步骤：
-  - 开发的机器 IP 要固定
-  - 连接到内网数据库，center 数据库中的 server_info 表，添加自己的服务器信息，主要注意 server_key、server_name、ip
-  - 在 ws-game 工程 /config 目录下，serverVariables.properties 中的 server.key 字段设置
-  - 本地安装 MySQL 并按 /config/jdbc.properties 中的属性设置数据库、创建数据表
-    - mysqld.exe --initialize-insecure 用于初始化本地 zip 包方式的安装
-    - mysqld.exe --console 启动服务
-    - 在 mysql 客户端执行 SET PASSWORD FOR 'root'@'localhost' = PASSWORD('mypass'); 设置 root 密码
-    - 原型表需设置 ENGINE=MyIASM
-  - 导出内网数据库中 game 数据库，并在本地数据库中导入
-  - ecllipse 中运行 ws-game 工程:
-    - run configuration:
-      - project: ws-game
-      - Main Class: com.rhea.ws.game.WSLauncher
-      - Program Arguments: test
-      - VM Arguments: -server -Xms512m -Xmx512m
-    - telnet 192.168.1.250 26381 确认 redis 可以连接(通过 wifi 连接存在问题，通过网线连接则可行)
-- processor 是基础功能服务，与当前模块相关的基本功能在其中实现，不同模块的 processor 之间不可相互依赖
-  - 一个 mapper 只能在本模块下的 processor 当中被引用
-  - mapper 是自动生成的，但是 @Repository 需要手动添加
-  - VO 对象的集合由延时任务处理框架自动维护，除了向集合中添加 VO 对象以外，不要进行删除或变动等任何操作
-- calculator 是在 cmd 和 event 间公用的复杂功能服务，可依赖所有 processor
-- cmd 是客户端与服务端交互的唯一接口
-- event 通常由 cmd 触发并安排进入倒计时队列
-  - 延时任务的 handler 的 bean 引用须添加到 core.xml 的 actionManager 之下
-- task 完成周期性任务
-- handler 禁止行为的写法：
-  - 尽量往上提
-  - 一开始不把所有数据从数据库取出
-  - 最大概率禁止的往上提
-  - 需要写数据的 handler 要重载 isSynchronization 返回 true
-- 单纯的读取不需要加锁
-- prototype 表自动生成的 Mapper.xml 里需要添加 <cache readOnly="true" flushInterval="86400000" />
-- windows subsystem for linux 启动偶尔会有错误，此时重启 LxssManager 服务可解决问题
-=======
-客户端开发：
-1.FairyGUI 有了修改并发布之后，除了提交相关 xml，还要提交 Unity 工程里 Assets/Build/UI 目录下的修改。
-2.Lua 中新增 UI
-  - Common/define.lua 中 require
-  - Common/VarDefine.lua 的 UINewNames、Messages 中新增名字和协议常量
-  - Loic/LuaMessageAgent.lua 的 handleMessage 中新增协议相关的分支语句
-  - 如需等待动画，则在 UI/ModalWaiting.lua 中新增协议
-3.Scripts/Games/GameThread.cs 包含播放战斗，切换场景的逻辑
-4.Build/Language.xml 是 Language.Get(XXX) 的来源，修改后需在 Unity 的 Game 菜单里编译
-5.新建包以后 FairyGUI 需修改包的发布设置，勿使用全局设置
-6.FairyGUI 如果使用 Component_bg 组件，请将组件实例名称命名为 bg
-7.新增战斗类型，需要做
-  a.BattleLogic.cs 新增标志位和分支逻辑，参考 IsHunt
-  b.GMsg.cs 新增分支，参考 HUNT_RESULT
-  c.GameThread.cs 新增方法，参考 HuntReplay
-  d.UIManager.lua 新增方法，参考 HandleHuntReslut，并在 BattleLogic.cs 中引用，参考 IsHunt
-  e.Unity 中在 Lua 菜单中使用 Gen Lua Wrapper Files 功能
-8.有新的 lua 脚本记得一定要提交，否则会导致全部进不去游戏
-
-=======
-部分功能（比如聊天、军团聊天）需要依赖 redis，本地架设服务器的话从内网拷贝的 MySQL 数据会与本地 redis 不一致，有些行动比如军团 flag 升级会推送军团聊天，军团信息不一致将导致升级 flag 在后台抛出空指针异常。还有些行为将导致更严重的问题，比如打地图上的军团怪物将导致部队无法退出 marching 状态。
-java.lang.NullPointerException
-	at com.rhea.ws.game.chat.calculator.ChatSenderCalculator.getChatMemberInfos(ChatSenderCalculator.java:331)
-	at com.rhea.ws.game.chat.calculator.ChatSenderCalculator.sendRemoveAllianceNpc(ChatSenderCalculator.java:233)
-  ...
-这个问题已确认是由于本地数据库中数据与内网 redis 数据库之间数据差异导致，前面的空指针异常就是由于在 redis 中缺失联盟信息导致的。
-比较彻底的解决方法是清理本地数据表。也可以重新建立一个 player，然后自己创建一个联盟，再打副本怪就不会抛出异常导致 marching 状态无法退出了。
 
 =======
 Netty is an asynchronous event-driven network application framework  for rapid development of maintainable high performance protocol servers & clients.
