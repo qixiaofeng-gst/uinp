@@ -6,7 +6,6 @@
 
   <script>window.addEventListener('load', () => {
 const gl = document.getElementById('canvas').getContext('webgl')
-const image = document.getElementById('texture')
 const create_shader = (type, src) => {
   const shader = gl.createShader(type)
   gl.shaderSource(shader, src)
@@ -99,6 +98,7 @@ const create_shader_program = (vs_id, fs_id) => {
   }
 }
 const first_prog = create_shader_program('vs', 'fs')
+const image = document.getElementById('texture')
 const init_scene = () => {
   const rect_buffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, rect_buffer)
@@ -122,19 +122,21 @@ const init_scene = () => {
   gl.clear(gl.COLOR_BUFFER_BIT)
   gl.useProgram(first_prog)
   
-  gl.enableVertexAttribArray(rect_buffer)
+  gl.enableVertexAttribArray(first_prog.vars.a_position.location)
   gl.bindBuffer(gl.ARRAY_BUFFER, rect_buffer)
   gl.vertexAttribPointer(
     first_prog.vars.a_position.location,
     2, gl.FLOAT, false, 0, 0
   )
   
-  gl.enableVertexAttribArray(tex_coord_buffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, tex_coord_buffer)
   gl.vertexAttribPointer(
     first_prog.vars.a_texCoord.location,
     2, gl.FLOAT, false, 0, 0
   )
+  gl.enableVertexAttribArray(first_prog.vars.a_texCoord.location)
+  
+  //gl.activeTexture(gl.TEXTURE0)
   
   gl.uniform2f(
     first_prog.vars.u_resolution.location,
@@ -164,11 +166,13 @@ const set_rect_tex = () => gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
 ]), gl.STATIC_DRAW)
 init_scene()
 const main_loop = () => {
-  gl.drawArrays(gl.TRIANGLES, 0, 6)
+  //gl.drawArrays(gl.TRIANGLES, 0, 6)
 }
 console.log(
   gl.VERTEX_SHADER,
   first_prog,
+  image.width,
+  image.height,
   gl.canvas.width,
   gl.canvas.height,
   gl.canvas.clientWidth,
@@ -194,20 +198,20 @@ uniform vec2 u_resolution;
 varying vec2 v_texCoord;
 
 void main() {
-   // convert the rectangle from pixels to 0.0 to 1.0
-   vec2 zeroToOne = a_position / u_resolution;
+  // convert the rectangle from pixels to 0.0 to 1.0
+  vec2 zeroToOne = a_position / u_resolution;
 
-   // convert from 0->1 to 0->2
-   vec2 zeroToTwo = zeroToOne * 2.0;
+  // convert from 0->1 to 0->2
+  vec2 zeroToTwo = zeroToOne * 2.0;
 
-   // convert from 0->2 to -1->+1 (clipspace)
-   vec2 clipSpace = zeroToTwo - 1.0;
+  // convert from 0->2 to -1->+1 (clipspace)
+  vec2 clipSpace = zeroToTwo - 1.0;
 
-   gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+  gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
 
-   // pass the texCoord to the fragment shader
-   // The GPU will interpolate this value between points.
-   v_texCoord = a_texCoord;
+  // pass the texCoord to the fragment shader
+  // The GPU will interpolate this value between points.
+  v_texCoord = a_texCoord;
 }
   </script>
 
@@ -221,7 +225,8 @@ uniform sampler2D u_image;
 varying vec2 v_texCoord;
 
 void main() {
-   gl_FragColor = texture2D(u_image, v_texCoord);
+  gl_FragColor = texture2D(u_image, v_texCoord);
+  //gl_FragColor = vec4(v_texCoord.x, v_texCoord.y, 0, 1);
 }
   </script>
 
