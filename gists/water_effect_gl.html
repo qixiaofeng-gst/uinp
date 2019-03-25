@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script>window.addEventListener('load', () => {
-const canvas_dom = document.getElementById('canvas')
-const gl = canvas_dom.getContext('webgl')
+const gl = document.getElementById('canvas').getContext('webgl')
+const image = document.getElementById('texture')
 const create_shader = (type, src) => {
   const shader = gl.createShader(type)
   gl.shaderSource(shader, src)
@@ -21,6 +21,10 @@ const create_shader = (type, src) => {
     gl.deleteShader(shader)
     return null
   }
+}
+const location_config = {
+  attribute: (program, name) => gl.getAttribLocation(program, name),
+  uniform: (program, name) => gl.getUniformLocation(program, name),
 }
 const parse_variables = src => {
   const reg_var = /(attribute|uniform)\s+\w+\s+\w+;$/gm
@@ -54,7 +58,11 @@ const merge_vars = (v1, v2) => {
   return vars
 }
 const parse_locations = (vars, program) => {
-
+  for (const k in vars) {
+    const v = vars[k]
+    v.location = location_config[v.var_type](program, k)
+    v.program = program
+  }
 }
 const create_vertex_shader = src => {
   return create_shader(gl.VERTEX_SHADER, src)
@@ -78,6 +86,8 @@ const create_shader_program = (vs_id, fs_id) => {
   gl.attachShader(program, fs)
   gl.linkProgram(program)
   if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    parse_locations(vars, program)
+    program.vars = vars
     return program
   } else {
     console.error(
@@ -90,17 +100,75 @@ const create_shader_program = (vs_id, fs_id) => {
 }
 const first_prog = create_shader_program('vs', 'fs')
 const init_scene = () => {
-  gl.clearColor(0, 0, 0, 1)
+  const rect_buffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, rect_buffer)
+  set_rectangle(0, 0, image.width, image.height)
+  
+  const tex_coord_buffer = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, tex_coord_buffer)
+  set_rect_tex()
+  
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image)
+  
+  /** Below should move into main_loop */
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  gl.clearColor(0, 0, 0, 0)
   gl.clear(gl.COLOR_BUFFER_BIT)
-  //=======
+  gl.useProgram(first_prog)
+  
+  gl.enableVertexAttribArray(rect_buffer)
+  gl.bindBuffer(gl.ARRAY_BUFFER, rect_buffer)
+  gl.vertexAttribPointer(
+    first_prog.vars.a_position.location,
+    2, gl.FLOAT, false, 0, 0
+  )
+  
+  gl.enableVertexAttribArray(tex_coord_buffer)
+  gl.bindBuffer(gl.ARRAY_BUFFER, tex_coord_buffer)
+  gl.vertexAttribPointer(
+    first_prog.vars.a_texCoord.location,
+    2, gl.FLOAT, false, 0, 0
+  )
+  
+  gl.uniform2f(
+    first_prog.vars.u_resolution.location,
+    gl.canvas.width, gl.canvas.height
+  )
+  gl.drawArrays(gl.TRIANGLES, 0, 6)
 }
+const set_rectangle = (x, y, width, height) => {
+  const x2 = x + width
+  const y2 = y + height
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    x, y,
+    x2, y,
+    x, y2,
+    x, y2,
+    x2, y,
+    x2, y2,
+  ]), gl.STATIC_DRAW)
+}
+const set_rect_tex = () => gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+  0.0, 0.0,
+  1.0, 0.0,
+  0.0, 1.0,
+  0.0, 1.0,
+  1.0, 0.0,
+  1.0, 1.0,
+]), gl.STATIC_DRAW)
+init_scene()
 const main_loop = () => {
-
+  gl.drawArrays(gl.TRIANGLES, 0, 6)
 }
 console.log(
   gl.VERTEX_SHADER,
   first_prog,
-  gl.canvas === canvas_dom,
   gl.canvas.width,
   gl.canvas.height,
   gl.canvas.clientWidth,
@@ -118,92 +186,44 @@ looper(main_loop)
   })</script>
 
   <script type="text/x-shader" id='vs'>
-attribute vec4 aVertexPosition;
-uniform mat4 uModelViewMatrix;
-uniform mat4 uProjectionMatrix;
+attribute vec2 a_position;
+attribute vec2 a_texCoord;
+
+uniform vec2 u_resolution;
+
+varying vec2 v_texCoord;
+
 void main() {
-  gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+   // convert the rectangle from pixels to 0.0 to 1.0
+   vec2 zeroToOne = a_position / u_resolution;
+
+   // convert from 0->1 to 0->2
+   vec2 zeroToTwo = zeroToOne * 2.0;
+
+   // convert from 0->2 to -1->+1 (clipspace)
+   vec2 clipSpace = zeroToTwo - 1.0;
+
+   gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+
+   // pass the texCoord to the fragment shader
+   // The GPU will interpolate this value between points.
+   v_texCoord = a_texCoord;
 }
   </script>
 
   <script type="text/x-shader" id='fs'>
-uniform vec4 aaVertexPosition = vec4(1.0, 1.0, 1.0, 1.0);
+precision mediump float;
+
+// our texture
+uniform sampler2D u_image;
+
+// the texCoords passed in from the vertex shader.
+varying vec2 v_texCoord;
+
 void main() {
-  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+   gl_FragColor = texture2D(u_image, v_texCoord);
 }
   </script>
-
-<!--
-Data Types In GLSL
-
-There are four main types: float, int, bool and sampler.
-
-For the first three types, vector types are available:
-vec2, vec3, vec4			2D, 3D and 4D floating point vector
-ivec2, ivec3, ivec4			2D, 3D and 4D integer vector
-bvec2, bvec3, bvec4			2D, 3D and 4D boolean vectors
-
-For floats here are also matrix types:
-mat2, mat3, mat4			2x2, 3x3, 4x4 floating point matrix
-
-Samplers are types representing textures.
-They are used for texture sampling.
-Sampler types have to be uniform.
-They are not allowed to be declared as a non-uniform type.
-Here are the different sampler types:
-sampler1D, sampler2D, sampler3D		1D, 2D and 3D texture
-samplerCube				Cube Map texture
-sampler1Dshadow, sampler2Dshadow	1D and 2D depth-component texture
-
-About Attributes, Uniforms And Varyings
-
-Uniforms are values which do not change during a rendering, for example the light position or the light color.
-Uniforms are available in vertex and fragment shaders.
-Uniforms are read-only.
-Attributes are only available in vertex shader and they are input values which change every vertex, for example the vertex position or normals.
-Attributes are read-only.
-Varyings are used for passing data from a vertex shader to a fragment shader.
-Varyings are (perspective correct) interpolated across the primitive.
-Varyings are read-only in fragment shader but are read- and writeable in vertex shader (but be careful, reading a varying type before writing to it will return an undefined value).
-If you want to use varyings you have to declare the same varying in your vertex shader and in your fragment shader.
-All uniform, attribute and varying types HAVE to be global. You are not allowed to specify a uniform/attribute/varying type in a function or a void.
-
-Built-In Types
-
-GLSL has some built-in attributes in a vertex shader:
-
-gl_Vertex				4D vector representing the vertex position
-gl_Normal				3D vector representing the vertex normal
-gl_Color				4D vector representing the vertex color
-gl_MultiTexCoordX			4D vector representing the texture coordinate of texture unit X
-There are some other built-in attributes, see reference [2], page 41 for a full list.
-
-GLSL also has some built-in uniforms:
-
-gl_ModelViewMatrix			4x4 Matrix representing the model-view matrix.
-gl_ModelViewProjectionMatrix		4x4 Matrix representing the model-view-projection matrix.
-gl_NormalMatrix				3x3 Matrix representing the inverse transpose model-view matrix.
-        This matrix is used for normal transformation.
-There are some other built-in uniforms, like lighting states. See reference [2], page 42 for a full list.
-
-GLSL Built-In Varyings:
-
-gl_FrontColor				4D vector representing the primitives front color
-gl_BackColor				4D vector representing the primitives back color
-gl_TexCoord[X]				4D vector representing the Xth texture coordinate
-There are some other built-in varyings. See reference [2], page 44 for a full list.
-
-And last but not least there are some built-in types which are used for shader output:
-
-gl_Position				4D vector representing the final processed vertex position. Only
-        available in vertex shader.
-gl_FragColor				4D vector representing the final color which is written in the frame
-        buffer. Only available in fragment shader.
-gl_FragDepth				float representing the depth which is written in the depth buffer.
-        Only available in fragment shader.
-The importance of built-in types is that they are mapped to the OpenGL states.
-For example if you call glLightfv(GL_LIGHT0, GL_POSITION, my_light_position) this value is available as a uniform using gl_LightSource[0].position in a vertex and/or fragment shader.
--->
 
   <style media="screen">
     html, body {
