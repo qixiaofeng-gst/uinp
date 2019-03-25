@@ -23,8 +23,38 @@ const create_shader = (type, src) => {
   }
 }
 const parse_variables = src => {
-  const reg_var = /(attribute|uniform|varying)\s+\w+\s+\w+;$/gm
-  console.log(src.match(reg_var))
+  const reg_var = /(attribute|uniform)\s+\w+\s+\w+;$/gm
+  const var_strs = src.match(reg_var)
+  const vars = {}
+  if (null === var_strs) {
+    return vars
+  }
+  for (const v of var_strs) {
+    const a3 = v.trim().split(/\s+/)
+    const [var_type, data_type, name_str] = a3
+    const name = name_str.substr(0, name_str.length - 1)
+    vars[name] = {
+      var_type,
+      data_type,
+    }
+  }
+  return vars
+}
+const merge_vars = (v1, v2) => {
+  const vars = {}
+  for (const k in v1) {
+    vars[k] = v1[k]
+  }
+  for (const k in v2) {
+    if (vars[k]) {
+      console.warn(`Duplicated variable name "${k}" detected`)
+    }
+    vars[k] = v2[k]
+  }
+  return vars
+}
+const parse_locations = (vars, program) => {
+
 }
 const create_vertex_shader = src => {
   return create_shader(gl.VERTEX_SHADER, src)
@@ -38,7 +68,9 @@ const get_src = id => {
 const create_shader_program = (vs_id, fs_id) => {
   const vs_src = get_src(vs_id)
   const fs_src = get_src(fs_id)
-  parse_variables(vs_src)
+  const vs_vars = parse_variables(vs_src)
+  const fs_vars = parse_variables(fs_src)
+  const vars = merge_vars(vs_vars, fs_vars)
   const vs = create_vertex_shader(vs_src)
   const fs = create_fragment_shader(fs_src)
   const program = gl.createProgram()
@@ -67,7 +99,7 @@ const main_loop = () => {
 }
 console.log(
   gl.VERTEX_SHADER,
-  create_shader_program('vs', 'fs'),
+  first_prog,
   gl.canvas === canvas_dom,
   gl.canvas.width,
   gl.canvas.height,
@@ -95,6 +127,7 @@ void main() {
   </script>
 
   <script type="text/x-shader" id='fs'>
+uniform vec4 aaVertexPosition = vec4(1.0, 1.0, 1.0, 1.0);
 void main() {
   gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

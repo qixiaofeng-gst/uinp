@@ -1,0 +1,16 @@
+{
+  "name": "try_tfjs",
+  "version": "1.0.0",
+  "description": "Try tensorflow",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "qixiaofeng",
+  "license": "MIT",
+  "dependencies": {
+    "@tensorflow/tfjs": "^1.0.1",
+    "@tensorflow/tfjs-node": "^1.0.1",
+    "@tensorflow/tfjs-vis": "^1.0.3"
+  }
+}
