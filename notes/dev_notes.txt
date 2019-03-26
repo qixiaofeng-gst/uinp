@@ -11,11 +11,16 @@ pip install --upgrade tensorflow==1.1.0rc1
 
 # 常用指令
 #* 软链接 ln -s target_to_link link_name
+#* 在 linux 下，两种使命令脱离 shell 执行的方法：
+#*# nohup command_and_paramters &
+#*# command_and_paramters </dev/null &>/dev/null &
 #* 查 linux 已占用端口 sudo lsof -i -P -n | grep LISTEN
 #* GIT 推送本地工程到远程空工程
 git pull origin master --allow-unrelated-histories
 git remote add origin git@blablabla:url
 git push -u origin master
+#* 在 windows 下使命令脱离 cmd 执行的方法（关闭 cmd 后进程将退出，因此大多数情况无效）：
+start "command_name" /B command_and_paramters > somefile.txt
 
 # Windows 中安装 MongoDB 服务
 #* 创建数据文件和日志文件目录；

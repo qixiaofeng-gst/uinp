@@ -16,6 +16,15 @@
 ##** http://192.168.1.253/platform/
 ##** http://192.168.1.250:8080/
 ##* 其它所有相关服务器
+##** http://192.168.1.47:8080/rhea-collect/exception/collect,
+##** http://192.168.1.47:8080/rhea-collect/ping/collect,
+
+服务器部署文档（docker 版本）：
+http://192.168.1.253:8899/pages/viewpage.action?pageId=7146460
+
+客户端机器人
+# 辅助人工
+# 压力测试
 
 =======
 officer 25223 Rufus
