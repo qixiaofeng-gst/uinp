@@ -21,13 +21,24 @@
 
 服务器部署文档（docker 版本）：
 http://192.168.1.253:8899/pages/viewpage.action?pageId=7146460
+服务器部署目录说明
+http://192.168.1.253:8899/pages/viewpage.action?pageId=6684742
+
+目前已涉及数据库：
+* game
+* center
+* gm
+* pay 由于本地无法调起支付因此未创建
 
 客户端机器人
 # 辅助人工
 # 压力测试
 
+服务器在开发本地搭建过程中奇怪无理的坑：
+* 某些 eclipse 工程通过 Add library -> Server runtime 的方式添加的 Build path 可能导致 war 包不能正常工作，唯有直接添加 external jar 方能工作
+
 =======
-officer 25223 Rufus
+运行中心服务器
 
 =======
 瑞亚策略游戏开发相关
