@@ -32,6 +32,11 @@ const location_config = {
   attribute: (program, name) => gl.getAttribLocation(program, name),
   uniform: (program, name) => gl.getUniformLocation(program, name),
 }
+const data_type_config = {
+  vec2: (loc, val) => gl.uniform2fv(loc, val),
+  sampler2D: (loc, val) => gl.uniform1i(loc, val),
+  float: (loc, val) => gl.uniform1f(loc, val),
+}
 const parse_variables = src => {
   const reg_var = /(attribute|uniform)\s+\w+\s+\w+;$/gm
   const var_strs = src.match(reg_var)
@@ -94,7 +99,22 @@ const create_shader_program = (vs_id, fs_id) => {
   if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
     parse_locations(vars, program)
     program.vars = vars
+    console.log('>>>', program)
     return program
+    return new Proxy({
+      //TODO
+    }, {
+      get: (_, key, __) => {
+        if (worker.hasOwnProperty(key)) {
+          return worker[key]
+        }
+        return mami[key]
+      },
+      set: (_, key, value, __) => {
+        mami[key] = value
+        return value
+      }
+    })
   } else {
     console.error(
       `Failed to link program`,
@@ -108,16 +128,14 @@ const prgm_drop = create_shader_program('vs_share', 'fs_drop')
 const prgm_update = create_shader_program('vs_share', 'fs_update')
 const prgm_render = create_shader_program('vs_render', 'fs_render')
 const image = document.getElementById('texture')
-const transparent_pixels = new ImageData(32, 32)
-const resolution = 256
+const resolution = 128
 const perturbance = 0.03
-const drop_radius = 20 //px
-const strength = 60 // 0.04 - 0.08
+const drop_radius = 10 //px
+const strength = 120 // 0.04 - 0.08
 const texture_delta = new Float32Array([1 / resolution, 1 / resolution])
 const top_left = new Float32Array([0, 0])
 const bottom_right = new Float32Array([1, 1])
 const container_ratio = new Float32Array([1, 0.68])
-const arr_framebuffer = new Float32Array(resolution * resolution * 4)
 const tex_background = gl.createTexture()
 const tex_bff_arr = []
 const tex_bff_index = {
@@ -157,26 +175,27 @@ const init_scene = () => {
 
   gl.bindBuffer(gl.ARRAY_BUFFER, bff_quad)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr_vtx_quad), gl.STATIC_DRAW)
-  
+
   gl.bindTexture(gl.TEXTURE_2D, tex_background)
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE) // gl.REPEAT perhaps
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE) // gl.REPEAT perhaps
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE) // gl.REPEAT perhaps
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE) // gl.REPEAT perhaps
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image)
-  
+
   for (let i = 0; i < 2; ++i) {
-		var framebuffer = gl.createFramebuffer()
-    var texture = gl.createTexture()
+		const framebuffer = gl.createFramebuffer()
+    const texture = gl.createTexture()
+    const arr_framebuffer = new Float32Array(resolution * resolution * 4)
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
 		gl.bindTexture(gl.TEXTURE_2D, texture)
-    
+
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, resolution, resolution, 0, gl.RGBA, gl.FLOAT, arr_framebuffer)
 
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
@@ -184,14 +203,15 @@ const init_scene = () => {
       texture, framebuffer
     })
   }
-  
+
   gl.clearColor(0, 0, 0, 0)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 }
 init_scene()
 gl.canvas.onclick = ({ offsetX, offsetY }) => {
-  console.log(offsetX, offsetY, arr_framebuffer[100])
+  console.log(offsetX, offsetY)
   drop(offsetX, offsetY, drop_radius, strength)
+  update()
 }
 const drop = (x, y, radius, strength) => {
   const width = gl.canvas.width
@@ -200,16 +220,16 @@ const drop = (x, y, radius, strength) => {
     (2 * x - width) / width,
     (height - 2 * y) / width,
   ])
-  
+
   gl.viewport(0, 0, resolution, resolution)
   gl.bindFramebuffer(gl.FRAMEBUFFER, tex_bff_arr[tex_bff_index.write].framebuffer)
   bind_texture(tex_bff_arr[tex_bff_index.read].texture)
   gl.useProgram(prgm_drop)
-  
+
   gl.uniform2fv(prgm_drop.vars.center.location, drop_position)
   gl.uniform1f(prgm_drop.vars.radius.location, radius)
   gl.uniform1f(prgm_drop.vars.strength.location, strength)
-  
+
   draw_quad()
   tex_bff_index.swap()
 }
@@ -224,20 +244,20 @@ const update = () => {
 const render = () => {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-  
+
   gl.enable(gl.BLEND)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   gl.useProgram(prgm_render)
   bind_texture(tex_background, 0)
   bind_texture(tex_bff_arr[0].texture, 1)
-  
+
   gl.uniform1f(prgm_render.vars.perturbance.location, perturbance)
   gl.uniform2fv(prgm_render.vars.top_left.location, top_left)
   gl.uniform2fv(prgm_render.vars.bottom_right.location, bottom_right)
   gl.uniform2fv(prgm_render.vars.container_ratio.location, container_ratio)
   gl.uniform1i(prgm_render.vars.sampler_bg.location, 0)
   gl.uniform1i(prgm_render.vars.sampler_ripples.location, 1)
-  
+
   draw_quad()
   gl.disable(gl.BLEND)
 }
