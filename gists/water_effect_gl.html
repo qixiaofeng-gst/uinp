@@ -33,14 +33,19 @@ const location_config = {
   uniform: (program, name) => gl.getUniformLocation(program, name),
 }
 const data_type_config = {
-  vec2: (loc, val) => gl.uniform2fv(loc, val),
-  sampler2D: (loc, val) => gl.uniform1i(loc, val),
-  float: (loc, val) => gl.uniform1f(loc, val),
+  vec2: (desc, val) => gl.uniform2fv(desc.location, val),
+  sampler2D: (desc, val) => {
+    gl.activeTexture(gl.TEXTURE0 + desc.index)
+    gl.bindTexture(gl.TEXTURE_2D, val)
+    gl.uniform1i(desc.location, desc.index)
+  },
+  float: (desc, val) => gl.uniform1f(desc.location, val),
 }
 const parse_variables = src => {
   const reg_var = /(attribute|uniform)\s+\w+\s+\w+;$/gm
   const var_strs = src.match(reg_var)
   const vars = {}
+  const indexer = {}
   if (null === var_strs) {
     return vars
   }
@@ -48,23 +53,16 @@ const parse_variables = src => {
     const a3 = v.trim().split(/\s+/)
     const [var_type, data_type, name_str] = a3
     const name = name_str.substr(0, name_str.length - 1)
+    const index = indexer[data_type] || 0
+    if (vars.hasOwnProperty(name)) {
+      console.warn(`Duplicated variable name "${name}" detected`)
+    }
     vars[name] = {
       var_type,
       data_type,
+      index,
     }
-  }
-  return vars
-}
-const merge_vars = (v1, v2) => {
-  const vars = {}
-  for (const k in v1) {
-    vars[k] = v1[k]
-  }
-  for (const k in v2) {
-    if (vars[k]) {
-      console.warn(`Duplicated variable name "${k}" detected`)
-    }
-    vars[k] = v2[k]
+    indexer[data_type] = index + 1
   }
   return vars
 }
@@ -87,9 +85,7 @@ const get_src = id => {
 const create_shader_program = (vs_id, fs_id) => {
   const vs_src = get_src(vs_id)
   const fs_src = get_src(fs_id)
-  const vs_vars = parse_variables(vs_src)
-  const fs_vars = parse_variables(fs_src)
-  const vars = merge_vars(vs_vars, fs_vars)
+  const vars = parse_variables(vs_src + fs_src)
   const vs = create_vertex_shader(vs_src)
   const fs = create_fragment_shader(fs_src)
   const program = gl.createProgram()
@@ -99,19 +95,18 @@ const create_shader_program = (vs_id, fs_id) => {
   if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
     parse_locations(vars, program)
     program.vars = vars
-    console.log('>>>', program)
-    return program
     return new Proxy({
-      //TODO
+      use: () => gl.useProgram(program)
     }, {
       get: (_, key, __) => {
-        if (worker.hasOwnProperty(key)) {
-          return worker[key]
+        if (vars.hasOwnProperty(key)) {
+          return vars[key]
         }
-        return mami[key]
+        return _[key]
       },
       set: (_, key, value, __) => {
-        mami[key] = value
+        const desc = vars[key]
+        data_type_config[desc.data_type](desc, value)
         return value
       }
     })
@@ -159,19 +154,15 @@ const draw_quad = () => {
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
   gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
 }
-const bind_texture = (texture, unit) => {
-  gl.activeTexture(gl.TEXTURE0 + (unit || 0))
-  gl.bindTexture(gl.TEXTURE_2D, texture)
-}
 const init_scene = () => {
-  gl.useProgram(prgm_drop)
+  prgm_drop.use()
   gl.enableVertexAttribArray(0)
-  gl.useProgram(prgm_update)
+  prgm_update.use()
   gl.enableVertexAttribArray(0)
-  gl.uniform2fv(prgm_update.vars.delta.location, texture_delta)
-  gl.useProgram(prgm_render)
+  prgm_update.delta = texture_delta
+  prgm_render.use()
   gl.enableVertexAttribArray(0)
-  gl.uniform2fv(prgm_render.vars.delta.location, texture_delta)
+  prgm_render.delta = texture_delta
 
   gl.bindBuffer(gl.ARRAY_BUFFER, bff_quad)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr_vtx_quad), gl.STATIC_DRAW)
@@ -200,7 +191,8 @@ const init_scene = () => {
 
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
     tex_bff_arr.push({
-      texture, framebuffer
+      texture,
+      framebuffer
     })
   }
 
@@ -211,7 +203,7 @@ init_scene()
 gl.canvas.onclick = ({ offsetX, offsetY }) => {
   console.log(offsetX, offsetY)
   drop(offsetX, offsetY, drop_radius, strength)
-  update()
+  //update()
 }
 const drop = (x, y, radius, strength) => {
   const width = gl.canvas.width
@@ -221,42 +213,40 @@ const drop = (x, y, radius, strength) => {
     (height - 2 * y) / width,
   ])
 
+  prgm_drop.use()
   gl.viewport(0, 0, resolution, resolution)
   gl.bindFramebuffer(gl.FRAMEBUFFER, tex_bff_arr[tex_bff_index.write].framebuffer)
-  bind_texture(tex_bff_arr[tex_bff_index.read].texture)
-  gl.useProgram(prgm_drop)
+  prgm_drop.texture = tex_bff_arr[tex_bff_index.read].texture
 
-  gl.uniform2fv(prgm_drop.vars.center.location, drop_position)
-  gl.uniform1f(prgm_drop.vars.radius.location, radius)
-  gl.uniform1f(prgm_drop.vars.strength.location, strength)
+  prgm_drop.center = drop_position
+  prgm_drop.radius = radius
+  prgm_drop.strength = strength
 
   draw_quad()
   tex_bff_index.swap()
 }
 const update = () => {
+  prgm_update.use()
   gl.viewport(0, 0, resolution, resolution)
   gl.bindFramebuffer(gl.FRAMEBUFFER, tex_bff_arr[tex_bff_index.write].framebuffer)
-  bind_texture(tex_bff_arr[tex_bff_index.read].texture)
-  gl.useProgram(prgm_update)
+  prgm_update.texture = tex_bff_arr[tex_bff_index.read].texture
   draw_quad()
   tex_bff_index.swap()
 }
 const render = () => {
+  prgm_render.use()
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-
   gl.enable(gl.BLEND)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-  gl.useProgram(prgm_render)
-  bind_texture(tex_background, 0)
-  bind_texture(tex_bff_arr[0].texture, 1)
 
-  gl.uniform1f(prgm_render.vars.perturbance.location, perturbance)
-  gl.uniform2fv(prgm_render.vars.top_left.location, top_left)
-  gl.uniform2fv(prgm_render.vars.bottom_right.location, bottom_right)
-  gl.uniform2fv(prgm_render.vars.container_ratio.location, container_ratio)
-  gl.uniform1i(prgm_render.vars.sampler_bg.location, 0)
-  gl.uniform1i(prgm_render.vars.sampler_ripples.location, 1)
+  prgm_render.perturbance = perturbance
+  prgm_render.top_left = top_left
+  prgm_render.bottom_right = bottom_right
+  prgm_render.container_ratio = container_ratio
+
+  prgm_render.sampler_bg = tex_background
+  prgm_render.sampler_ripples = tex_bff_arr[0].texture
 
   draw_quad()
   gl.disable(gl.BLEND)
@@ -265,13 +255,6 @@ const main_loop = () => {
   update()
   render()
 }
-console.log(
-  prgm_drop,
-  prgm_update,
-  prgm_render,
-  image.width,
-  image.height,
-)
 const looper = cb => {
   cb()
   requestAnimationFrame(delta_time => {

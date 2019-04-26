@@ -3,6 +3,19 @@
 4 12:1 1667
 5 20:1 1000
 
+// 下面记录一个异常：正常流程走到此处不应当有空指针情况，这种情况只有在没有进入地牢界面或者进入地牢界面异常的情况方才能够发生，暂先观察此玩家是否会再次出现此异常。
+[INFO ][00:02:45,720][Server-Worker-7-2] (core.cmd.GameCmdDispatcher) - 客户端空闲超时,sessionid=74915
+[INFO ][00:02:47,047][cmdExecutor-1-thread-14] (core.cmd.AbstractCmdHandler) - 协议-23002-报错-playerId:1000300000030614
+java.lang.NullPointerException
+at com.rhea.ws.game.dungeon.cmd.FightDungeonMonsterHandler23002.doExecute(FightDungeonMonsterHandler23002.java:90)
+at com.rhea.ws.game.core.cmd.AbstractCmdHandler.execute(AbstractCmdHandler.java:147)
+at com.rhea.ws.game.core.cmd.GameCmdDispatcher$GameCmdExecuteTask.run(GameCmdDispatcher.java:214)
+at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+at java.lang.Thread.run(Thread.java:748)
+[INFO ][00:02:51,781][Server-Worker-7-1] (core.cmd.GameCmdDispatcher) - 客户端连接,sessionid=74921 clientIP:172.58.45.34 hostName:172.58.45.34 hostString:172.58.45.34 port:47989
+[INFO ][00:02:54,002][Server-Worker-7-1] (core.cmd.GameCmdDispatcher) - 客户端空闲超时,sessionid=74865
+
 # 地图每个大格占了 100x100 = 10000 个小格，描述异色块的形式: 逐行
 # 每个高低地形与其余装饰物一致描述，所不同的是：其余装饰物是实心，因此 prefab 中心可以放在几何中心（几何中心落在范围内）；高低地形是空心，prefab 中心须放在边沿区域
 
