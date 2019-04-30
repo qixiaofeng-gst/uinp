@@ -1,5 +1,4 @@
-
-module.exports = {
-  input: 'src/index.html.tmpl',
-  output: 'out'
-}
+() => ({
+  input: 'src/index.html',
+  output: 'out',
+})
