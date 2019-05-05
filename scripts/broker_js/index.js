@@ -19,7 +19,6 @@ const read = file_path => fs.readFileSync(
     encoding: 'utf8'
   }
 )
-const config = eval(read('config.js'))()
 const parsers = [
   /\/\*PUT\s+(.+)\s+\*\//,
   /<!--PUT\s+(.+)\s+-->/,
@@ -68,7 +67,7 @@ const rejoin_path = target => target.replace(/\\/g, path.sep)
 
 const src_state = Assignable()
 
-const start_watch = () => {
+const start_watch = config => {
   const { input } = config
   
   if (false === fs.existsSync(input)) {
@@ -77,7 +76,7 @@ const start_watch = () => {
   }
   
   const src_dir = path.dirname(input)
-  make_output()
+  make_output(config)
   
   console.log('The [ broker_js ] start watch')
   return fs.watch(src_dir, { recursive: true }, (e_type, file_name) => {
@@ -89,7 +88,7 @@ const start_watch = () => {
     if (false === fs.existsSync(file_path)) {
       delete src_state[file_path]
       console.log('Remove:', file_path, new Date().toLocaleString())
-      make_output()
+      make_output(config)
       return
     }
     
@@ -105,7 +104,7 @@ const start_watch = () => {
     }
     
     console.log('Change:', e_type, file_path, new Date().toLocaleString())
-    make_output()
+    make_output(config)
   })
 }
 
@@ -155,10 +154,12 @@ const load_file = (in_file_path, context) => {
   return parse_file(in_file_path, raw)
 }
 
-const make_output = () => {
+const make_output = config => {
   const { input, output } = config
   const out_file = path.join(output, path.basename(input))
   fs.writeFileSync(out_file, load_file(input, src_state))
 }
 
-start_watch()
+module.exports = {
+  start_watch
+}
