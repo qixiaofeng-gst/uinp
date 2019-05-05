@@ -1,0 +1,25 @@
+html, body {
+  touch-action:none;
+  content-zooming:none;
+  margin:0;
+  padding:0;
+  width:100vw;
+  height:100vh;
+  background:#222;
+  overflow:hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#canvas {
+  display: block;
+  box-shadow: 0px 0px 80px #000;
+  border-radius: 10px;
+}
+
+#texture {
+  position: absolute;
+  visibility: hidden;
+}

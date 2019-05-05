@@ -1,24 +1,15 @@
 // monitor changes on a file
-/*
-  1done. read config (input, output)
-  2done. parse input
-  3done. loop
-  4done. detect changes
-  5done. make output file
-  
-  only modulization left, about 1 hours work
-*/
 
 const fs = require('fs')
 const path = require('path').posix
 const util = require('util')
 
-const read = file_path => fs.readFileSync(
-  file_path,
-  {
-    encoding: 'utf8'
+const read_into = (file_path, context) => {
+  context[file_path] = {
+    content: fs.readFileSync(file_path, { encoding: 'utf8' }),
+    modify_time:  fs.statSync(file_path).mtimeMs,
   }
-)
+}
 const parsers = [
   /\/\*PUT\s+(.+)\s+\*\//,
   /<!--PUT\s+(.+)\s+-->/,
@@ -100,7 +91,7 @@ const start_watch = config => {
       return
     }
     if (false === stats.isDirectory()) {
-      load_file(file_path, src_state) 
+      read_into(file_path, src_state) 
     }
     
     console.log('Change:', e_type, file_path, new Date().toLocaleString())
@@ -108,56 +99,77 @@ const start_watch = config => {
   })
 }
 
-const load_file = (in_file_path, context) => {
-  const raw = read(in_file_path)
-  context[in_file_path] = {
-    content: raw,
-    modify_time:  fs.statSync(in_file_path).mtimeMs,
-  }
+const combine = (in_file_path, context) => {
+  const loop_detector = []
+  const ref_count = {}
   
-  console.log('Load file:', in_file_path)
-  const parse_file = (fp, fc) => {
-    const loop_detector = []
+  console.log('Combine with file:', in_file_path)
   
-    const inner_parse = (file_path, file_content) => {
-      if (loop_detector.includes(file_path)) {
-        console.warn('File [', file_path, '] is recursivly used, output might be corrupted. stack:', loop_detector)
-        return file_content
+  const inner_parse = (file_path, file_content) => {
+    if (loop_detector.includes(file_path)) {
+      console.warn('File [', file_path, '] is recursivly used, output might be corrupted. stack:', loop_detector)
+      return file_content
+    }
+    
+    const ref = ref_count[file_path] || ({ [self]: 0 })
+    ref[self]++
+    const { length: LL } = loop_detector
+    if (LL > 0) {
+      const last = loop_detector[LL - 1]
+      const last_ref = ref[last] || 0
+      ref[last] = last_ref + 1
+    }
+    ref_count[file_path] = ref
+    
+    loop_detector.push(file_path)
+    const src_dir = path.dirname(file_path)
+    let c = file_content
+    for (const p of parsers) {
+      const puts = c.match(new RegExp(p, 'gm'))
+      if (null == puts) {
+        continue
       }
-      loop_detector.push(file_path)
-      const src_dir = path.dirname(file_path)
-      let c = file_content
-      for (const p of parsers) {
-        const puts = c.match(new RegExp(p, 'gm'))
-        if (null == puts) {
+      for (const put of puts) {
+        const inner_file_path = path.resolve(path.sep, src_dir, put.match(p)[1]).substr(path.sep.length)
+        if (false === fs.existsSync(inner_file_path)) {
+          console.warn('File not exists:', inner_file_path)
           continue
         }
-        for (const put of puts) {
-          const inner_file_path = path.resolve(path.sep, src_dir, put.match(p)[1]).substr(path.sep.length)
-          if (false === fs.existsSync(inner_file_path)) {
-            console.warn('File not exists:', inner_file_path)
-            continue
-          }
-          if (false === context.hasOwnProperty(inner_file_path)) {
-            load_file(inner_file_path, context)
-          }
-          c = c.replace(put, inner_parse(inner_file_path, context[inner_file_path].content))
+        if (false === context.hasOwnProperty(inner_file_path)) {
+          read_into(inner_file_path, context)
         }
+        c = c.replace(put, inner_parse(inner_file_path, context[inner_file_path].content))
       }
-      loop_detector.pop()
-      return c
     }
-  
-    return inner_parse(fp, fc)
+    loop_detector.pop()
+    return c
+  }
+
+  if (false === context.hasOwnProperty(in_file_path)) {
+    read_into(in_file_path, context)
+  }
+  const result = inner_parse(in_file_path, context[in_file_path].content)
+
+  for (const p in ref_count) {
+    const ref = ref_count[p]
+    const rc = ref[self]
+    if (rc <= 1) {
+      continue
+    }
+    console.warn('File [', p, '] is used', rc, 'times, used by:')
+    for (const u in ref) {
+      console.warn('    -', u, ref[u], 'times')
+    }
   }
   
-  return parse_file(in_file_path, raw)
+  return result
 }
 
 const make_output = config => {
   const { input, output } = config
   const out_file = path.join(output, path.basename(input))
-  fs.writeFileSync(out_file, load_file(input, src_state))
+  fs.writeFileSync(out_file, combine(input, src_state))
+  console.log('Combined to', out_file)
 }
 
 module.exports = {

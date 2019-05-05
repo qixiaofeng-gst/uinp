@@ -1,0 +1,14 @@
+{
+  "name": "the_game",
+  "version": "1.0.0",
+  "description": "",
+  "main": "combiner.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "qxf",
+  "license": "MIT",
+  "dependencies": {
+    "broker_js": "file:broker_js-1.0.0.tgz"
+  }
+}

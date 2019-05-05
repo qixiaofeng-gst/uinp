@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <title>水波效果</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script>window.addEventListener('load', () => {
+  /*PUT index.js */
+  })</script>
+
+  <script type="text/gl-shader" id='vs_share'>
+  /*PUT vs/share.c */
+  </script>
+
+  <script type="text/gl-shader" id='vs_share_tttttt'>
+  /*PUT vs/share.c */
+  </script>
+
+  <script type="text/gl-shader" id='fs_drop'>
+  /*PUT fs/drop.c */
+  </script>
+
+  <script type="text/gl-shader" id='fs_update'>
+  /*PUT fs/update.c */
+  </script>
+
+  <script type="text/gl-shader" id='vs_render'>
+  /*PUT vs/render.c */
+  </script>
+
+  <script type="text/gl-shader" id='fs_render'>
+  /*PUT fs/render.c */
+  </script>
+
+  <style media="screen">
+  /*PUT index.css */
+  </style>
+  <link rel="shortcut icon" href="data:image/png;/*PUT imgs/smile.base64 */" />
+</head>
+<body>
+  <canvas id="canvas" width=500 height=340>
+    <!--
+      width & height have to be set as attributes, but not css properties
+      above makes canvas.width&height consistent with clientWidth&Height and other pairs of width&height
+    -->
+  </canvas>
+  <img id="texture" src="data:image/jpeg;/*PUT imgs/penguins.base64 */">
+</body>
+</html>
