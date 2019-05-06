@@ -1,5 +1,13 @@
 /*PUT js/shader_creator.js */
 
+/*
+- Mapping the screen coords to [-1, 1]
+- Shaders for rendering basic geometries
+- The physic mechanism for rigid body
+- The body editor
+- Mapping the map coords to screen
+*/
+
 const prgm_drop = create_shader_program('vs_share', 'fs_drop')
 const prgm_update = create_shader_program('vs_share', 'fs_update')
 const prgm_render = create_shader_program('vs_render', 'fs_render')
@@ -35,6 +43,17 @@ const draw_quad = () => {
   gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
   gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
   //gl.drawArrays(gl.LINE_LOOP, 0, 4)
+  /*
+    void gl.drawArrays(mode, first, count) count: number of indexes
+    void gl.drawElements(mode, count, type, offset) count: number of elements
+    gl.POINTS: Draws a single dot.
+    gl.LINE_STRIP: Draws a straight line to the next vertex.
+    gl.LINE_LOOP: Draws a straight line to the next vertex, and connects the last vertex back to the first.
+    gl.LINES: Draws a line between a pair of vertices.
+    gl.TRIANGLE_STRIP
+    gl.TRIANGLE_FAN
+    gl.TRIANGLES: Draws a triangle for a group of three vertices.
+  */
 }
 const init_scene = () => {
   prgm_drop.use()
