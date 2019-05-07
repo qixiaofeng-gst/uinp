@@ -1,4 +1,5 @@
 // monitor changes on a file
+//TODO sometime the cache may be corrupted: some file content is strangely empty
 
 const fs = require('fs')
 const path = require('path').posix

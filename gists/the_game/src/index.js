@@ -11,20 +11,20 @@
 - Use web socket to transfer script
 */
 
+const canvas_size = {
+  width: 1000,
+  height: 900,
+}
 const prgm_render = create_shader_program('vs_render', 'fs_render')
 const image = document.getElementById('texture')
 const bff_quad = gl.createBuffer()
 const arr_vtx_quad = [
-  2, 2,
-  250, 2,
+  10, 10,
+  250, 10,
   250, 170,
-  2, 170,
+  10, 170,
 ]
 const draw_quad = () => {
-  gl.bindBuffer(gl.ARRAY_BUFFER, bff_quad)
-  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, 4)
-  //gl.drawArrays(gl.LINE_LOOP, 0, 4)
   /*
     void gl.drawArrays(mode, first, count) count: number of indexes
     void gl.drawElements(mode, count, type, offset) count: number of elements
@@ -37,20 +37,26 @@ const draw_quad = () => {
     gl.TRIANGLE_FAN
     gl.TRIANGLES: Draws a triangle for a group of three vertices.
   */
+  gl.bindBuffer(gl.ARRAY_BUFFER, bff_quad)
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
+  gl.drawArrays(gl.LINE_LOOP, 0, 4)
 }
 
 const init_scene = () => {
+  gl.canvas.width = canvas_size.width
+  gl.canvas.height = canvas_size.height
+  
   prgm_render.use()
   gl.enableVertexAttribArray(0)
   gl.bindBuffer(gl.ARRAY_BUFFER, bff_quad)
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr_vtx_quad), gl.STATIC_DRAW)
   prgm_render.canvas_size = new Float32Array([
-    500, 340
+    canvas_size.width, canvas_size.height
   ])
   
-  gl.clearColor(0.5, 0.5, 0, 0)
+  gl.clearColor(0, 0, 0, 0)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-    
+
   gl.canvas.onclick = ({ offsetX, offsetY }) => {
     console.log(offsetX, offsetY, '<<<<<<<')
   }
