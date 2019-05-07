@@ -16,7 +16,7 @@ html, body {
 #canvas {
   display: block;
   box-shadow: 0px 0px 80px #000;
-  border-radius: 10px;
+  /*border-radius: 10px;*/
 }
 
 #texture {
