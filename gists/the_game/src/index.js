@@ -5,6 +5,7 @@
 - DONE(1.5h) Mapping the screen coords to [-1, 1]
 - 50% Shaders for rendering basic geometries
 - 30% The physic mechanism for rigid body
+  - extract the onxxxxx stuff out of bone_engine
 - The body editor
 - Mapping the map coords to screen
 

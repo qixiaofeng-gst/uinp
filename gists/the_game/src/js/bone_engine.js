@@ -3,7 +3,7 @@
 const BoneEngine = (in_canvas, in_options) => {
   let
   mouse = XY(),
-  mouse_point = Point(),
+  mouse_point = false,
   draw_points = []
 
   const
@@ -76,8 +76,8 @@ const BoneEngine = (in_canvas, in_options) => {
     let n = iter
     while(n--) {
       if (mouse_point) {
-        const { x, y } = mouse.sub(mouse_point.get_pos()).div_n(iter)
-        mouse_point = Point(x, y)
+        const p = mouse.sub(mouse_point.get_pos()).div_n(iter)
+        mouse_point.move(p)
       }
 
       for(const p of points) {
@@ -131,12 +131,11 @@ const BoneEngine = (in_canvas, in_options) => {
   }
 
   canvas.onmouseup = e => {
-    mouse.down = false
     mouse_point = false
   }
 
   canvas.onmousemove = e => {
-    mouse = XY(e.clientX, e.clientY)
+    mouse = XY(e.offsetX, e.offsetY)
   }
   
   document.onkeydown = e => {
