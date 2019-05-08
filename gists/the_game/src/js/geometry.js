@@ -67,7 +67,8 @@ const Point = (x, y, in_fixed) => {
     pos = XY(x, y)
   },
   get_pos = () => pos,
-  fix = () => fixed = true
+  fix = () => fixed = true,
+  is_fixed = () => fixed
   
   return ({
     get_pos,
@@ -76,6 +77,7 @@ const Point = (x, y, in_fixed) => {
     update,
     check_walls,
     fix,
+    is_fixed,
   })
 }
 
@@ -107,18 +109,17 @@ const Rectangle = (x, y, w, h) => {
   const
   p1 = Point(x, y),
   p2 = Point(x + w, y),
-  p3 = Point(x, y + h),
-  p4 = Point(x + w, y + h),
+  p3 = Point(x + w, y + h),
+  p4 = Point(x, y + h),
 
   c1 = Constraint(p1, p2),
   c2 = Constraint(p2, p3),
   c3 = Constraint(p3, p4),
   c4 = Constraint(p4, p1),
-  c5 = Constraint(p1, p3),
-  c6 = Constraint(p2, p4)
+  c5 = Constraint(p1, p3)
 
   points = [p1, p2, p3, p4],
-  constraints = [c1, c2, c3, c4, c5, c6],
+  constraints = [c1, c2, c3, c4, c5],
   fix = idx => points[idx % points.length].fix()
   
   return ({
@@ -126,4 +127,20 @@ const Rectangle = (x, y, w, h) => {
     constraints,
     fix,
   })
+}
+
+const serialize = ({ points, constraints }) => {
+  //TODO minimize the output string
+  /**
+  ps: [
+    [1, 2, false],
+    [3, 4, true],
+    ...
+  ],
+  cs: [
+    [0, 1],
+    [2, 3],
+    ...
+  ]
+  */
 }

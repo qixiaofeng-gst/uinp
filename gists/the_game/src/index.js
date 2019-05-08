@@ -38,6 +38,9 @@ const draw_lines = lines => {
   gl.enableVertexAttribArray(0)
   gl.drawArrays(gl.LINES, 0, lines.length / 2)
 }
+const draw_plane = plane => {
+  
+}
 
 const init_scene = () => {
   gl.canvas.width = canvas_size.width
@@ -114,12 +117,12 @@ const update = () => {
   jsv.update(16)
 }
 const render = () => {
-  prgm_render.use()
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
   gl.enable(gl.BLEND)
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
+  prgm_render.use()
   draw_lines(jsv.get_lines())
   gl.disable(gl.BLEND)
 }
