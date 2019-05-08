@@ -1,18 +1,19 @@
 const XY = (v1, v2) => {
-  const x = v1 || 0
-  const y = v2 || 0
-  const cal_len = (a, b) => Math.sqrt(a * a + b * b)
-  const len = cal_len(x, y)
+  const
+  x = v1 || 0,
+  y = v2 || 0,
+  cal_len = (a, b) => Math.sqrt(a * a + b * b),
+  len = cal_len(x, y),
   
-  const sub = ({ x: a, y: b }) => XY(x - a, y - b)
-  const add = ({ x: a, y: b }) => XY(x + a, y + b)
-  const mul = ({ x: a, y: b }) => XY(x * a, y * b)
-  const div = ({ x: a, y: b }) => XY(x / a, y / b)
-  const mul_n = n => XY(x * n, y * n)
-  const div_n = n => XY(x / n, y / n)
+  sub = ({ x: a, y: b }) => XY(x - a, y - b),
+  add = ({ x: a, y: b }) => XY(x + a, y + b),
+  mul = ({ x: a, y: b }) => XY(x * a, y * b),
+  div = ({ x: a, y: b }) => XY(x / a, y / b),
+  mul_n = n => XY(x * n, y * n),
+  div_n = n => XY(x / n, y / n),
   
-  const distance = ({ x: a, y: b }) => cal_len(x - a, y - b)
-  const normalize = () => ((len > 0) ? XY(x / len, y / len) : XY())
+  distance = ({ x: a, y: b }) => cal_len(x - a, y - b),
+  normalize = () => ((len > 0) ? XY(x / len, y / len) : XY())
   
   return ({
     x, y, len,
@@ -24,26 +25,26 @@ const XY = (v1, v2) => {
 }
 
 const Point = (x, y, in_fixed) => {
-  let pos = XY(x, y)
-  let pre = XY(x, y)
-  let acc = XY()
-  const fixed = in_fixed
+  let
+  pos = XY(x, y),
+  pre = XY(x, y),
+  acc = XY(),
+  fixed = in_fixed || false
   
-  const move = v => {
+  const
+  move = v => {
     if (fixed) {
       return
     }
     pos = pos.add(v)
-  }
-  
-  const add_force = v => {
+  },
+  add_force = v => {
     if (fixed) {
       return
     }
     acc = acc.add(v)
-  }
-  
-  const update = delta => {
+  },
+  update = delta => {
     if (fixed) {
       return
     }
@@ -56,89 +57,73 @@ const Point = (x, y, in_fixed) => {
     acc = XY()
     
     pre = old_pos
-  }
-  
-  const check_walls = (x, y, w, h) => {
-/*
-Point.prototype.check_walls = function(x, y, w, h) {
-
-    this.pos.x = Math.max(x + 1, Math.min(w - 1, this.pos.x));
-    this.pos.y = Math.max(y + 1, Math.min(h - 1, this.pos.y));
-
-    if (this.pos.y >= h - 1)
-        this.pos.x -= (this.pos.x - this.pre.x + this.acc.x);
-};
-*/
-  }
-  
-  const draw = () = {
-/*
-Point.prototype.draw = function(ctx, size) {
-
-    if(this.fixed) {
-
-        ctx.fillStyle = 'rgba(255,255,255,0.2)';
-        ctx.beginPath();
-        ctx.arc(this.pos.x, this.pos.y, size * 3, 0, two_PI, false);
-        ctx.fill();
+  },
+  check_walls = (in_x, in_y, in_w, in_h) => {
+    let x = Math.max(in_x + 1, Math.min(in_w - 1, pos.x))
+    let y = Math.max(in_y + 1, Math.min(in_h - 1, pos.y))
+    if (y >= (in_h - 1)) {
+      x -= (pos.x - pre.x + acc.x)
     }
-
-    ctx.fillStyle = (this.fixed) ? '#EDEA26' : '#aaa';
-    ctx.beginPath();
-    ctx.arc(this.pos.x, this.pos.y, size, 0, two_PI, false);
-    ctx.fill();
-};
-*/
-  }
+    pos = XY(x, y)
+  },
+  get_pos = () => pos,
+  fix = () => fixed = true
   
   return ({
+    get_pos,
     move,
     add_force,
     update,
     check_walls,
-    draw,
+    fix,
   })
 }
 
 const Constraint = (in_p1, in_p2) => {
-  const p1 = in_p1
-  const p2 = in_p2
-  const init_len = p1.pos.distance(p2.pos)
-  const stretch = len * 0.15
+  const
+  p1 = in_p1,
+  p2 = in_p2,
+  init_len = p1.get_pos().distance(p2.get_pos()),
+  stretch = init_len * 0.15,
   
-  const resolve = () => {
-    const dists = p2.pos.sub(p1.pos)
-    const len = dists.len()
-    const diff = len - init_len
-    const f = dists.normalize().mul_n(diff * 0.5)
+  resolve = () => {
+    const
+    dists = p2.get_pos().sub(p1.get_pos()),
+    len = dists.len,
+    diff = len - init_len,
+    f = dists.normalize().mul_n(diff * 0.5)
+    
     p1.move(f)
     p2.move(f.mul_n(-1))
   }
   
-  const draw = () => {
-/*
-Constraint.prototype.draw = function(ctx, stress) {
+  return ({
+    p1, p2,
+    resolve,
+  })
+}
 
-    if(stress) {
+const Rectangle = (x, y, w, h) => {
+  const
+  p1 = Point(x, y),
+  p2 = Point(x + w, y),
+  p3 = Point(x, y + h),
+  p4 = Point(x + w, y + h),
 
-        var diff = this.length - this.p1.pos.distance(this.p2.pos);
+  c1 = Constraint(p1, p2),
+  c2 = Constraint(p2, p3),
+  c3 = Constraint(p3, p4),
+  c4 = Constraint(p4, p1),
+  c5 = Constraint(p1, p3),
+  c6 = Constraint(p2, p4)
 
-        var per = Math.round(Math.min(Math.abs(diff / this.stretch), 1) * 255);
-
-        ctx.strokeStyle = 'rgba(255, '+(255 - per)+', '+(255 - per)+', 0.8)';
-
-    } else ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-
-    ctx.beginPath();
-    ctx.moveTo(this.p1.pos.x, this.p1.pos.y);
-    ctx.lineTo(this.p2.pos.x, this.p2.pos.y);
-    ctx.stroke();
-};
-*/
-  }
+  points = [p1, p2, p3, p4],
+  constraints = [c1, c2, c3, c4, c5, c6],
+  fix = idx => points[idx % points.length].fix()
   
   return ({
-    resolve,
-    draw,
+    points,
+    constraints,
+    fix,
   })
 }
