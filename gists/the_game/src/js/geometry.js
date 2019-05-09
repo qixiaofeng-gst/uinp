@@ -29,7 +29,8 @@ const Point = (x, y, in_fixed) => {
   pos = XY(x, y),
   pre = XY(x, y),
   acc = XY(),
-  fixed = in_fixed || false
+  fixed = in_fixed || false,
+  drag_to = false
   
   const
   move = v => {
@@ -68,7 +69,9 @@ const Point = (x, y, in_fixed) => {
   },
   get_pos = () => pos,
   fix = () => fixed = true,
-  is_fixed = () => fixed
+  is_fixed = () => fixed,
+  set_drag = xy => drag_to = xy,
+  get_drag = () => drag_to
   
   return ({
     get_pos,
@@ -78,6 +81,8 @@ const Point = (x, y, in_fixed) => {
     check_walls,
     fix,
     is_fixed,
+    set_drag,
+    get_drag,
   })
 }
 

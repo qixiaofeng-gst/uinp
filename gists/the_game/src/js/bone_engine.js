@@ -1,34 +1,23 @@
 /*PUT geometry.js */
 
-const BoneEngine = (in_canvas, in_options) => {
-  let
-  mouse = XY(),
-  mouse_point = false,
-  draw_points = []
+const BoneEngine = (in_canvas) => {
+  let draw_points = false
 
   const
   canvas = in_canvas,
-  options = in_options,
-  { width, height } = canvas,
   
+  { width, height } = canvas,
   constraints = [],
   points = [],
 
-  gravity = options.gravity || XY(0, 0.98),
-  point_size = options.point_size || 2,
-  show_stress = options.show_stress || false,
+  gravity = XY(0, 0.98),
   
-  key = {
-    ctrl: false,
-    alt: false,
-  },
-  get_mouse_point = () => {
+  get_point_around = (x, y, range) => {
     let closest = false
-    let i = points.length;
-    while(i--) {
-      const point = points[i]
-      if(point.get_pos().distance(mouse) < 10) {
-          closest = point
+    const target = XY(x, y)
+    for (const p of points) {
+      if(p.get_pos().distance(target) < range) {
+          closest = p
       }
     }
     return closest
@@ -65,7 +54,7 @@ const BoneEngine = (in_canvas, in_options) => {
     }
   },
   update = iter => {
-    if (key.ctrl) {
+    if (draw_points) {
       return
     }
 
@@ -75,12 +64,13 @@ const BoneEngine = (in_canvas, in_options) => {
     
     let n = iter
     while(n--) {
-      if (mouse_point) {
-        const p = mouse.sub(mouse_point.get_pos()).div_n(iter)
-        mouse_point.move(p)
-      }
-
       for(const p of points) {
+        const drag = p.get_drag()
+        if (drag) {
+          const s = drag.sub(p.get_pos()).div_n(iter)
+          p.move(s)
+        }
+        
         p.add_force(gravity)
         p.update(delta)
         p.check_walls(0, 0, width, height)
@@ -99,62 +89,70 @@ const BoneEngine = (in_canvas, in_options) => {
       lines.splice(lines.length, 0, x1, y1, x2, y2)
     }
     return lines
-  }
+  },
+  get_points = () => {
+    const ps = []
+    for (const p of points) {
+      const { x, y } = p.get_pos()
+      const size = p.is_fixed() ? 10 : 6
+      ps.push([
+        x, y, size,
+      ])
+    }
+    return ps
+  },
   
-  canvas.oncontextmenu = e => e.preventDefault()
-
-  canvas.onmousedown = e => {
-    mouse = XY(e.offsetX, e.offsetY)
-    mouse.down = true
-    
-    let p = get_mouse_point()
-    
-    if (e.which == 3) {
-      if (p) {
-        remove_point(p)
-      }
-    } else {
-      if (key.ctrl) {
-        if (false == p) {
-          p = Point(mouse.x, mouse.y, key.alt)
-          points.push(p)
-        }
-
-        if (draw_points.length) {
-          constraints.push(Constraint(p, draw_points[draw_points.length - 1]))
-        }
-        draw_points.push(p)
-      } else {
-        mouse_point = p
+  is_constraint_exists = (pa, pb) => {
+    if (pa == pb) {
+      return true
+    }
+    for (const { p1, p2 } of constraints) {
+      const exists = p1 == pa && p2 == pb
+      const exists_r = p1 == pb && p2 == pa
+      if (exists || exists_r) {
+        return true
       }
     }
-  }
-
-  canvas.onmouseup = e => {
-    mouse_point = false
-  }
-
-  canvas.onmousemove = e => {
-    mouse = XY(e.offsetX, e.offsetY)
-  }
-  
-  document.onkeydown = e => {
-    if (e.keyCode == 17) {
-      key.ctrl = true
-    } else if (e.keyCode == 16) {
-      draw_points = []
-    } else if (e.keyCode == 18) {
-      key.alt = true
+    return false
+  },
+  start_editing = () => {
+    draw_points = []
+  },
+  draw_point = p => {
+    if (false == draw_points) {
+      return
     }
-  }
-
-  document.onkeyup = e => {
-      if (e.keyCode == 17) {
-          key.ctrl = false
-          draw_points = []
-      } else if (e.keyCode == 18) {
-          key.alt = false
+    
+    const { x, y } = p.get_pos()
+    const exists = get_point_around(x, y)
+    if (exists) {
+      draw_points.push(exists)
+      const { length } = draw_points
+      if (1 == length) {
+        draw_points.push(exists)
+        return
       }
+      const prev = draw_points[length - 2]
+      if (false == is_constraint_exists(exists, prev)) {
+        constraints.push(Constraint(exists, prev))
+      }
+      return
+    }
+    
+    draw_points.push(p)
+    const { length } = draw_points
+    if (1 == length) {
+      return
+    }
+    const prev = draw_points[length - 2]
+    if (2 == length) {
+      points.push(prev)
+    }
+    points.push(p)
+    constraints.push(Constraint(p, prev))
+  },
+  end_editing = () => {
+    draw_points = false
   }
   
   return ({
@@ -162,6 +160,10 @@ const BoneEngine = (in_canvas, in_options) => {
     add_constraint,
     add_shape,
     get_lines,
+    get_points,
     update,
+    start_editing,
+    draw_point,
+    end_editing,
   })
 }
