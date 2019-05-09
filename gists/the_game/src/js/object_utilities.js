@@ -10,6 +10,7 @@ const ou = (() => {
         r[key] = val
       }
     }
+    return r
   },
   assign = (obj, val) => {
     for (const key in val) {

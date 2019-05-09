@@ -69,6 +69,7 @@ const Point = (x, y, in_fixed) => {
   },
   get_pos = () => pos,
   fix = () => fixed = true,
+  release = () => fixed = false,
   is_fixed = () => fixed,
   set_drag = xy => drag_to = xy,
   get_drag = () => drag_to
@@ -80,6 +81,7 @@ const Point = (x, y, in_fixed) => {
     update,
     check_walls,
     fix,
+    release,
     is_fixed,
     set_drag,
     get_drag,
@@ -135,17 +137,29 @@ const Rectangle = (x, y, w, h) => {
 }
 
 const serialize = ({ points, constraints }) => {
-  //TODO minimize the output string
-  /**
-  ps: [
-    [1, 2, false],
-    [3, 4, true],
-    ...
-  ],
-  cs: [
-    [0, 1],
-    [2, 3],
-    ...
-  ]
-  */
+  let ps = '\n'
+  for (const p of points) {
+    const { x, y } = p.get_pos()
+    ps += `[${x}, ${y}, ${p.is_fixed()}],\n`
+  }
+  let cs = '\n'
+  for (const c of constraints) {
+    cs += `[${points.indexOf(c.p1)}, ${points.indexOf(c.p2)}],\n`
+  }
+  return `{ ps: [${ps}], cs: [${cs}], }`
+}
+
+const deserialize = ({ ps, cs }) => {
+  const points = []
+  const constraints = []
+  for (const [x, y, fixed] of ps) {
+    points.push(Point(x, y, fixed))
+  }
+  for (const [p1, p2] of cs) {
+    constraints.push(Constraint(points[p1], points[p2]))
+  }
+  return ({
+    points,
+    constraints,
+  })
 }

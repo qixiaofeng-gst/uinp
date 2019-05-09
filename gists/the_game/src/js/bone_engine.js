@@ -13,6 +13,7 @@ const BoneEngine = (in_canvas) => {
   gravity = XY(0, 0.98),
   
   get_point_around = (x, y, range) => {
+    range = range || 9
     let closest = false
     const target = XY(x, y)
     for (const p of points) {
@@ -22,30 +23,7 @@ const BoneEngine = (in_canvas) => {
     }
     return closest
   },
-  remove_point = point => {
-    let i = constraints.length
-    while (i--) {
-      const constraint = constraints[i]
-      if (constraint.p1 == point || constraint.p2 == point) {
-        constraints.splice(constraints.indexOf(constraint), 1)
-      }
-    }
-
-    if (points.includes(point)) {
-      points.splice(points.indexOf(point), 1)
-    }
-  },
-  add_point = (x, y, fixed) => {
-    const point = Point(x, y, fixed)
-    points.push(point)
-    return point
-  },
-  add_constraint = (p1, p2) => {
-    const c = Constraint(p1, p2)
-    constraints.push(c)
-    return c
-  },
-  add_shape = ({ points: ps, constraints: cs }) => {
+  add_unity = ({ points: ps, constraints: cs }) => {
     if (Array.isArray(ps)) {
       points.splice(points.length, 0, ...ps)
     }
@@ -81,6 +59,7 @@ const BoneEngine = (in_canvas) => {
       }
     }
   },
+  
   get_lines = () => {
     const lines = []
     for (const c of constraints) {
@@ -101,6 +80,12 @@ const BoneEngine = (in_canvas) => {
     }
     return ps
   },
+  get_unities = () => {
+    //TODO detect unities and return
+  },
+  to_string = () => serialize({
+    points, constraints
+  }),
   
   is_constraint_exists = (pa, pb) => {
     if (pa == pb) {
@@ -118,14 +103,31 @@ const BoneEngine = (in_canvas) => {
   start_editing = () => {
     draw_points = []
   },
-  draw_point = p => {
-    if (false == draw_points) {
+  remove_point = point => {
+    let i = constraints.length
+    while (i--) {
+      const constraint = constraints[i]
+      if (constraint.p1 == point || constraint.p2 == point) {
+        constraints.splice(constraints.indexOf(constraint), 1)
+      }
+    }
+
+    if (points.includes(point)) {
+      points.splice(points.indexOf(point), 1)
+    }
+  },
+  create_point = (x, y, fixed) => {
+    if (false === draw_points) {
       return
     }
     
-    const { x, y } = p.get_pos()
     const exists = get_point_around(x, y)
     if (exists) {
+      if (fixed) {
+        exists.fix()
+      } else {
+        exists.release()
+      }
       draw_points.push(exists)
       const { length } = draw_points
       if (1 == length) {
@@ -139,6 +141,7 @@ const BoneEngine = (in_canvas) => {
       return
     }
     
+    const p = Point(x, y, fixed)
     draw_points.push(p)
     const { length } = draw_points
     if (1 == length) {
@@ -156,14 +159,17 @@ const BoneEngine = (in_canvas) => {
   }
   
   return ({
-    add_point,
-    add_constraint,
-    add_shape,
+    add_unity,
+    
     get_lines,
     get_points,
+    get_point_around,
+    get_unities,
+    to_string,
+    
     update,
     start_editing,
-    draw_point,
+    create_point,
     end_editing,
   })
 }

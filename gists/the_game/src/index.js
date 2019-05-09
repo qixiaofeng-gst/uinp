@@ -6,11 +6,18 @@
 /*
 - DONE(1.5h) Mapping the screen coords to [-1, 1]
 - 80% Shaders for rendering basic geometries
-- 30% The physic mechanism for rigid body
-  - drag
-  - edit
-  - persistence
+- 40% The physic mechanism for rigid body
+  - detect unities
+  - collision
 - The body editor
+  - the ui engine, reuse bone_engine stuff
+  - more basic shapes
+    - line
+    - soft strip
+    - cloth
+    - cycle
+    - rectangle
+    - solid strip (then rectangle with a free point at each end)
 - Mapping the map coords to screen
 
 - Make page auto reload after code change
@@ -78,67 +85,60 @@ const init_scene = () => {
   gl.clearColor(0, 0, 0, 0)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
   gl.enable(gl.BLEND)
-
-  gl.canvas.onclick = ({ offsetX, offsetY }) => {
-    console.log(offsetX, offsetY, '<<<<<<<')
-  }
+  
   gl.canvas.oncontextmenu = e => e.preventDefault()
 }
 init_scene()
 
 const ie = InputEngine(gl.canvas)
 const be = BoneEngine(gl.canvas, {show_stress: true})
-const init_engine = () => {
+const init_engines = () => {
+  let dragging = false
   const
-  p1  = be.add_point(90, 40, false),
-  p2  = be.add_point(160, 40, false),
-  p3  = be.add_point(90, 110, false),
-  p4  = be.add_point(160, 110, false),
-  p5  = be.add_point(90, 180, false),
-  p6  = be.add_point(160, 180, false),
-  p7  = be.add_point(90, 250, false),
-  p8  = be.add_point(160, 250, false),
-  p9  = be.add_point(90, 320, true),
-  p10 = be.add_point(160, 320, true),
-  p11 = be.add_point(300, 40, false),
-  p12 = be.add_point(365, 198, false),
-  p13 = be.add_point(345, 218, false),
-  p14 = be.add_point(385, 218, false)
-
-  be.add_constraint(p1, p2)
-  be.add_constraint(p3, p4)
-  be.add_constraint(p5, p6)
-  be.add_constraint(p7, p8)
-  be.add_constraint(p1, p3)
-  be.add_constraint(p3, p5)
-  be.add_constraint(p5, p7)
-  be.add_constraint(p7, p9)
-  be.add_constraint(p2, p4)
-  be.add_constraint(p4, p6)
-  be.add_constraint(p6, p8)
-  be.add_constraint(p8, p10)
-  be.add_constraint(p1, p4)
-  be.add_constraint(p2, p3)
-  be.add_constraint(p3, p6)
-  be.add_constraint(p4, p5)
-  be.add_constraint(p5, p8)
-  be.add_constraint(p6, p7)
-  be.add_constraint(p7, p10)
-  be.add_constraint(p8, p9)
-  be.add_constraint(p2, p11)
-  be.add_constraint(p4, p11)
-  be.add_constraint(p11, p12)
-  be.add_constraint(p12, p13)
-  be.add_constraint(p12, p14)
-  be.add_constraint(p13, p14)
+  end_drag = () => {
+    if (dragging) {
+      dragging.set_drag(false)
+    }
+    dragging = false
+  },
+  start_drag = () => {
+    const { x, y } = ie.get_mouse()
+    dragging = be.get_point_around(x, y)
+    if (dragging) {
+      dragging.set_drag(XY(x, y))
+    }
+  },
+  do_drag = () => {
+    if (dragging) {
+      const { x, y } = ie.get_mouse()
+      dragging.set_drag(XY(x, y))
+    }
+  }
   
-  be.add_shape(Rectangle(500, 70, 70, 70))
-
-  const square = Rectangle(630, 70, 50, 50)
-  square.fix(1)
-  be.add_shape(square)
+  ie.onmousedown = start_drag
+  ie.onmousemove = do_drag
+  ie.onmouseup = end_drag
+  
+  ie.onkeydown = () => {
+    if (ie.ctrl == ie.get_code()) {
+      be.start_editing()
+    }
+  }
+  ie.onclick = () => {
+    if (ie.is_ctrl_down()) {
+      const { x, y } = ie.get_mouse()
+      be.create_point(x, y, ie.is_alt_down())
+    }
+  }
+  ie.onkeyup = () => {
+    if (ie.ctrl == ie.get_code()) {
+      be.end_editing()
+    }
+  }
+  
+  be.add_unity(deserialize(/*PUT objs/examples.js */))
 }
-init_engine()
+init_engines()
 
 const update = () => {
   be.update(16)
