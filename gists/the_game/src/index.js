@@ -6,8 +6,7 @@
 /*
 - DONE(1.5h) Mapping the screen coords to [-1, 1]
 - 80% Shaders for rendering basic geometries
-- 40% The physic mechanism for rigid body
-  - detect unities
+- 50% The physic mechanism for rigid body
   - collision
 - The body editor
   - the ui engine, reuse bone_engine stuff
@@ -133,10 +132,12 @@ const init_engines = () => {
   ie.onkeyup = () => {
     if (ie.ctrl == ie.get_code()) {
       be.end_editing()
+      be.detect_unities()
+      console.log(be.get_unities().length)
     }
   }
   
-  be.add_unity(deserialize(/*PUT objs/examples.js */))
+  be.batch_add(deserialize(/*PUT objs/examples.js */))
 }
 init_engines()
 

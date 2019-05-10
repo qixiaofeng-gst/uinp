@@ -9,6 +9,7 @@ const BoneEngine = (in_canvas) => {
   { width, height } = canvas,
   constraints = [],
   points = [],
+  unities = [],
 
   gravity = XY(0, 0.98),
   
@@ -23,7 +24,7 @@ const BoneEngine = (in_canvas) => {
     }
     return closest
   },
-  add_unity = ({ points: ps, constraints: cs }) => {
+  batch_add = ({ points: ps, constraints: cs }) => {
     if (Array.isArray(ps)) {
       points.splice(points.length, 0, ...ps)
     }
@@ -31,6 +32,54 @@ const BoneEngine = (in_canvas) => {
       constraints.splice(constraints.length, 0, ...cs)
     }
   },
+  
+  get_relevant_constraints = p => {
+    const cs = []
+    for (const c of constraints) {
+      if (c.is_unity_parsed) {
+        continue
+      }
+      const is_p1 = (c.p1 == p)
+      if (is_p1 || c.p2 == p) {
+        cs.push(c)
+        c.is_unity_parsed = true
+        const subs = get_relevant_constraints(is_p1 ? c.p2 : c.p1)
+        cs.splice(cs.length, 0, ...subs)
+      }
+    }
+    return cs
+  },
+  mark_unity_parsed = (ps, p) => {
+    p.is_unity_parsed = true
+    if (false == ps.includes(p)) {
+      ps.push(p)
+    }
+  },
+  detect_unities = () => {
+    for (const p of points) {
+      p.is_unity_parsed = false
+    }
+    for (const c of constraints) {
+      c.is_unity_parsed = false
+    }
+    unities.splice(0, unities.length)
+    for (const p of points) {
+      if (p.is_unity_parsed) {
+        continue
+      }
+      const ps = []
+      const cs = get_relevant_constraints(p)
+      for (const c of cs) {
+        mark_unity_parsed(ps, c.p1)
+        mark_unity_parsed(ps, c.p2)
+      }
+      unities.push({
+        points: ps,
+        constraints: cs,
+      })
+    }
+  },
+  
   update = iter => {
     if (draw_points) {
       return
@@ -80,9 +129,7 @@ const BoneEngine = (in_canvas) => {
     }
     return ps
   },
-  get_unities = () => {
-    //TODO detect unities and return
-  },
+  get_unities = () => unities,
   to_string = () => serialize({
     points, constraints
   }),
@@ -159,7 +206,7 @@ const BoneEngine = (in_canvas) => {
   }
   
   return ({
-    add_unity,
+    batch_add,
     
     get_lines,
     get_points,
@@ -168,6 +215,7 @@ const BoneEngine = (in_canvas) => {
     to_string,
     
     update,
+    detect_unities,
     start_editing,
     create_point,
     end_editing,
