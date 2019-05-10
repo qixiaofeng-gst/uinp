@@ -136,6 +136,95 @@ const Rectangle = (x, y, w, h) => {
   })
 }
 
+const calc_bb = points => {
+  const
+  last_index = points.length - 1,
+  { x, y } = points[last_index].get_pos()
+  let
+  left = x,
+  right = x,
+  top = y,
+  bottom = y,
+  i = last_index
+  while (i--) {
+    const { x: a, y: b } = points[i].get_pos()
+    if (a < left) {
+      left = a
+    }
+    if (right < a) {
+      right = a
+    }
+    if (b < top) {
+      top = b
+    }
+    if (bottom < b) {
+      bottom = b
+    }
+  }
+  return ({
+    left,
+    right,
+    top,
+    bottom,
+  })
+}
+
+const calc_slope = (x1, y1, x2, y2) => {
+  /**
+  XXX (0.1 + 0.2 - 0.3) == 0 in javascript is false!!!
+  XXX precision stuff: parseFloat(n.toFixed(2))
+  XXX ignored the x1 == x2 && y1 == y2
+  
+  return: false means infinity
+  */
+  const
+  dx = x2 - x1,
+  dy = y2 - y1,
+  is_x0 = 0 == dx
+  
+  if (is_x0) {
+    return false
+  } else {
+    return dy / dx
+  }
+}
+
+const is_between = (t, a, b) => (
+  (t <= a && t >= b) ||
+  (t >= a && t <= b)
+)
+
+const polygon_has = (polygon, p) => {
+  const { x, y } = p
+  const cross_count = 0
+  for (const { p1, p2 } of polygon) {
+    const { x: x1, y: y1 } = p1.get_pos()
+    const { x: x2, y: y2 } = p2.get_pos()
+    const slope = calc_slope(x1, y1, x2, y2)
+    if (false === slope) {
+      /**TODO*/
+    }
+    if (0 === slope) {
+      
+    }
+    
+  }
+  return 1 == (cross_count % 2)
+}
+
+/**
+The relation between line slope (ls) and perpendicular slope (ps): ps * ls = -1
+
+x1, y1, s1,
+x2, y2, s2,
+x, y,
+
+s2 = -1 / s1,
+(x - x1) * s1 = y - y1, s1 * x - s1 * x1 = y - y1,
+(x - x2) * s2 = y - y2, s2 * x - s2 * x2 = y - y2,
+x = ((y2 - y1) - (s2 * x2 - s1 * x1)) / (s1 - s2),
+*/
+
 const serialize = ({ points, constraints }) => {
   let ps = '\n'
   for (const p of points) {

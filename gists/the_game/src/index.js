@@ -7,6 +7,7 @@
 - DONE(1.5h) Mapping the screen coords to [-1, 1]
 - 80% Shaders for rendering basic geometries
 - 50% The physic mechanism for rigid body
+  - method for checking point is inside polygon
   - collision
 - The body editor
   - the ui engine, reuse bone_engine stuff
