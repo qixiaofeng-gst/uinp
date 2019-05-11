@@ -125,8 +125,19 @@ const init_engines = () => {
     }
   }
   ie.onclick = () => {
+    const { x, y } = ie.get_mouse()
+    
+    console.log('here we go:')
+    const us = be.get_unities()
+    for (const { points } of us) {
+      const xy_arr = []
+      for (const p of points) {
+        xy_arr.push(p.get_pos())
+      }
+      console.log(calc_aabb(xy_arr, 10).has({ x, y }))
+    }
+    
     if (ie.is_ctrl_down()) {
-      const { x, y } = ie.get_mouse()
       be.create_point(x, y, ie.is_alt_down())
     }
   }
@@ -134,11 +145,11 @@ const init_engines = () => {
     if (ie.ctrl == ie.get_code()) {
       be.end_editing()
       be.detect_unities()
-      console.log(be.get_unities().length)
     }
   }
   
   be.batch_add(deserialize(/*PUT objs/examples.js */))
+  be.detect_unities()
 }
 init_engines()
 

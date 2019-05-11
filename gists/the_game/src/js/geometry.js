@@ -136,10 +136,18 @@ const Rectangle = (x, y, w, h) => {
   })
 }
 
-const calc_bb = points => {
+/** XXX (0.1 + 0.2 - 0.3) == 0 in javascript is false!!! */
+const f_cut = n => parseFloat(n.toFixed(5))
+const f_is0 = n => (0 == f_cut(n))
+const f_eq = (a, b) => f_is0(a - b)
+const f_nlt = (a, b) => f_eq(a, b) || a > b // not less than >=
+const f_ngt = (a, b) => f_eq(a, b) || a < b // not greater than <=
+
+const calc_aabb = (xy_arr, margin) => {
+  margin = margin || 0
   const
-  last_index = points.length - 1,
-  { x, y } = points[last_index].get_pos()
+  last_index = xy_arr.length - 1,
+  { x, y } = xy_arr[last_index]
   let
   left = x,
   right = x,
@@ -147,7 +155,7 @@ const calc_bb = points => {
   bottom = y,
   i = last_index
   while (i--) {
-    const { x: a, y: b } = points[i].get_pos()
+    const { x: a, y: b } = xy_arr[i]
     if (a < left) {
       left = a
     }
@@ -161,53 +169,119 @@ const calc_bb = points => {
       bottom = b
     }
   }
+  left -= margin
+  right += margin
+  top -= margin
+  bottom += margin
+  
+  const has = ({ x, y }) => (
+    f_nlt(x, left) && f_ngt(x, right) &&
+    f_nlt(y, top) && f_ngt(y, bottom)
+  )
+  
   return ({
     left,
     right,
     top,
     bottom,
+    has,
+    over: ({ left, right, top, bottom }) => (
+      has({ x: left, y: top }) ||
+      has({ x: left, y: bottom }) ||
+      has({ x: right, y: bottom }) ||
+      has({ x: left, y: top })
+    ),
   })
 }
 
-const calc_slope = (x1, y1, x2, y2) => {
-  /**
-  XXX (0.1 + 0.2 - 0.3) == 0 in javascript is false!!!
-  XXX precision stuff: parseFloat(n.toFixed(2))
-  XXX ignored the x1 == x2 && y1 == y2
-  
-  return: false means infinity
-  */
-  const
-  dx = x2 - x1,
-  dy = y2 - y1,
-  is_x0 = 0 == dx
-  
-  if (is_x0) {
-    return false
-  } else {
-    return dy / dx
-  }
-}
-
 const is_between = (t, a, b) => (
-  (t <= a && t >= b) ||
-  (t >= a && t <= b)
+  (f_ngt(t, a) && f_nlt(t, b)) ||
+  (f_nlt(t, a) && f_ngt(t, b))
 )
 
-const polygon_has = (polygon, p) => {
-  const { x, y } = p
+const create_line = (in_xy1, in_xy2) => {
+  /** a x + b y + c = 0 */
+  let
+  a = 1,
+  b = 1,
+  c = 0
+  const
+  xy1 = in_xy1,
+  xy2 = in_xy2,
+  d_xy = xy1.sub(xy2)
+  
+  if (f_is0(d_xy.x)) {
+    if (f_is0(d_xy.y)) {
+      return ({
+        cross: xy => f_eq(xy.x, xy1.x) && f_eq(xy.y, xy1.y),
+        expand: _ => [[xy1, xy2], [xy1, xy2], [xy1, xy1], [xy2, xy2]],
+      })
+    } else {
+      b = 0
+      c = -xy1.x
+    }
+  } else {
+    if (f_is0(d_xy.y)) {
+      a = 0
+      c = -xy1.y
+    } else {
+      a = -(d_xy.y / d_xy.x)
+      c = -(a * xy1.x + xy1.y)
+    }
+  }
+  
+  const expand_line = offset => {
+    const
+    top_left = xy1 - offset,
+    top_right = xy1 + offset,
+    bot_left = xy2 - offset,
+    bot_right = xy2 + offset
+    return ([
+      [top_left, top_right],
+      [top_left, bot_left],
+      [bot_left, bot_right],
+      [top_right, bot_right],
+    ])
+  }
+  
+  return ({
+    cross: xy => {
+      const is_valid = is_between(xy.x, xy1.x, xy2.x)
+      if (false == is_valid) {
+        return false
+      }
+      if (0 == b) {
+        return (
+          f_ngt(xy.y, xy1.y) ||
+          f_ngt(xy.y, xy2.y)
+        )
+      }
+      if (0 == a) {
+        return is_between(xy.y, xy1.y, xy2.y)
+      }
+      return f_ngt(a * xy.x + b * xy.y + c, 0)
+    },
+    expand: width => {
+      const len = width / 2
+      if (0 == b) {
+        return expand_line(XY(0, len))
+      }
+      if (0 == a) {
+        return expand_line(XY(len, 0))
+      }
+      const offset = XY(1, -a / b).normalize().mul_n(len)
+      return expand_line(offset)
+    },
+  })
+}
+
+const polygon_has = (polygon, xy) => {
   const cross_count = 0
-  for (const { p1, p2 } of polygon) {
-    const { x: x1, y: y1 } = p1.get_pos()
-    const { x: x2, y: y2 } = p2.get_pos()
-    const slope = calc_slope(x1, y1, x2, y2)
-    if (false === slope) {
-      /**TODO*/
+  for (const [ xy1, xy2 ] of polygon) {
+    const line = create_line(xy1, xy2)
+    if (line.cross(xy)) {
+      ++cross_count
     }
-    if (0 === slope) {
-      
-    }
-    
   }
   return 1 == (cross_count % 2)
 }
