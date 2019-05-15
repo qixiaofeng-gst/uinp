@@ -7,7 +7,7 @@ const BoneEngine = (in_canvas) => {
   canvas = in_canvas,
   
   { width, height } = canvas,
-  constraints = [],
+  bones = [],
   points = [],
   unities = [],
 
@@ -24,18 +24,18 @@ const BoneEngine = (in_canvas) => {
     }
     return closest
   },
-  batch_add = ({ points: ps, constraints: cs }) => {
+  batch_add = ({ points: ps, bones: cs }) => {
     if (Array.isArray(ps)) {
       points.splice(points.length, 0, ...ps)
     }
     if (Array.isArray(cs)) {
-      constraints.splice(constraints.length, 0, ...cs)
+      bones.splice(bones.length, 0, ...cs)
     }
   },
   
-  get_relevant_constraints = p => {
+  get_relevant_bones = p => {
     const cs = []
-    for (const c of constraints) {
+    for (const c of bones) {
       if (c.is_unity_parsed) {
         continue
       }
@@ -43,7 +43,7 @@ const BoneEngine = (in_canvas) => {
       if (is_p1 || c.p2 == p) {
         cs.push(c)
         c.is_unity_parsed = true
-        const subs = get_relevant_constraints(is_p1 ? c.p2 : c.p1)
+        const subs = get_relevant_bones(is_p1 ? c.p2 : c.p1)
         cs.splice(cs.length, 0, ...subs)
       }
     }
@@ -59,7 +59,7 @@ const BoneEngine = (in_canvas) => {
     for (const p of points) {
       p.is_unity_parsed = false
     }
-    for (const c of constraints) {
+    for (const c of bones) {
       c.is_unity_parsed = false
     }
     unities.splice(0, unities.length)
@@ -68,14 +68,14 @@ const BoneEngine = (in_canvas) => {
         continue
       }
       const ps = []
-      const cs = get_relevant_constraints(p)
+      const cs = get_relevant_bones(p)
       for (const c of cs) {
         mark_unity_parsed(ps, c.p1)
         mark_unity_parsed(ps, c.p2)
       }
       unities.push({
         points: ps,
-        constraints: cs,
+        bones: cs,
       })
     }
   },
@@ -103,7 +103,7 @@ const BoneEngine = (in_canvas) => {
         p.check_walls(0, 0, width, height)
       }
 
-      for(const c of constraints) {
+      for(const c of bones) {
         c.resolve()
       }
     }
@@ -111,7 +111,7 @@ const BoneEngine = (in_canvas) => {
   
   get_lines = () => {
     const lines = []
-    for (const c of constraints) {
+    for (const c of bones) {
       const { x: x1, y: y1 } = c.p1.get_pos()
       const { x: x2, y: y2 } = c.p2.get_pos()
       lines.splice(lines.length, 0, x1, y1, x2, y2)
@@ -131,14 +131,14 @@ const BoneEngine = (in_canvas) => {
   },
   get_unities = () => unities,
   to_string = () => serialize({
-    points, constraints
+    points, bones
   }),
   
   is_constraint_exists = (pa, pb) => {
     if (pa == pb) {
       return true
     }
-    for (const { p1, p2 } of constraints) {
+    for (const { p1, p2 } of bones) {
       const exists = p1 == pa && p2 == pb
       const exists_r = p1 == pb && p2 == pa
       if (exists || exists_r) {
@@ -151,11 +151,11 @@ const BoneEngine = (in_canvas) => {
     draw_points = []
   },
   remove_point = point => {
-    let i = constraints.length
+    let i = bones.length
     while (i--) {
-      const constraint = constraints[i]
+      const constraint = bones[i]
       if (constraint.p1 == point || constraint.p2 == point) {
-        constraints.splice(constraints.indexOf(constraint), 1)
+        bones.splice(bones.indexOf(constraint), 1)
       }
     }
 
@@ -183,7 +183,7 @@ const BoneEngine = (in_canvas) => {
       }
       const prev = draw_points[length - 2]
       if (false == is_constraint_exists(exists, prev)) {
-        constraints.push(Constraint(exists, prev))
+        bones.push(Bone(exists, prev))
       }
       return
     }
@@ -199,7 +199,7 @@ const BoneEngine = (in_canvas) => {
       points.push(prev)
     }
     points.push(p)
-    constraints.push(Constraint(p, prev))
+    bones.push(Bone(p, prev))
   },
   end_editing = () => {
     draw_points = false

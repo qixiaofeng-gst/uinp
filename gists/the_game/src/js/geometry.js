@@ -88,7 +88,7 @@ const Point = (x, y, in_fixed) => {
   })
 }
 
-const Constraint = (in_p1, in_p2) => {
+const Bone = (in_p1, in_p2) => {
   const
   p1 = in_p1,
   p2 = in_p2,
@@ -119,19 +119,19 @@ const Rectangle = (x, y, w, h) => {
   p3 = Point(x + w, y + h),
   p4 = Point(x, y + h),
 
-  c1 = Constraint(p1, p2),
-  c2 = Constraint(p2, p3),
-  c3 = Constraint(p3, p4),
-  c4 = Constraint(p4, p1),
-  c5 = Constraint(p1, p3)
+  c1 = Bone(p1, p2),
+  c2 = Bone(p2, p3),
+  c3 = Bone(p3, p4),
+  c4 = Bone(p4, p1),
+  c5 = Bone(p1, p3)
 
   points = [p1, p2, p3, p4],
-  constraints = [c1, c2, c3, c4, c5],
+  bones = [c1, c2, c3, c4, c5],
   fix = idx => points[idx % points.length].fix()
   
   return ({
     points,
-    constraints,
+    bones,
     fix,
   })
 }
@@ -232,10 +232,10 @@ const create_line = (in_xy1, in_xy2) => {
   
   const expand_line = offset => {
     const
-    top_left = xy1 - offset,
-    top_right = xy1 + offset,
-    bot_left = xy2 - offset,
-    bot_right = xy2 + offset
+    top_left = xy1.sub(offset),
+    top_right = xy1.add(offset),
+    bot_left = xy2.sub(offset),
+    bot_right = xy2.add(offset)
     return ([
       [top_left, top_right],
       [top_left, bot_left],
@@ -276,10 +276,11 @@ const create_line = (in_xy1, in_xy2) => {
 }
 
 const polygon_has = (polygon, xy) => {
-  const cross_count = 0
+  let cross_count = 0
   for (const [ xy1, xy2 ] of polygon) {
     const line = create_line(xy1, xy2)
     if (line.cross(xy)) {
+      console.log('----', xy1, xy2, xy)
       ++cross_count
     }
   }
@@ -299,14 +300,14 @@ s2 = -1 / s1,
 x = ((y2 - y1) - (s2 * x2 - s1 * x1)) / (s1 - s2),
 */
 
-const serialize = ({ points, constraints }) => {
+const serialize = ({ points, bones }) => {
   let ps = '\n'
   for (const p of points) {
     const { x, y } = p.get_pos()
     ps += `[${x}, ${y}, ${p.is_fixed()}],\n`
   }
   let cs = '\n'
-  for (const c of constraints) {
+  for (const c of bones) {
     cs += `[${points.indexOf(c.p1)}, ${points.indexOf(c.p2)}],\n`
   }
   return `{ ps: [${ps}], cs: [${cs}], }`
@@ -314,15 +315,15 @@ const serialize = ({ points, constraints }) => {
 
 const deserialize = ({ ps, cs }) => {
   const points = []
-  const constraints = []
+  const bones = []
   for (const [x, y, fixed] of ps) {
     points.push(Point(x, y, fixed))
   }
   for (const [p1, p2] of cs) {
-    constraints.push(Constraint(points[p1], points[p2]))
+    bones.push(Bone(points[p1], points[p2]))
   }
   return ({
     points,
-    constraints,
+    bones,
   })
 }
