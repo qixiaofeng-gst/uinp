@@ -1,0 +1,15 @@
+{
+  "name": "test_js",
+  "version": "0.0.1",
+  "description": "Test utilities",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "test",
+    "javascript"
+  ],
+  "author": "qxf",
+  "license": "MIT"
+}
