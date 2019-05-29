@@ -1,0 +1,23 @@
+对冲基金(Hedge Fund)分类法
+1. Style & Location，按风格和领域划分，风格指操作仓位不同，领域指股票、外汇、债券等不同领域
+2. Market Neutral / Directional，按是否与市场相关划分
+3. Risk Reducer / Return Enhancer，按对风险和收益的不同影响划分
+4. Systemetic / Discretionary，按是否有固定算法划分，固定算法的反面是自由决定
+
+High Freguency Trading
+The common types of high-frequency trading include several types of market-making, event arbitrage, statistical arbitrage, and latency arbitrage.
+Most high-frequency trading strategies are not fraudulent, but instead exploit minute deviations from market equilibrium.
+
+Treat investment as business, four principles available:
+1. Know what you are doing — know your business.
+2. Do not let anyone else run your business, unless
+  (1) you can supervise his performance with adequate care and comprehension or
+  (2) you have unusually strong reasons for placing implicit confidence in his integrity and ability.
+3. Do not enter upon an operation — that is, manufacturing or trading in an item — unless a reliable calculation shows that it has a fair chance to yield a reasonable profit.
+  In particular, keep away from ventures in which you have little to gain and much to lose.
+4. Have the courage of your knowledge and experience.
+  If you have formed a conclusion from the facts and if you know your judgment is sound, act on it — even though others may hesitate or differ.
+
+
+博弈的基本属性
+信息、决策次序
