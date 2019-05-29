@@ -1,10 +1,16 @@
-const {
-  the,
+const
+fs = require('fs'),
+{
   run,
 } = require('../index')
 
-run({
-  test_throw: () => {
-    the(true).eq('true')
+const
+ls = fs.readdirSync(__dirname),
+filter_index = 'index.js'
+
+for (const f of ls) {
+  if (f == filter_index) {
+    continue
   }
-}, 'Test4Test')
+  run(require(`${__dirname}/${f}`), f)
+}

@@ -1,4 +1,5 @@
 const
+fs = require('fs'),
 cstr = require('./colors'),
 
 options = {
@@ -49,7 +50,7 @@ the = target => {
       if (val === target) {
         return true
       } else {
-        throw new Error(`Expect ${val}, get ${target}`)
+        throw new Error(`Expect (${typeof(val)}) ${val}, get (${typeof(target)}) ${target}`)
       }
     }
   }
@@ -119,14 +120,6 @@ run = (suite, name) => {
       console.log(msg)
     }
   }
-},
-
-/**TODO
-Usage:
-run_suite() // Load all files (except index.js) under current directory
-*/
-run_suite = () => {
-  
 }
 
 module.exports = {
