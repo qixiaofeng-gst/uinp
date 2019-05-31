@@ -4,6 +4,7 @@
   - 打包工具 -> 检查版本号、资源版本号 -> 
     - 打安卓包之前配置切换到 develop select server -> 生成版本配置 -> build bundle
     - 电脑运行之前配置切换到 develop -> 生成版本配置 -> build bundle
+  - 禁用热更 HotEngine.cs CheckHotUpdateAsync 470行的 EnterGame() 保留，其余内容全部删除
 - unity3d 中材质能够被 Get/SetPixel 的前提：
   - Enabled read write
   - format is RGBA 32
