@@ -1,3 +1,6 @@
+9013,9015,9016,9005,9067
+属性的说明信息需要提供一个协议取用
+
 - 打包准备：
   - jdk, android-sdk, android-ndk
   - file -> build settings -> select android -> switch platform (bottom-left corner)
