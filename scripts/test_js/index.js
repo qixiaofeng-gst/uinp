@@ -15,7 +15,7 @@ adjust_stack = e => {
   rt = '\n',
   st = `${e.stack}`,
   ss = st.split(rt),
-  cand = ss.splice(4, 3)
+  cand = ss.splice(2, 3)
   
   let r = ss[0]
   for (const c of cand) {
@@ -102,28 +102,46 @@ run = (suite, name) => {
   total = passed_quantity + failed_quantity
   
   if (0 === failed_quantity) {
-    console.log(`All ${
-      cstr().green(total).str()
-    } test cases of suite [${
+    console.log(`Suite [${
       name
-    }] passed.`)
+    }] ${
+      cstr().green('all ' + total + ' cases passed').str()
+    }.\n`)
   } else {
-    console.log(`Summary of suite [${
+    console.log(`Suite [${
       cstr().bright(name).str()
     }], failed: ${
       cstr().red(failed_quantity).str()
     } / ${total}, passed: ${
       cstr().green(passed_quantity).str()
     } / ${total}`)
-    console.log('\nBelows are details of failed:\n')
+    console.log('Belows are details of failed:')
     for (const msg of failed) {
       console.log(msg)
     }
+    console.log(`End summary of suite [${name}].\n`)
+  }
+},
+
+/**
+In the index.js under test directory, do:
+run_dir(__dirname)
+*/
+run_dir = dir_path => {
+  const
+  ls = fs.readdirSync(dir_path),
+  filter_index = 'index.js'
+
+  for (const f of ls) {
+    if (f == filter_index) {
+      continue
+    }
+    run(require(`${dir_path}/${f}`), f)
   }
 }
 
 module.exports = {
   epsilon,
   the,
-  run,
+  run_dir,
 }
