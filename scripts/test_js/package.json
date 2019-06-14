@@ -10,6 +10,9 @@
     "test",
     "javascript"
   ],
+  "devDependencies": {
+    "test": "file:./test"
+  },
   "author": "qxf",
   "license": "MIT"
 }

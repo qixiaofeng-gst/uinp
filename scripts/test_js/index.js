@@ -173,4 +173,5 @@ module.exports = {
   epsilon,
   the,
   run_dir,
+  cstr,
 }

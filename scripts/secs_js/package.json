@@ -16,6 +16,7 @@
     "moment": "^2.23.0",
     "moment-timezone": "^0.5.23",
     "mongodb": "^3.1.10",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "test_js": "file:test_js-0.0.1.tgz"
   }
 }
