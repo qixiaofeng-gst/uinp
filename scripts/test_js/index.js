@@ -1,6 +1,7 @@
 const
 fs = require('fs'),
 cstr = require('./colors'),
+seg_seperator = '======= ======= =======',
 
 options = {
   epsilon: 1e-1,
@@ -101,6 +102,7 @@ run = (suite, name) => {
   failed_quantity = failed.length,
   total = passed_quantity + failed_quantity
   
+  console.log(seg_seperator)
   if (0 === failed_quantity) {
     console.log(`Suite [${
       name
@@ -121,6 +123,12 @@ run = (suite, name) => {
     }
     console.log(`End summary of suite [${name}].\n`)
   }
+  
+  return ({
+    total,
+    passed: passed_quantity,
+    failed: failed_quantity,
+  })
 },
 
 /**
@@ -132,12 +140,33 @@ run_dir = dir_path => {
   ls = fs.readdirSync(dir_path),
   filter_index = 'index.js'
 
+  let
+  total = 0,
+  passed = 0,
+  failed = 0
+  
   for (const f of ls) {
     if (f == filter_index) {
       continue
     }
-    run(require(`${dir_path}/${f}`), f)
+    const {
+      total: t,
+      passed: p,
+      failed: fd,
+    } = run(require(`${dir_path}/${f}`), f)
+    total += t
+    passed += p
+    failed += fd
   }
+  
+  console.log(seg_seperator)
+  console.log(`Summary of all suites: failed: ${
+    (0 == failed) ? cstr().green(failed).str() : cstr().red(failed).str()
+  }, passed: ${
+    (0 == passed) ? cstr().red(passed).str() : cstr().green(passed).str()
+  }, total: ${
+    cstr().bright(total).str()
+  }.`)
 }
 
 module.exports = {
