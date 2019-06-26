@@ -1,3 +1,8 @@
+
+
+
+奖励类型为 7 的奖励删除。
+
 - 打包准备：
   - jdk, android-sdk, android-ndk
   - file -> build settings -> select android -> switch platform (bottom-left corner)
