@@ -25,6 +25,7 @@ const parsers = {
     cb_replacement: file_path => `modules['${(() => file_path)()}']`,
   },
 }
+const modules_placeholder = '/*MODULES*/'
 
 const self = Symbol('self')
 const rejoin_path = target => target.replace(/\\/g, path.sep)
@@ -33,13 +34,19 @@ const src_state = {}
 const modules = {}
 
 //const inner_sm = 
-const serialize_modules = () => `const modules = {\n${(() => {
-  let result = ''
-  for (const key in modules) {
-    result += `'${key}': (() => {\n${modules[key]}\n})(),\n`
-  }
-  return result
-})()}}//End modules\n`
+const serialize_modules = () => `/**
+ * ATTENTION:
+ * File is generated with broker_js, do not modify it manually.
+ */
+const modules = {
+  ${(() => {
+    let result = ''
+    for (const key in modules) {
+      result += `'${key}': (() => {\n${modules[key]}\n})(),\n`
+    }
+    return result
+  })()}
+}//End modules\n\n`
 
 const start_watch = config => {
   const { input } = config
@@ -173,7 +180,11 @@ const make_output = config => {
   const { input, output } = config
   const out_file = path.join(output, path.basename(input))
   const combined = combine(input, src_state, modules)
-  fs.writeFileSync(out_file, serialize_modules() + combined)
+  if (combined.includes(modules_placeholder)) {
+    fs.writeFileSync(out_file, combined.replace(modules_placeholder, serialize_modules()))
+  } else {
+    fs.writeFileSync(out_file, serialize_modules() + combined)
+  }
   console.log('Combined to', out_file)
 }
 
