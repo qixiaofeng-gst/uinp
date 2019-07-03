@@ -1,3 +1,5 @@
+const ou = require('./object_utilities.js')
+
 const InputEngine = (in_canvas) => {
   const
   shift = 16,
@@ -155,3 +157,5 @@ const InputEngine = (in_canvas) => {
     }
   })
 }
+
+module.exports = InputEngine

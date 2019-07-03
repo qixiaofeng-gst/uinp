@@ -25,3 +25,5 @@ const ou = (() => {
     set: (_, key, val, __) => false,
   })
 })()
+
+module.exports = ou

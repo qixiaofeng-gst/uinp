@@ -1,9 +1,18 @@
 /*MODULES*/
 
-/*PUT js/object_utilities.js */
-/*PUT js/shader_creator.js */
-/*PUT js/input_engine.js */
-/*PUT js/bone_engine.js */
+const {
+  gl,
+  create_shader_program,
+} = require('js/shader_creator.js')
+const InputEngine = require('js/input_engine.js')
+const BoneEngine = require('js/bone_engine.js')
+const {
+  deserialize,
+  calc_aabb,
+  create_line,
+  polygon_has,
+  XY,
+} = require('js/geometry.js')
 
 /*
 - DONE(1.5h) Mapping the screen coords to [-1, 1]

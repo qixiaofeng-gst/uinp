@@ -1,4 +1,6 @@
-/*PUT geometry.js */
+const {
+  XY,
+} = require('./geometry.js')
 
 const BoneEngine = (in_canvas) => {
   let draw_points = false
@@ -221,3 +223,5 @@ const BoneEngine = (in_canvas) => {
     end_editing,
   })
 }
+
+module.exports = BoneEngine

@@ -38,15 +38,15 @@ const serialize_modules = () => `/**
  * ATTENTION:
  * File is generated with broker_js, do not modify it manually.
  */
-const modules = {
-  ${(() => {
-    let result = ''
-    for (const key in modules) {
-      result += `'${key}': (() => {\n${modules[key]}\n})(),\n`
-    }
-    return result
-  })()}
-}//End modules\n\n`
+const modules = {}
+${(() => {
+  let result = ''
+  for (const key in modules) {
+    result += `modules['${key}']= (() => {\n${modules[key]}\n})()\n`
+  }
+  return result
+})()}
+//End modules\n\n`
 
 const start_watch = config => {
   const { input } = config

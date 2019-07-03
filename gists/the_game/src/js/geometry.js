@@ -327,3 +327,12 @@ const deserialize = ({ ps, cs }) => {
     bones,
   })
 }
+
+module.exports = {
+  deserialize,
+  serialize,
+  XY,
+  calc_aabb,
+  create_line,
+  polygon_has,
+}

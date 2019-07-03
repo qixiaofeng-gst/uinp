@@ -1,9 +1,5 @@
-Stronghold 信息写入最后数据表，写入 xy_client_map
-Complex 原型结构重构，生成 complex
-
-战斗统计界面添加攻守图标
-
-奖励类型为 7 的奖励删除。
+军团建筑类型需要至少 16 种。
+3001 和用户落城的修改。
 
 - csharp 类导入到 lua 需修改 CustomSettings.cs
 - 打包准备：

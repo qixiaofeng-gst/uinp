@@ -112,3 +112,8 @@ const create_shader_program = (vs_id, fs_id) => {
     return null
   }
 }
+
+module.exports = {
+  gl,
+  create_shader_program,
+}
