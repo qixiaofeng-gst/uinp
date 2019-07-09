@@ -280,7 +280,6 @@ const polygon_has = (polygon, xy) => {
   for (const [ xy1, xy2 ] of polygon) {
     const line = create_line(xy1, xy2)
     if (line.cross(xy)) {
-      console.log('----', xy1, xy2, xy)
       ++cross_count
     }
   }
@@ -329,10 +328,12 @@ const deserialize = ({ ps, cs }) => {
 }
 
 module.exports = {
+  XY,
   deserialize,
   serialize,
-  XY,
   calc_aabb,
   create_line,
   polygon_has,
+  Point,
+  Bone,
 }

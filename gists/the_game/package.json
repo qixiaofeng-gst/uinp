@@ -9,6 +9,7 @@
   "author": "qxf",
   "license": "MIT",
   "dependencies": {
-    "broker_js": "file:broker_js-1.0.0.tgz"
+    "broker_js": "file:broker_js-1.0.0.tgz",
+    "test_js": "file:test_js-0.0.1.tgz"
   }
 }

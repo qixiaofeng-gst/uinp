@@ -14,7 +14,7 @@ const {
   XY,
 } = require('js/geometry.js')
 
-/*
+/**
 - DONE(1.5h) Mapping the screen coords to [-1, 1]
 - 80% Shaders for rendering basic geometries
 - 50% The physic mechanism for rigid body
@@ -145,11 +145,9 @@ const init_engines = () => {
         xy_arr.push(p.get_pos())
       }
       if (calc_aabb(xy_arr, 10).has({ x, y })) {
-        console.log('======', bones.length)
         for (const { p1, p2 } of bones) {
           const line_area = create_line(p1.get_pos(), p2.get_pos()).expand()
           if (polygon_has(line_area, { x, y })) {
-            console.log('-------')
             return
           }
         }

@@ -30,11 +30,8 @@ const modules_placeholder = '/*MODULES*/'
 const self = Symbol('self')
 const rejoin_path = target => target.replace(/\\/g, path.sep)
 
-const src_state = {}
-const modules = {}
-
 //const inner_sm = 
-const serialize_modules = () => `/**
+const serialize_modules = modules => `/**
  * ATTENTION:
  * File is generated with broker_js, do not modify it manually.
  */
@@ -48,6 +45,7 @@ ${(() => {
 })()}
 //End modules\n\n`
 
+const src_state = {}
 const start_watch = config => {
   const { input } = config
   
@@ -76,13 +74,10 @@ const start_watch = config => {
     const stats = fs.statSync(file_path)
     const { mtimeMs } = stats
     
-    src_state[file_path] = src_state[file_path] || {}
-    if (src_state[file_path].modify_time == mtimeMs) {
+    if (src_state[file_path] == mtimeMs) {
       return
     }
-    if (false === stats.isDirectory()) {
-      read_into(file_path, src_state) 
-    }
+    src_state[file_path] = mtimeMs
     
     console.log('Change:', e_type, file_path, new Date().toLocaleString())
     make_output(config)
@@ -177,17 +172,19 @@ const combine = (in_file_path, context, mds) => {
 }
 
 const make_output = config => {
+  const modules = {}
   const { input, output } = config
   const out_file = path.join(output, path.basename(input))
-  const combined = combine(input, src_state, modules)
+  const combined = combine(input, {}, modules)
   if (combined.includes(modules_placeholder)) {
-    fs.writeFileSync(out_file, combined.replace(modules_placeholder, serialize_modules()))
+    fs.writeFileSync(out_file, combined.replace(modules_placeholder, serialize_modules(modules)))
   } else {
-    fs.writeFileSync(out_file, serialize_modules() + combined)
+    fs.writeFileSync(out_file, serialize_modules(modules) + combined)
   }
   console.log('Combined to', out_file)
 }
 
 module.exports = {
-  start_watch
+  start_watch,
+  make_output,
 }

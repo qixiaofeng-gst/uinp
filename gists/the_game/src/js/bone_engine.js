@@ -1,5 +1,7 @@
 const {
   XY,
+  Point,
+  Bone,
 } = require('./geometry.js')
 
 const BoneEngine = (in_canvas) => {
