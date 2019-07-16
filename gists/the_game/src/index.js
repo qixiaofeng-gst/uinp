@@ -15,7 +15,8 @@ const {
 } = require('js/geometry.js')
 
 /**
-- DONE(1.5h) Mapping the screen coords to [-1, 1]
+WIP
+- hover to show collision shape
 - 80% Shaders for rendering basic geometries
 - 50% The physic mechanism for rigid body
   - method for checking point is inside polygon
@@ -31,8 +32,12 @@ const {
     - solid strip (then rectangle with a free point at each end)
 - Mapping the map coords to screen
 
+TODO
 - Make page auto reload after code change
 - Use web socket to transfer script
+
+DONE
+- (1.5h) Mapping the screen coords to [-1, 1]
 */
 
 const canvas_size = {
@@ -146,7 +151,7 @@ const init_engines = () => {
       }
       if (calc_aabb(xy_arr, 10).has({ x, y })) {
         for (const { p1, p2 } of bones) {
-          const line_area = create_line(p1.get_pos(), p2.get_pos()).expand()
+          const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
           if (polygon_has(line_area, { x, y })) {
             return
           }
@@ -170,14 +175,57 @@ const init_engines = () => {
 }
 init_engines()
 
-const update = () => {
+let hovering = false
+
+const
+update = () => {
   be.update(16)
-}
-const render = () => {
+  const { x, y } = ie.get_mouse()
+  const us = be.get_unities()
+  for (const { points, bones } of us) {
+    const xy_arr = []
+    for (const p of points) {
+      xy_arr.push(p.get_pos())
+    }
+    
+      //TODO belows are debugging code >>>>>>>
+      if (false == hovering) {
+        hovering = []
+      }
+      for (const { p1, p2 } of bones) {
+        const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
+        console.log('hello there')
+        for (const [ v1, v2 ] of line_area) {
+          hovering.push(v1.x)
+          hovering.push(v1.y)
+          hovering.push(v2.x)
+          hovering.push(v2.y)
+        }
+      }
+      continue
+      //debugging code end <<<<<<<
+    
+    if (calc_aabb(xy_arr, 10).has({ x, y })) {
+      for (const { p1, p2 } of bones) {
+        const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
+        if (polygon_has(line_area, { x, y })) {
+          return
+        } else {
+          //hovering = false
+        }
+      }
+    }
+  }
+},
+render = () => {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   
   prgm_render.use()
+  if (hovering) {
+    console.log('damn', hovering)
+    draw_lines(hovering)
+  }
   draw_lines(be.get_lines())
   
   prgm_dot.use()
@@ -185,16 +233,17 @@ const render = () => {
   for (const d of dots) {
     draw_plane(d)
   }
-}
-
-const main_loop = () => {
+},
+main_loop = () => {
   update()
   render()
-}
-const looper = cb => {
+},
+looper = cb => {
   cb()
   requestAnimationFrame(delta_time => {
+    if (hovering) return
     looper(cb)
   })
 }
+
 looper(main_loop)

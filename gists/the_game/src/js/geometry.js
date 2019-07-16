@@ -236,6 +236,7 @@ const create_line = (in_xy1, in_xy2) => {
     top_right = xy1.add(offset),
     bot_left = xy2.sub(offset),
     bot_right = xy2.add(offset)
+    
     return ([
       [top_left, top_right],
       [top_left, bot_left],
@@ -264,12 +265,14 @@ const create_line = (in_xy1, in_xy2) => {
     expand: width => {
       const len = width / 2
       if (0 == b) {
+        console.log('111')
         return expand_line(XY(0, len))
       }
       if (0 == a) {
+        console.log('222')
         return expand_line(XY(len, 0))
       }
-      const offset = XY(1, -a / b).normalize().mul_n(len)
+      const offset = XY(1, (c - a) / b).normalize().mul_n(len)
       return expand_line(offset)
     },
   })
