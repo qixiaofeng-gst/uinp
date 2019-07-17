@@ -16,10 +16,34 @@ html, body {
 #canvas {
   display: block;
   box-shadow: 0px 0px 80px #000;
-  /*border-radius: 10px;*/
 }
 
 #texture {
   position: absolute;
   visibility: hidden;
+}
+
+#tool_bar {
+  user-select: none;
+  padding-right: 2em;
+  color: white;
+}
+
+li {
+  line-height: 2em;
+  cursor: pointer;
+  padding: 0 10px;
+}
+
+li:hover, li.active {
+  border: 1px solid white;
+  margin: -1px;
+}
+
+li.marker {
+  color: #8888ff;
+}
+
+li.maker {
+  color: #00aa00;
 }

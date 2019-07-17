@@ -30,7 +30,23 @@
   <link rel="shortcut icon" href="data:image/png;/*PUT imgs/smile.base64 */" />
 </head>
 <body>
-  <canvas id="canvas" width=1000 height=900>
+  <div id="tool_bar">
+    Editor
+    <ol>
+    <li id="e_basic">Basic</li>
+    <li id="e_mark_fix" class="marker">Mark Fix</li>
+    <li id="e_move_fix">Move Fix</li>
+    <li id="e_mark_edge" class="marker">Mark Edge</li>
+    <li id="e_make_line" class="maker">Make Line</li>
+    <li id="e_make_square" class="maker">Make Square</li>
+    <li id="e_make_cycle" class="maker">Make Cycle</li>
+    <li id="e_make_cloth" class="maker">Make Cloth</li>
+    <li id="e_make_rope" class="maker">Make Rope</li>
+    <li id="e_make_stave" class="maker">Make Stave</li>
+    <li id="e_make_breakable" class="maker">Make Breakable</li>
+    </ol>
+  </div>
+  <canvas id="canvas" width=900 height=900>
     <!--
       width & height have to be set as attributes, but not css properties
       above makes canvas.width&height consistent with clientWidth&Height and other pairs of width&height

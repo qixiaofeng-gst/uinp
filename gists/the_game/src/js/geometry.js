@@ -253,26 +253,26 @@ const create_line = (in_xy1, in_xy2) => {
       }
       if (0 == b) {
         return (
-          f_ngt(xy.y, xy1.y) ||
-          f_ngt(xy.y, xy2.y)
+          f_eq(xy.x, xy1.x) && (
+            f_ngt(xy.y, xy1.y) ||
+            f_ngt(xy.y, xy2.y)
+          )
         )
       }
       if (0 == a) {
-        return is_between(xy.y, xy1.y, xy2.y)
+        return is_between(xy.x, xy1.x, xy2.x) && f_ngt(xy.y, xy1.y)
       }
       return f_ngt(a * xy.x + b * xy.y + c, 0)
     },
     expand: width => {
       const len = width / 2
       if (0 == b) {
-        console.log('111')
-        return expand_line(XY(0, len))
-      }
-      if (0 == a) {
-        console.log('222')
         return expand_line(XY(len, 0))
       }
-      const offset = XY(1, (c - a) / b).normalize().mul_n(len)
+      if (0 == a) {
+        return expand_line(XY(0, len))
+      }
+      const offset = XY(1, - d_xy.x / d_xy.y).normalize().mul_n(len)
       return expand_line(offset)
     },
   })
@@ -290,16 +290,7 @@ const polygon_has = (polygon, xy) => {
 }
 
 /**
-The relation between line slope (ls) and perpendicular slope (ps): ps * ls = -1
-
-x1, y1, s1,
-x2, y2, s2,
-x, y,
-
-s2 = -1 / s1,
-(x - x1) * s1 = y - y1, s1 * x - s1 * x1 = y - y1,
-(x - x2) * s2 = y - y2, s2 * x - s2 * x2 = y - y2,
-x = ((y2 - y1) - (s2 * x2 - s1 * x1)) / (s1 - s2),
+Two perpendicular vectors (a, b) and (c, d) have this formula: a*c + b*d = 0
 */
 
 const serialize = ({ points, bones }) => {

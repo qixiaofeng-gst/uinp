@@ -16,20 +16,13 @@ const {
 
 /**
 WIP
-- hover to show collision shape
 - 80% Shaders for rendering basic geometries
 - 50% The physic mechanism for rigid body
   - method for checking point is inside polygon
   - collision
-- The body editor
-  - the ui engine, reuse bone_engine stuff
-  - more basic shapes
-    - line
-    - soft strip
-    - cloth
-    - cycle
-    - rectangle
-    - solid strip (then rectangle with a free point at each end)
+- 10% The body editor
+  - the ui engine, use HTML stuff
+  - all editor functions
 - Mapping the map coords to screen
 
 TODO
@@ -38,10 +31,11 @@ TODO
 
 DONE
 - (1.5h) Mapping the screen coords to [-1, 1]
+- (4.0h) hover to show collision shape
 */
 
 const canvas_size = {
-  width: 1000,
+  width: 900,
   height: 900,
 }
 const prgm_render = create_shader_program('vs_render', 'fs_render')
@@ -188,34 +182,23 @@ update = () => {
       xy_arr.push(p.get_pos())
     }
     
-      //TODO belows are debugging code >>>>>>>
-      if (false == hovering) {
-        hovering = []
-      }
-      for (const { p1, p2 } of bones) {
-        const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
-        console.log('hello there')
-        for (const [ v1, v2 ] of line_area) {
-          hovering.push(v1.x)
-          hovering.push(v1.y)
-          hovering.push(v2.x)
-          hovering.push(v2.y)
-        }
-      }
-      continue
-      //debugging code end <<<<<<<
-    
     if (calc_aabb(xy_arr, 10).has({ x, y })) {
       for (const { p1, p2 } of bones) {
         const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
         if (polygon_has(line_area, { x, y })) {
+          hovering = []
+          for (const [ v1, v2 ] of line_area) {
+            hovering.push(v1.x)
+            hovering.push(v1.y)
+            hovering.push(v2.x)
+            hovering.push(v2.y)
+          }
           return
-        } else {
-          //hovering = false
         }
       }
     }
   }
+  hovering = false
 },
 render = () => {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
@@ -223,7 +206,6 @@ render = () => {
   
   prgm_render.use()
   if (hovering) {
-    console.log('damn', hovering)
     draw_lines(hovering)
   }
   draw_lines(be.get_lines())
@@ -241,7 +223,6 @@ main_loop = () => {
 looper = cb => {
   cb()
   requestAnimationFrame(delta_time => {
-    if (hovering) return
     looper(cb)
   })
 }
