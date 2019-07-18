@@ -132,8 +132,18 @@ const InputEngine = (in_canvas) => {
     alt,
   }, {
     set: (_, key, val, __) => {
-      const off = 'off'
-      const msg = `No property [${key}] in the Input Engine`
+      const
+      off = 'off',
+      offall = `${off}all`,
+      msg = `No property [${key}] in the Input Engine`
+      
+      if (key === offall && true === val) {
+        for (const name in listeners) {
+          const e = listeners[name]
+          e.splice(0, e.length)
+        }
+        return val
+      }
       if (key.startsWith(off)) {
         const mapped = key.replace(off, 'on')
         if (listeners.hasOwnProperty(mapped)) {

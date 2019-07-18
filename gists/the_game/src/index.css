@@ -30,14 +30,18 @@ html, body {
 }
 
 li {
-  line-height: 2em;
+  line-height: 1em;
   cursor: pointer;
-  padding: 0 10px;
+  padding: 10px;
 }
 
-li:hover, li.active {
+li:hover {
+  background: #111;
+}
+
+li.active {
   border: 1px solid white;
-  margin: -1px;
+  padding: 9px;
 }
 
 li.marker {
