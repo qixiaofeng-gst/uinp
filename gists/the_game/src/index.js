@@ -120,7 +120,7 @@ let hovering = false
 
 const
 update = () => {
-  be.update(16)
+  be.update()
   const { x, y } = ie.get_mouse()
   const us = be.get_unities()
   for (const { points, bones } of us) {

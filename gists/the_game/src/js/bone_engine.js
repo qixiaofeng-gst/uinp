@@ -5,17 +5,15 @@ const {
 } = require('./geometry.js')
 
 const BoneEngine = (in_canvas) => {
-  let draw_points = false
+  let
+  kinematics = false,
+  creating = false
 
   const
-  canvas = in_canvas,
-  
-  { width, height } = canvas,
+  { width, height } = in_canvas,
   bones = [],
   points = [],
   unities = [],
-
-  gravity = XY(0, 0.98),
   
   get_point_around = (x, y, range) => {
     range = range || 9
@@ -84,32 +82,9 @@ const BoneEngine = (in_canvas) => {
     }
   },
   
-  update = iter => {
-    if (draw_points) {
-      return
-    }
-
-    iter = iter || 6
-
-    const delta = 1 / iter
-    
-    let n = iter
-    while(n--) {
-      for(const p of points) {
-        const drag = p.get_drag()
-        if (drag) {
-          const s = drag.sub(p.get_pos()).div_n(iter)
-          p.move(s)
-        }
-        
-        p.add_force(gravity)
-        p.update(delta)
-        p.check_walls(0, 0, width, height)
-      }
-
-      for(const c of bones) {
-        c.resolve()
-      }
+  update = () => {
+    if (kinematics && kinematics.update) {
+      kinematics.update(points, bones)
     }
   },
   
@@ -151,9 +126,6 @@ const BoneEngine = (in_canvas) => {
     }
     return false
   },
-  start_editing = () => {
-    draw_points = []
-  },
   remove_point = point => {
     let i = bones.length
     while (i--) {
@@ -168,46 +140,50 @@ const BoneEngine = (in_canvas) => {
     }
   },
   create_point = (x, y, fixed) => {
-    if (false === draw_points) {
-      return
-    }
-    
     const exists = get_point_around(x, y)
     if (exists) {
-      if (fixed) {
-        exists.fix()
+      if (creating) {
+        if (creating.is_exist) {
+          if (false == is_constraint_exists(exists, creating.p)) {
+            bones.push(Bone(exists, creating.p))
+          }
+          creating = false
+        } else {
+          points.push(creating.p)
+          bones.push(Bone(exists, creating.p))
+          creating = false
+        }
       } else {
-        exists.release()
+        creating = {
+          is_exist: true,
+          p: exists,
+        }
       }
-      draw_points.push(exists)
-      const { length } = draw_points
-      if (1 == length) {
-        draw_points.push(exists)
-        return
+    } else {
+      const p = Point(x, y, fixed)
+      if (creating) {
+        if (false == creating.is_exist) {
+          points.push(creating.p)
+        }
+        points.push(p)
+        bones.push(Bone(creating.p, p))
+        creating = false
+      } else {
+        creating = {
+          is_exist: false,
+          p,
+        } 
       }
-      const prev = draw_points[length - 2]
-      if (false == is_constraint_exists(exists, prev)) {
-        bones.push(Bone(exists, prev))
-      }
-      return
     }
-    
-    const p = Point(x, y, fixed)
-    draw_points.push(p)
-    const { length } = draw_points
-    if (1 == length) {
-      return
-    }
-    const prev = draw_points[length - 2]
-    if (2 == length) {
-      points.push(prev)
-    }
-    points.push(p)
-    bones.push(Bone(p, prev))
   },
-  end_editing = () => {
-    draw_points = false
-  }
+  clear_creating = () => {
+    creating = false
+    detect_unities()
+  },
+  set_kinematics = obj => {
+    kinematics = obj
+  },
+  get_size = () => ({ width, height })
   
   return ({
     batch_add,
@@ -220,9 +196,11 @@ const BoneEngine = (in_canvas) => {
     
     update,
     detect_unities,
-    start_editing,
     create_point,
-    end_editing,
+    clear_creating,
+    
+    set_kinematics,
+    get_size,
   })
 }
 

@@ -7,6 +7,15 @@ setup = (be, ie) => {
   return ({
     basic: btn => {
       console.log('Editor: basic')
+      ie.onkeyup = () => {
+        if (ie.ctrl == ie.get_code()) {
+        }
+      }
+      
+      ie.onkeydown = () => {
+        if (ie.ctrl == ie.get_code()) {
+        }
+      }
     },
     mark_fix: btn => {
       console.log('Editor: mark fix')
@@ -57,6 +66,9 @@ create_editor = (be, ie) => {
   be: bone engine
   ie: input engine
   */
+  let
+  state = false
+  
   const
   config = setup(be, ie)
   
@@ -79,6 +91,7 @@ create_editor = (be, ie) => {
       add_class(button, active_clz)
       
       ie.offall = true
+      be.set_kinematics(false)
       config[entry](button)
     }
   }

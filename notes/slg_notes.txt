@@ -1,4 +1,5 @@
-服务器进度，任务目标是多个吗？一列图标是奖励还是任务？
+Stronghold2alliance 表得初始化
+StrongholdBuilding2alliance 初始化？
 
 殖民地上缴的资源怎么处理？（平分给军团成员？）
 所有协议返回错误信息的字符串的多语言处理
