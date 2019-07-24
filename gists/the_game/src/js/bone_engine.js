@@ -2,6 +2,7 @@ const {
   XY,
   Point,
   Bone,
+  min_bone_len,
 } = require('./geometry.js')
 
 const BoneEngine = (in_canvas) => {
@@ -139,40 +140,47 @@ const BoneEngine = (in_canvas) => {
       points.splice(points.indexOf(point), 1)
     }
   },
-  create_point = (x, y, fixed) => {
+  create_point = (x, y) => {
     const exists = get_point_around(x, y)
     if (exists) {
       if (creating) {
+        if (creating.p === exists) {
+          return
+        }
         if (creating.is_exist) {
           if (false == is_constraint_exists(exists, creating.p)) {
             bones.push(Bone(exists, creating.p))
           }
-          creating = false
         } else {
           points.push(creating.p)
           bones.push(Bone(exists, creating.p))
-          creating = false
         }
-      } else {
-        creating = {
-          is_exist: true,
-          p: exists,
-        }
+        
+      }
+      creating = {
+        is_exist: true,
+        p: exists,
       }
     } else {
-      const p = Point(x, y, fixed)
+      const p = Point(x, y)
       if (creating) {
+        if (creating.p.get_pos().sub(p.get_pos()).len < min_bone_len) {
+          return
+        }
         if (false == creating.is_exist) {
           points.push(creating.p)
         }
         points.push(p)
         bones.push(Bone(creating.p, p))
-        creating = false
+        creating = {
+          is_exist: true,
+          p,
+        }
       } else {
         creating = {
           is_exist: false,
           p,
-        } 
+        }
       }
     }
   },

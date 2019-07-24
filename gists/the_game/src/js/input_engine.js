@@ -6,17 +6,9 @@ const InputEngine = (in_canvas) => {
   ctrl = 17,
   alt = 18,
   a = 65,
-  alphabet = [
-    'a', 'b', 'c', 'd', 'e', 'f', 'g',
-    'h', 'i', 'j', 'k', 'l', 'm', 'n',
-    'o', 'p', 'q', 'r', 's', 't',
-    'u', 'v', 'w', 'x', 'y', 'z',
-  ],
+  alphabet = 'abcdefghijklmnopqrstuvwxyz',
   zero = 48,
-  numbers = [
-    '0', '1', '2', '3', '4',
-    '5', '6', '7', '8', '9',
-  ],
+  numbers = '0123456789',
   left = 37,
   up = 38,
   right = 39,
@@ -106,7 +98,6 @@ const InputEngine = (in_canvas) => {
   
   document.onkeydown = ({ keyCode }) => {
     key.code = keyCode
-    console.log(keyCode)
     switch (key.code) {
       case shift:
         if (key.shift) {

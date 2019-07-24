@@ -1,5 +1,4 @@
-Stronghold2alliance 表得初始化
-StrongholdBuilding2alliance 初始化？
+zpx7185
 
 殖民地上缴的资源怎么处理？（平分给军团成员？）
 所有协议返回错误信息的字符串的多语言处理
@@ -12,6 +11,8 @@ StrongholdBuilding2alliance 初始化？
 地块详情：2d
 
 预估共 9 天
+
+insert into map2cover(map_id, cover_type, owner_id, peace_time) select map_id + 10, 3, owner_id, peace_time from map2cover where owner_id = 1000100000021201 and cover_type = 3;
 
 两个 api：
 1. 判断地块是否属于我
@@ -151,7 +152,7 @@ http://192.168.1.253:8899/pages/viewpage.action?pageId=6684742
 
 =======
 瑞亚策略游戏开发相关
-ssh: root@192.168.250 9ol.=[;. 日志目录：/usr/docker/game/game_logs
+ssh: root@192.168.1.250 9ol.=[;. 日志目录：/usr/docker/game/game_logs，启动/停止脚本：/usr/docker/game/
 ftp: 192.168.1.253 传输方式为主动 share:无密码
 http://192.168.1.253:8899 wiki
 http://192.168.1.253:8888 jira qixiaofeng

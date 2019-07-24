@@ -1,4 +1,5 @@
-const XY = (v1, v2) => {
+const
+XY = (v1, v2) => {
   const
   x = v1 || 0,
   y = v2 || 0,
@@ -22,9 +23,9 @@ const XY = (v1, v2) => {
     normalize,
     distance,
   })
-}
+},
 
-const Point = (x, y, in_fixed) => {
+Point = (x, y, in_fixed) => {
   let
   pos = XY(x, y),
   pre = XY(x, y),
@@ -86,9 +87,10 @@ const Point = (x, y, in_fixed) => {
     set_drag,
     get_drag,
   })
-}
+},
 
-const Bone = (in_p1, in_p2) => {
+min_bone_len = 10,
+Bone = (in_p1, in_p2) => {
   const
   p1 = in_p1,
   p2 = in_p2,
@@ -110,9 +112,9 @@ const Bone = (in_p1, in_p2) => {
     p1, p2,
     resolve,
   })
-}
+},
 
-const Rectangle = (x, y, w, h) => {
+Rectangle = (x, y, w, h) => {
   const
   p1 = Point(x, y),
   p2 = Point(x + w, y),
@@ -134,16 +136,16 @@ const Rectangle = (x, y, w, h) => {
     bones,
     fix,
   })
-}
+},
 
 /** XXX (0.1 + 0.2 - 0.3) == 0 in javascript is false!!! */
-const f_cut = n => parseFloat(n.toFixed(5))
-const f_is0 = n => (0 == f_cut(n))
-const f_eq = (a, b) => f_is0(a - b)
-const f_nlt = (a, b) => f_eq(a, b) || a > b // not less than >=
-const f_ngt = (a, b) => f_eq(a, b) || a < b // not greater than <=
+f_cut = n => parseFloat(n.toFixed(5)),
+f_is0 = n => (0 == f_cut(n)),
+f_eq = (a, b) => f_is0(a - b),
+f_nlt = (a, b) => f_eq(a, b) || a > b, // not less than >=
+f_ngt = (a, b) => f_eq(a, b) || a < b, // not greater than <=
 
-const calc_aabb = (xy_arr, margin) => {
+calc_aabb = (xy_arr, margin) => {
   margin = margin || 0
   const
   last_index = xy_arr.length - 1,
@@ -192,14 +194,14 @@ const calc_aabb = (xy_arr, margin) => {
       has({ x: left, y: top })
     ),
   })
-}
+},
 
-const is_between = (t, a, b) => (
+is_between = (t, a, b) => (
   (f_ngt(t, a) && f_nlt(t, b)) ||
   (f_nlt(t, a) && f_ngt(t, b))
-)
+),
 
-const create_line = (in_xy1, in_xy2) => {
+create_line = (in_xy1, in_xy2) => {
   /** a x + b y + c = 0 */
   let
   a = 1,
@@ -276,9 +278,9 @@ const create_line = (in_xy1, in_xy2) => {
       return expand_line(offset)
     },
   })
-}
+},
 
-const polygon_has = (polygon, xy) => {
+polygon_has = (polygon, xy) => {
   let cross_count = 0
   for (const [ xy1, xy2 ] of polygon) {
     const line = create_line(xy1, xy2)
@@ -287,13 +289,13 @@ const polygon_has = (polygon, xy) => {
     }
   }
   return 1 == (cross_count % 2)
-}
+},
 
 /**
 Two perpendicular vectors (a, b) and (c, d) have this formula: a*c + b*d = 0
 */
 
-const serialize = ({ points, bones }) => {
+serialize = ({ points, bones }) => {
   let ps = '\n'
   for (const p of points) {
     const { x, y } = p.get_pos()
@@ -304,9 +306,9 @@ const serialize = ({ points, bones }) => {
     cs += `[${points.indexOf(c.p1)}, ${points.indexOf(c.p2)}],\n`
   }
   return `{ ps: [${ps}], cs: [${cs}], }`
-}
+},
 
-const deserialize = ({ ps, cs }) => {
+deserialize = ({ ps, cs }) => {
   const points = []
   const bones = []
   for (const [x, y, fixed] of ps) {
@@ -329,5 +331,6 @@ module.exports = {
   create_line,
   polygon_has,
   Point,
+  min_bone_len,
   Bone,
 }
