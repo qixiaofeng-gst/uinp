@@ -1,6 +1,30 @@
-zpx7185
+殖民提交资源前，刷新 resource，建造或升级时，刷新 resource
 
-殖民地上缴的资源怎么处理？（平分给军团成员？）
+城市外观
+new-0000 193,164
+
+city.4019.too_far 距离太远无法迁城（超出最大迁城距离）
+alliance.12014.full_in_area 联盟在当前州（区域）已达到招募上限，因此无法加入该联盟。
+alliance.12100.lack_of_privillege 没有足够的军团权限来编辑地块备注
+alliance.12100.join_to_comment 必须加入军团方能添加地块备注
+map.3015.no_more_fort 要塞数量已到达上限，无法建造更多要塞。
+
+服务器进度更新通知邮件，标题/内容
+
+服务器进度更新后军团奖励发放邮件，标题/内容
+
+text_data_ 系列是策划使用的
+text_msg_ 系列是开发使用的
+数据表出错先看 250 中数据表，别问其他人了。
+
+地图、据点相关原型表让策划填写
+BUG：每次启动服务器，game.progress 值是 1 不论原本是多少
+
+时间填在 value 里（天数），threshold 填 0
+服务器进度事件，某些事件没有目标了，因为它只有时间约束
+每一种条件类型（包括事件目标条件，还有军团发奖条件）的两个值（门槛值、目标值）需要一一明确。
+
+殖民地上缴的资源转换成军团经验
 所有协议返回错误信息的字符串的多语言处理
 
 大地图逻辑实现（大地图据点相关 2d + 事件相关 1d）：3d
@@ -13,6 +37,11 @@ zpx7185
 预估共 9 天
 
 insert into map2cover(map_id, cover_type, owner_id, peace_time) select map_id + 10, 3, owner_id, peace_time from map2cover where owner_id = 1000100000021201 and cover_type = 3;
+
+set @temp_player_id = 1000100000000200;
+insert into map2cover(map_id, cover_type, owner_id, peace_time) select map_id, 3, @temp_player_id, 0 from map_collect where player_id = @temp_player_id;
+insert into player2resource_domain(map_id, player_id, durability) select map_id, @temp_player_id, 10 from map_collect where player_id = @temp_player_id;
+delete from map_collect where player_id = @temp_player_id;
 
 两个 api：
 1. 判断地块是否属于我
@@ -86,19 +115,6 @@ insert into map2cover(map_id, cover_type, owner_id, peace_time) select map_id + 
     t.Apply();
     RGLog.Log(">>>>>>> " + width + ", " + height + ", ts: " + ((System.DateTime.Now.Ticks - ts) / System.TimeSpan.TicksPerMillisecond));
     #endregion
-
-// 下面记录一个异常：正常流程走到此处不应当有空指针情况，这种情况只有在没有进入地牢界面或者进入地牢界面异常的情况方才能够发生，暂先观察此玩家是否会再次出现此异常。
-[INFO ][00:02:45,720][Server-Worker-7-2] (core.cmd.GameCmdDispatcher) - 客户端空闲超时,sessionid=74915
-[INFO ][00:02:47,047][cmdExecutor-1-thread-14] (core.cmd.AbstractCmdHandler) - 协议-23002-报错-playerId:1000300000030614
-java.lang.NullPointerException
-at com.rhea.ws.game.dungeon.cmd.FightDungeonMonsterHandler23002.doExecute(FightDungeonMonsterHandler23002.java:90)
-at com.rhea.ws.game.core.cmd.AbstractCmdHandler.execute(AbstractCmdHandler.java:147)
-at com.rhea.ws.game.core.cmd.GameCmdDispatcher$GameCmdExecuteTask.run(GameCmdDispatcher.java:214)
-at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
-at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
-at java.lang.Thread.run(Thread.java:748)
-[INFO ][00:02:51,781][Server-Worker-7-1] (core.cmd.GameCmdDispatcher) - 客户端连接,sessionid=74921 clientIP:172.58.45.34 hostName:172.58.45.34 hostString:172.58.45.34 port:47989
-[INFO ][00:02:54,002][Server-Worker-7-1] (core.cmd.GameCmdDispatcher) - 客户端空闲超时,sessionid=74865
 
 # 地图每个大格占了 100x100 = 10000 个小格，描述异色块的形式: 逐行
 # 每个高低地形与其余装饰物一致描述，所不同的是：其余装饰物是实心，因此 prefab 中心可以放在几何中心（几何中心落在范围内）；高低地形是空心，prefab 中心须放在边沿区域

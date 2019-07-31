@@ -42,9 +42,15 @@ Set-NetFirewallProfile -Profile Domain, Public,Private -Enabled false
 "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --disable-web-security --user-data-dir="D:/TempDocs/chrome_data/"
 Windows 下可创建快捷方式并添加参数
 
+# Windows 重启 LxssManager 服务可重启 Linux 子系统
+
 # Java 执行指定 jar 包中的指定 class 和 library path 的命令行：
 java -Djava.library.path=dir/path -cp xxx.jar xxx.xxx.ClassName
 # eclipse 中配置 ${user} 变量的方法：在 eclipse.ini 中的 -vmargs 之后一行添加 -Duser.name=XXX
 
 # SQL 拷贝表数据语句：insert into table_1 (column_1, colum_2) select column_a, column_b from table_2;
 # 如果 select column_names from table; 的 column_names 中有常量值，比如数值或字符串，则在返回结果中该列是该常量值
+# select 语句可以用在 from 和 where 之后
+# from 之后可以放多个表（或 select 语句），此时 from 对应的 select 语句中所有列需带表名
+
+# SVN 解决树冲突，需先 svn resolve --accept=working，accept 的参数值随需要而定
