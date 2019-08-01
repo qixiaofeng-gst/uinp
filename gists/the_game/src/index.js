@@ -108,50 +108,22 @@ init_scene()
 
 const ie = InputEngine(gl.canvas)
 const be = BoneEngine(gl.canvas, {show_stress: true})
+const editor = create_editor(be, ie)
 const init_engines = () => {
-  create_editor(be, ie)
   start_player(be, ie)
   be.batch_add(deserialize(/*PUT objs/examples.js */))
   be.detect_unities()
 }
 init_engines()
 
-let hovering = false
-
 const
-update = () => {
-  be.update()
-  const { x, y } = ie.get_mouse()
-  const us = be.get_unities()
-  for (const { points, bones } of us) {
-    const xy_arr = []
-    for (const p of points) {
-      xy_arr.push(p.get_pos())
-    }
-    
-    if (calc_aabb(xy_arr, 10).has({ x, y })) {
-      for (const { p1, p2 } of bones) {
-        const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
-        if (polygon_has(line_area, { x, y })) {
-          hovering = []
-          for (const [ v1, v2 ] of line_area) {
-            hovering.push(v1.x)
-            hovering.push(v1.y)
-            hovering.push(v2.x)
-            hovering.push(v2.y)
-          }
-          return
-        }
-      }
-    }
-  }
-  hovering = false
-},
 render = () => {
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
   gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   
   prgm_render.use()
+  
+  const hovering = editor.get_auxiliary_lines()
   if (hovering) {
     draw_lines(hovering)
   }
@@ -164,7 +136,7 @@ render = () => {
   }
 },
 main_loop = () => {
-  update()
+  be.update()
   render()
 },
 looper = cb => {

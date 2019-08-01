@@ -1,3 +1,6 @@
+let
+auxiliary_lines = false
+
 const
 {
   start_player,
@@ -31,6 +34,33 @@ setup = (be, ie) => {
     },
     mark_fix: btn => {
       console.log('Editor: mark fix')
+      ie.onmousemove = () => {
+        const { x, y } = ie.get_mouse()
+        const us = be.get_unities()
+        for (const { points, bones } of us) {
+          const xy_arr = []
+          for (const p of points) {
+            xy_arr.push(p.get_pos())
+          }
+          
+          if (calc_aabb(xy_arr, 10).has({ x, y })) {
+            for (const { p1, p2 } of bones) {
+              const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
+              if (polygon_has(line_area, { x, y })) {
+                auxiliary_lines = []
+                for (const [ v1, v2 ] of line_area) {
+                  auxiliary_lines.push(v1.x)
+                  auxiliary_lines.push(v1.y)
+                  auxiliary_lines.push(v2.x)
+                  auxiliary_lines.push(v2.y)
+                }
+                return
+              }
+            }
+          }
+        }
+        auxiliary_lines = false
+      }
     },
     move_fix: btn => {
       console.log('Editor: move fix')
@@ -73,6 +103,7 @@ remove_class = (ele, clz) => {
   const old = ele.className
   ele.className = old.replace(clz, '').trim()
 },
+get_auxiliary_lines = () => auxiliary_lines,
 create_editor = (be, ie) => {
   /**
   be: bone engine
@@ -102,12 +133,17 @@ create_editor = (be, ie) => {
       }
       add_class(button, active_clz)
       
+      auxiliary_lines = false
       ie.offall = true
       be.set_kinematics(false)
       be.clear_creating()
       config[entry](button)
     }
   }
+  
+  return ({
+    get_auxiliary_lines,
+  })
 }
 
 module.exports = {
