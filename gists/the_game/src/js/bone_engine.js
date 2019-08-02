@@ -1,11 +1,16 @@
-const {
+const
+{
   XY,
   Point,
   Bone,
   min_bone_len,
+  polygon_has,
+  create_line,
+  calc_aabb,
 } = require('./geometry.js')
 
-const BoneEngine = (in_canvas) => {
+const
+BoneEngine = (in_canvas) => {
   let
   kinematics = false,
   creating = false
@@ -15,9 +20,11 @@ const BoneEngine = (in_canvas) => {
   bones = [],
   points = [],
   unities = [],
+  default_radius = 9,
   
+  get_default_radius = () => default_radius,
   get_point_around = (x, y, range) => {
-    range = range || 9
+    range = range || default_radius
     let closest = false
     const target = XY(x, y)
     for (const p of points) {
@@ -26,6 +33,27 @@ const BoneEngine = (in_canvas) => {
       }
     }
     return closest
+  },
+  get_line_around = (x, y, range) => {
+    range = range || default_radius
+    for (const { points, bones } of unities) {
+      const xy_arr = []
+      for (const p of points) {
+        xy_arr.push(p.get_pos())
+      }
+      
+      if (calc_aabb(xy_arr, range).has({ x, y })) {
+        for (const { p1, p2 } of bones) {
+          const
+          line = create_line(p1.get_pos(), p2.get_pos()),
+          line_area = line.expand(range)
+          if (polygon_has(line_area, { x, y })) {
+            return line
+          }
+        }
+      }
+    }
+    return false
   },
   batch_add = ({ points: ps, bones: cs }) => {
     if (Array.isArray(ps)) {
@@ -199,6 +227,8 @@ const BoneEngine = (in_canvas) => {
     get_lines,
     get_points,
     get_point_around,
+    get_line_around,
+    get_default_radius,
     get_unities,
     to_string,
     

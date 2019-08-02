@@ -8,10 +8,6 @@ InputEngine = require('js/input_engine.js'),
 BoneEngine = require('js/bone_engine.js'),
 {
   deserialize,
-  calc_aabb,
-  create_line,
-  polygon_has,
-  XY,
 } = require('js/geometry.js'),
 {
   start_player,

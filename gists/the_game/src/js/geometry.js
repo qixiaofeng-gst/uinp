@@ -73,9 +73,19 @@ Point = (x, y, in_fixed) => {
   release = () => fixed = false,
   is_fixed = () => fixed,
   set_drag = xy => drag_to = xy,
-  get_drag = () => drag_to
+  get_drag = () => drag_to,
+  expand = radius => {
+    const
+    tl = pos.add(XY(-radius, -radius)),
+    tr = pos.add(XY(radius, -radius)),
+    bl = pos.add(XY(-radius, radius)),
+    br = pos.add(XY(radius, radius))
+    
+    return ([[tl, tr], [tl, bl], [bl, br], [tr, br],])
+  }
   
   return ({
+    expand,
     get_pos,
     move,
     add_force,
@@ -291,6 +301,18 @@ polygon_has = (polygon, xy) => {
   return 1 == (cross_count % 2)
 },
 
+polygon2renderable = polygon => {
+  const
+  result = []
+  for (const [v1, v2] of polygon) {
+    result.push(v1.x)
+    result.push(v1.y)
+    result.push(v2.x)
+    result.push(v2.y)
+  }
+  return result
+},
+
 /**
 Two perpendicular vectors (a, b) and (c, d) have this formula: a*c + b*d = 0
 */
@@ -330,6 +352,7 @@ module.exports = {
   calc_aabb,
   create_line,
   polygon_has,
+  polygon2renderable,
   Point,
   min_bone_len,
   Bone,

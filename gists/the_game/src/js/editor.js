@@ -5,24 +5,15 @@ const
 {
   start_player,
 } = require('./player.js'),
+{
+  calc_aabb,
+  create_line,
+  polygon_has,
+  polygon2renderable,
+  XY,
+} = require('./geometry.js'),
 active_clz = 'active',
-/**
-const us = be.get_unities()
-for (const { points, bones } of us) {
-  const xy_arr = []
-  for (const p of points) {
-    xy_arr.push(p.get_pos())
-  }
-  if (calc_aabb(xy_arr, 10).has({ x, y })) {
-    for (const { p1, p2 } of bones) {
-      const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
-      if (polygon_has(line_area, { x, y })) {
-        return
-      }
-    }
-  }
-}
-*/
+
 setup = (be, ie) => {
   return ({
     basic: btn => {
@@ -36,30 +27,23 @@ setup = (be, ie) => {
       console.log('Editor: mark fix')
       ie.onmousemove = () => {
         const { x, y } = ie.get_mouse()
-        const us = be.get_unities()
-        for (const { points, bones } of us) {
-          const xy_arr = []
-          for (const p of points) {
-            xy_arr.push(p.get_pos())
-          }
-          
-          if (calc_aabb(xy_arr, 10).has({ x, y })) {
-            for (const { p1, p2 } of bones) {
-              const line_area = create_line(p1.get_pos(), p2.get_pos()).expand(5)
-              if (polygon_has(line_area, { x, y })) {
-                auxiliary_lines = []
-                for (const [ v1, v2 ] of line_area) {
-                  auxiliary_lines.push(v1.x)
-                  auxiliary_lines.push(v1.y)
-                  auxiliary_lines.push(v2.x)
-                  auxiliary_lines.push(v2.y)
-                }
-                return
-              }
-            }
+        const p = be.get_point_around(x, y)
+        if (p) {
+          auxiliary_lines = polygon2renderable(p.expand(5))
+        } else {
+          auxiliary_lines = false
+        }
+      }
+      ie.onclick = () => {
+        const { x, y } = ie.get_mouse()
+        const p = be.get_point_around(x, y)
+        if (p) {
+          if (p.is_fixed()) {
+            p.release()
+          } else {
+            p.fix()
           }
         }
-        auxiliary_lines = false
       }
     },
     move_fix: btn => {
@@ -67,6 +51,16 @@ setup = (be, ie) => {
     },
     mark_edge: btn => {
       console.log('Editor: mark edge')
+      ie.onmousemove = () => {
+        const
+        { x, y } = ie.get_mouse(),
+        line = be.get_line_around(x, y)
+        if (line) {
+          auxiliary_lines = polygon2renderable(line.expand(5))
+        } else {
+          auxiliary_lines = false
+        }
+      }
     },
     make_line: btn => {
       console.log('Editor: make line')
