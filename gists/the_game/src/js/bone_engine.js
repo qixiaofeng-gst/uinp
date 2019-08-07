@@ -3,6 +3,7 @@ const
   XY,
   Point,
   Bone,
+  Unity,
   min_bone_len,
   polygon_has,
   create_line,
@@ -106,10 +107,7 @@ BoneEngine = (in_canvas) => {
         mark_unity_parsed(ps, c.p1)
         mark_unity_parsed(ps, c.p2)
       }
-      unities.push({
-        points: ps,
-        bones: cs,
-      })
+      unities.push(Unity(ps, cs))
     }
   },
   

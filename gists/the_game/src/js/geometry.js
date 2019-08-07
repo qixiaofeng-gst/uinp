@@ -65,6 +65,7 @@ Point = (x, y, in_fixed) => {
     let y = Math.max(in_y + 1, Math.min(in_h - 1, pos.y))
     if (y >= (in_h - 1)) {
       x -= (pos.x - pre.x + acc.x)
+      y = in_h - 30
     }
     pos = XY(x, y)
   },
@@ -150,6 +151,53 @@ Bone = (in_p1, in_p2) => {
   })
 },
 
+Unity = (ps, bs) => {
+  const
+  points = ps,
+  bones = bs,
+  edges = [],
+  corners = [],
+  get_corners = () => {
+    const
+    result = []
+    for (const c of corners) {
+      result.push(c.get_pos())
+    }
+    return result
+  },
+  get_collision = () => {
+    const
+    collision = []
+    if (corners.length == edges.length) {
+      for (const { p1, p2 } of edges) {
+        collision.push([p1.get_pos(), p2.get_pos()])
+      }
+    }
+    return collision
+  }
+  
+  for (const bone of bones) {
+    if (bone.is_edge()) {
+      edges.push(bone)
+    }
+    const
+    { p1, p2 } = bone
+    if (false == corners.includes(p1)) {
+      corners.push(p1)
+    }
+    if (false == corners.includes(p2)) {
+      corners.push(p2)
+    }
+  }
+  
+  return ({
+    points,
+    bones,
+    get_corners,
+    get_collision,
+  })
+},
+
 Rectangle = (x, y, w, h) => {
   const
   p1 = Point(x, y),
@@ -212,9 +260,33 @@ calc_aabb = (xy_arr, margin) => {
   top -= margin
   bottom += margin
   
-  const has = ({ x, y }) => (
+  const
+  has = ({ x, y }) => (
     f_nlt(x, left) && f_ngt(x, right) &&
     f_nlt(y, top) && f_ngt(y, bottom)
+  ),
+  overlap = ({
+    left,
+    right,
+    top,
+    bottom,
+  }) => (
+    has({
+      x: left,
+      y: top,
+    }) ||
+    has({
+      x: left,
+      y: bottom,
+    }) ||
+    has({
+      x: right,
+      y: top,
+    }) ||
+    has({
+      x: right,
+      y: bottom,
+    })
   )
   
   return ({
@@ -223,6 +295,7 @@ calc_aabb = (xy_arr, margin) => {
     top,
     bottom,
     has,
+    overlap,
     over: ({ left, right, top, bottom }) => (
       has({ x: left, y: top }) ||
       has({ x: left, y: bottom }) ||
@@ -388,4 +461,5 @@ module.exports = {
   min_bone_len,
   Bone,
   bones2renderable,
+  Unity,
 }
