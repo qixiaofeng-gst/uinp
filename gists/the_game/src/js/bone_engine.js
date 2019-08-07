@@ -7,6 +7,7 @@ const
   polygon_has,
   create_line,
   calc_aabb,
+  serialize,
 } = require('./geometry.js')
 
 const
@@ -34,7 +35,7 @@ BoneEngine = (in_canvas) => {
     }
     return closest
   },
-  get_line_around = (x, y, range) => {
+  get_bone_around = (x, y, range) => {
     range = range || default_radius
     for (const { points, bones } of unities) {
       const xy_arr = []
@@ -43,12 +44,13 @@ BoneEngine = (in_canvas) => {
       }
       
       if (calc_aabb(xy_arr, range).has({ x, y })) {
-        for (const { p1, p2 } of bones) {
+        for (const bone of bones) {
           const
+          { p1, p2 } = bone,
           line = create_line(p1.get_pos(), p2.get_pos()),
           line_area = line.expand(range)
           if (polygon_has(line_area, { x, y })) {
-            return line
+            return bone
           }
         }
       }
@@ -117,15 +119,7 @@ BoneEngine = (in_canvas) => {
     }
   },
   
-  get_lines = () => {
-    const lines = []
-    for (const c of bones) {
-      const { x: x1, y: y1 } = c.p1.get_pos()
-      const { x: x2, y: y2 } = c.p2.get_pos()
-      lines.splice(lines.length, 0, x1, y1, x2, y2)
-    }
-    return lines
-  },
+  get_bones = () => bones,
   get_points = () => {
     const ps = []
     for (const p of points) {
@@ -142,7 +136,7 @@ BoneEngine = (in_canvas) => {
     points, bones
   }),
   
-  is_constraint_exists = (pa, pb) => {
+  is_bone_exists = (pa, pb) => {
     if (pa == pb) {
       return true
     }
@@ -176,7 +170,7 @@ BoneEngine = (in_canvas) => {
           return
         }
         if (creating.is_exist) {
-          if (false == is_constraint_exists(exists, creating.p)) {
+          if (false == is_bone_exists(exists, creating.p)) {
             bones.push(Bone(exists, creating.p))
           }
         } else {
@@ -224,10 +218,10 @@ BoneEngine = (in_canvas) => {
   return ({
     batch_add,
     
-    get_lines,
+    get_bones,
     get_points,
     get_point_around,
-    get_line_around,
+    get_bone_around,
     get_default_radius,
     get_unities,
     to_string,

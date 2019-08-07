@@ -100,7 +100,18 @@ Point = (x, y, in_fixed) => {
 },
 
 min_bone_len = 10,
+bones2renderable = bones => {
+  const
+  result = []
+  for (const bone of bones) {
+    result.splice(result.length, 0, ...bone.to_renderable())
+  }
+  return result
+},
 Bone = (in_p1, in_p2) => {
+  let
+  _is_edge = false
+  
   const
   p1 = in_p1,
   p2 = in_p2,
@@ -116,11 +127,26 @@ Bone = (in_p1, in_p2) => {
     
     p1.move(f)
     p2.move(f.mul_n(-1))
+  },
+  is_edge = () => _is_edge,
+  set_edge = b => _is_edge = !!b,
+  to_renderable = () => {
+    const
+    edge_mark = is_edge() ? 1 : 0,
+    v1 = p1.get_pos(),
+    v2 = p2.get_pos()
+    return ([
+      v1.x, v1.y, edge_mark,
+      v2.x, v2.y, edge_mark,
+    ])
   }
   
   return ({
     p1, p2,
     resolve,
+    is_edge,
+    set_edge,
+    to_renderable,
   })
 },
 
@@ -325,19 +351,24 @@ serialize = ({ points, bones }) => {
   }
   let cs = '\n'
   for (const c of bones) {
-    cs += `[${points.indexOf(c.p1)}, ${points.indexOf(c.p2)}],\n`
+    cs += `[${points.indexOf(c.p1)}, ${points.indexOf(c.p2)}, ${c.is_edge()}],\n`
   }
   return `{ ps: [${ps}], cs: [${cs}], }`
 },
 
 deserialize = ({ ps, cs }) => {
-  const points = []
-  const bones = []
+  const
+  points = [],
+  bones = []
+  
   for (const [x, y, fixed] of ps) {
     points.push(Point(x, y, fixed))
   }
-  for (const [p1, p2] of cs) {
-    bones.push(Bone(points[p1], points[p2]))
+  for (const [p1, p2, is_edge] of cs) {
+    const
+    c = Bone(points[p1], points[p2])
+    c.set_edge(is_edge)
+    bones.push(c)
   }
   return ({
     points,
@@ -356,4 +387,5 @@ module.exports = {
   Point,
   min_bone_len,
   Bone,
+  bones2renderable,
 }

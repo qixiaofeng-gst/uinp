@@ -8,13 +8,14 @@ InputEngine = require('js/input_engine.js'),
 BoneEngine = require('js/bone_engine.js'),
 {
   deserialize,
+  bones2renderable,
 } = require('js/geometry.js'),
 {
   start_player,
 } = require('js/player.js'),
 {
   create_editor,
-} = require('js/editor.js')
+} = require('js/editor.js'),
 
 /**
 WIP
@@ -36,14 +37,14 @@ DONE
 - (4.0h) hover to show collision shape
 */
 
-const canvas_size = {
+canvas_size = {
   width: 900,
   height: 900,
-}
-const prgm_render = create_shader_program('vs_render', 'fs_render')
-const prgm_dot = create_shader_program('vs_dot', 'fs_dot')
-const bff_quad = gl.createBuffer()
-const draw_raw = (dots, shape, size) => {
+},
+prgm_render = create_shader_program('vs_render', 'fs_render'),
+prgm_dot = create_shader_program('vs_dot', 'fs_dot'),
+bff_quad = gl.createBuffer(),
+draw_raw = (dots, shape, size) => {
   size = size || 2
   /*
     void gl.drawArrays(mode, first, count) count: number of indexes
@@ -64,10 +65,11 @@ const draw_raw = (dots, shape, size) => {
   gl.vertexAttribPointer(0, size, gl.FLOAT, false, 0, 0)
   gl.enableVertexAttribArray(0)
   gl.drawArrays(shape, 0, dots.length / size)
-}
-const draw_lines = lines => draw_raw(lines, gl.LINES)
-const draw_plane = plane => draw_raw(plane, gl.TRIANGLE_FAN, 4)
-const points2dots = (points) => {
+},
+draw_lines = lines => draw_raw(lines, gl.LINES),
+draw_bones = lines => draw_raw(lines, gl.LINES, 3),
+draw_plane = plane => draw_raw(plane, gl.TRIANGLE_FAN, 4)
+points2dots = (points) => {
   const dots = []
   for (const [x, y, size] of points) {
     const offset = size * 0.5
@@ -79,9 +81,9 @@ const points2dots = (points) => {
     ])
   }
   return dots
-}
+},
 
-const init_scene = () => {
+init_scene = () => {
   gl.canvas.width = canvas_size.width
   gl.canvas.height = canvas_size.height
   
@@ -102,10 +104,11 @@ const init_scene = () => {
 }
 init_scene()
 
-const ie = InputEngine(gl.canvas)
-const be = BoneEngine(gl.canvas, {show_stress: true})
-const editor = create_editor(be, ie)
-const init_engines = () => {
+const
+ie = InputEngine(gl.canvas),
+be = BoneEngine(gl.canvas, {show_stress: true}),
+editor = create_editor(be, ie),
+init_engines = () => {
   start_player(be, ie)
   be.batch_add(deserialize(/*PUT objs/examples.js */))
   be.detect_unities()
@@ -123,7 +126,7 @@ render = () => {
   if (hovering) {
     draw_lines(hovering)
   }
-  draw_lines(be.get_lines())
+  draw_bones(bones2renderable(be.get_bones()))
   
   prgm_dot.use()
   const dots = points2dots(be.get_points())

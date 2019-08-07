@@ -1,17 +1,10 @@
-殖民提交资源前，刷新 resource，建造或升级时，刷新 resource
+卡池延迟时间放到 game_progress_meta_prototype 中
+
+insert into city_level_prototype select level, 2, art_resource_image, art_resource_animation, is_valid from city_level_prototype where terrain_type = 1;
 
 城市外观
-198,270
+193,264
 
-city.4019.too_far 距离太远无法迁城（超出最大迁城距离）
-alliance.12014.full_in_area 联盟在当前州（区域）已达到招募上限，因此无法加入该联盟。
-alliance.12100.lack_of_privillege 没有足够的军团权限来编辑地块备注
-alliance.12100.join_to_comment 必须加入军团方能添加地块备注
-map.3015.no_more_fort 要塞数量已到达上限，无法建造更多要塞。
-
-服务器进度更新通知邮件，标题/内容
-
-服务器进度更新后军团奖励发放邮件，标题/内容
 
 text_data_ 系列是策划使用的
 text_msg_ 系列是开发使用的

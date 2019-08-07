@@ -54,12 +54,18 @@ setup = (be, ie) => {
       ie.onmousemove = () => {
         const
         { x, y } = ie.get_mouse(),
-        line = be.get_line_around(x, y)
-        if (line) {
-          auxiliary_lines = polygon2renderable(line.expand(5))
+        bone = be.get_bone_around(x, y)
+        if (bone) {
+          auxiliary_lines = polygon2renderable(create_line(bone.p1.get_pos(), bone.p2.get_pos()).expand(5))
         } else {
           auxiliary_lines = false
         }
+      }
+      ie.onclick = () => {
+        const
+        { x, y } = ie.get_mouse(),
+        bone = be.get_bone_around(x, y)
+        bone && bone.set_edge(false === bone.is_edge())
       }
     },
     make_line: btn => {
@@ -87,6 +93,8 @@ setup = (be, ie) => {
       console.log('Exit editor, player take over events')
       start_player(be, ie)
       remove_class(btn, active_clz)
+      
+      console.log(be.to_string())
     },
   })
 },
