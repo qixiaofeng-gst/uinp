@@ -58,6 +58,21 @@ BoneEngine = (in_canvas) => {
     }
     return false
   },
+  get_unity_around = (x, y, range) => {
+    const
+    p = get_point_around(x, y, range)
+    if (p) {
+      for (const unity of unities) {
+        const { points } = unity
+        for (const point of points ) {
+          if (point == p) {
+            return unity
+          }
+        }
+      }
+    }
+    return false
+  },
   batch_add = ({ points: ps, bones: cs }) => {
     if (Array.isArray(ps)) {
       points.splice(points.length, 0, ...ps)
@@ -65,6 +80,8 @@ BoneEngine = (in_canvas) => {
     if (Array.isArray(cs)) {
       bones.splice(bones.length, 0, ...cs)
     }
+    
+    detect_unities()
   },
   
   get_relevant_bones = p => {
@@ -114,6 +131,21 @@ BoneEngine = (in_canvas) => {
   update = () => {
     if (kinematics && kinematics.update) {
       kinematics.update(points, bones)
+    }
+    
+    for (let i = 0; i < unities.length; ++i) {
+      for (let j = 0; j < unities.length; ++j) {
+        if (i === j) {
+          continue
+        }
+        
+        const
+        a = unities[i],
+        b = unities[j]
+        if (a.collide(b)) {
+          console.log('damn the colliding')
+        }
+      }
     }
   },
   
@@ -222,10 +254,10 @@ BoneEngine = (in_canvas) => {
     get_bone_around,
     get_default_radius,
     get_unities,
+    get_unity_around,
     to_string,
     
     update,
-    detect_unities,
     create_point,
     clear_creating,
     

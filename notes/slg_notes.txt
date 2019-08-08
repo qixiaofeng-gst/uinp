@@ -1,3 +1,5 @@
+CDN
+
 卡池延迟时间放到 game_progress_meta_prototype 中
 
 insert into city_level_prototype select level, 2, art_resource_image, art_resource_animation, is_valid from city_level_prototype where terrain_type = 1;

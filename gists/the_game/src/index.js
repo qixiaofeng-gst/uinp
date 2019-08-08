@@ -22,7 +22,7 @@ WIP
 - 80% Shaders for rendering basic geometries
 - 50% The physic mechanism for rigid body
   - method for checking point is inside polygon
-  - collision
+  - (4h) collision
 - 20% (4h) The body editor
   - the ui engine, use HTML stuff
   - all editor functions
@@ -111,7 +111,6 @@ editor = create_editor(be, ie),
 init_engines = () => {
   start_player(be, ie)
   be.batch_add(deserialize(/*PUT objs/examples.js */))
-  be.detect_unities()
 }
 init_engines()
 

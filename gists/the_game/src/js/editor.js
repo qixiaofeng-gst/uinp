@@ -48,6 +48,10 @@ setup = (be, ie) => {
     },
     move_fix: btn => {
       console.log('Editor: move fix')
+      // get unity
+      // get aabb
+      // aabb follow mouse
+      // move unity
     },
     mark_edge: btn => {
       console.log('Editor: mark edge')

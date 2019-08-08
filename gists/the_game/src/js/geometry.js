@@ -61,11 +61,11 @@ Point = (x, y, in_fixed) => {
     pre = old_pos
   },
   check_walls = (in_x, in_y, in_w, in_h) => {
-    let x = Math.max(in_x + 1, Math.min(in_w - 1, pos.x))
-    let y = Math.max(in_y + 1, Math.min(in_h - 1, pos.y))
+    let
+    x = Math.max(in_x + 1, Math.min(in_w - 1, pos.x)),
+    y = Math.max(in_y + 1, Math.min(in_h - 1, pos.y))
     if (y >= (in_h - 1)) {
       x -= (pos.x - pre.x + acc.x)
-      y = in_h - 30
     }
     pos = XY(x, y)
   },
@@ -174,6 +174,29 @@ Unity = (ps, bs) => {
       }
     }
     return collision
+  },
+  collide = unity => {
+    const
+    corners_a = unity.get_corners(),
+    collision_a = unity.get_collision(),
+    corners_b = get_corners(),
+    collision_b = get_collision()
+    
+    for (const xy of corners_a) {
+      if (polygon_has(collision_b, xy)) {
+        console.log('TODO return the collide point and edge')
+        return true
+      }
+    }
+    
+    for (const xy of corners_b) {
+      if (polygon_has(collision_a, xy)) {
+        console.log('TODO return the collide point and edge')
+        return true
+      }
+    }
+    
+    return false
   }
   
   for (const bone of bones) {
@@ -195,6 +218,7 @@ Unity = (ps, bs) => {
     bones,
     get_corners,
     get_collision,
+    collide,
   })
 },
 
