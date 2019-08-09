@@ -200,14 +200,14 @@ Unity = (ps, bs) => {
     
     for (const xy of corners_a) {
       if (polygon_has(collision_b, xy)) {
-        console.log('TODO return the collide point and edge')
+        //console.log('TODO return the collide point and edge')
         return true
       }
     }
     
     for (const xy of corners_b) {
       if (polygon_has(collision_a, xy)) {
-        console.log('TODO return the collide point and edge')
+        //console.log('TODO return the collide point and edge')
         return true
       }
     }
@@ -236,30 +236,6 @@ Unity = (ps, bs) => {
     get_collision,
     get_aabb,
     collide,
-  })
-},
-
-Rectangle = (x, y, w, h) => {
-  const
-  p1 = Point(x, y),
-  p2 = Point(x + w, y),
-  p3 = Point(x + w, y + h),
-  p4 = Point(x, y + h),
-
-  c1 = Bone(p1, p2),
-  c2 = Bone(p2, p3),
-  c3 = Bone(p3, p4),
-  c4 = Bone(p4, p1),
-  c5 = Bone(p1, p3)
-
-  points = [p1, p2, p3, p4],
-  bones = [c1, c2, c3, c4, c5],
-  fix = idx => points[idx % points.length].fix()
-  
-  return ({
-    points,
-    bones,
-    fix,
   })
 },
 
@@ -307,6 +283,7 @@ calc_aabb = (xy_arr, margin) => {
     f_nlt(y, top) && f_ngt(y, bottom)
   ),
   to_polygon = xy_movement => {
+    xy_movement = xy_movement || XY(0, 0)
     const
     lt = XY(left, top).add(xy_movement),
     lb = XY(left, bottom).add(xy_movement),
@@ -492,4 +469,5 @@ module.exports = {
   Bone,
   bones2renderable,
   Unity,
+  calc_aabb,
 }

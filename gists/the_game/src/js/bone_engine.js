@@ -135,7 +135,7 @@ BoneEngine = (in_canvas) => {
         a = unities[i],
         b = unities[j]
         if (a.collide(b)) {
-          console.log('damn the colliding')
+          //TODO console.log('damn the colliding')
         }
       }
     }

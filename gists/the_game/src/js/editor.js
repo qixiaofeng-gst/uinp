@@ -6,12 +6,52 @@ const
   start_player,
 } = require('./player.js'),
 {
+  calc_aabb,
   create_line,
   polygon_has,
   polygon2renderable,
   XY,
+  Point,
+  Bone,
 } = require('./geometry.js'),
 active_clz = 'active',
+
+gen_aux = (cb_aux, cb_done) => {
+  let
+  xy_origin = false
+  
+  ie.onmousedown = () => {
+    const
+    { x, y } = ie.get_mouse()
+    
+    xy_origin = XY(x, y)
+  }
+  ie.onmousemove = () => {
+    if (xy_origin && cb_aux) {
+      const
+      { x, y } = ie.get_mouse()
+      auxiliary_lines = cb_aux(xy_origin, XY(x, y))
+    }
+  }
+  ie.onmouseup = () => {
+    if (xy_origin && cb_done) {
+      const
+      { x, y } = ie.get_mouse()
+      cb_done(xy_origin, XY(x, y))
+    }
+    
+    auxiliary_lines = false
+    xy_origin = false
+  }
+},
+
+gen_aux_line = cb_done => gen_aux((xy_origin, xy_end) => {
+  return polygon2renderable(create_line(xy_origin, xy_end).expand(5))
+}, cb_done),
+
+gen_aux_square = cb_done => gen_aux((xy_origin, xy_end) => {
+  return polygon2renderable(calc_aabb([ xy_origin, xy_end, ]).to_polygon())
+}, cb_done),
 
 setup = (be, ie) => {
   return ({
@@ -119,24 +159,48 @@ setup = (be, ie) => {
     },
     make_line: btn => {
       console.log('Editor: make line')
+      gen_aux_line((xy_origin, xy_end) => {
+        
+      })
     },
     make_square: btn => {
       console.log('Editor: make square')
+      gen_aux_square((xy_origin, xy_end) => {
+        const
+        xy_delta = xy_end.sub(xy_origin)
+        to_add = Rectangle(xy_origin.x, xy_origin.y, xy_delta.x, xy_delta.y)
+        be.batch_add(to_add)
+      })
     },
     make_cycle: btn => {
       console.log('Editor: make cycle')
+      gen_aux_square((xy_origin, xy_end) => {
+        
+      })
     },
     make_cloth: btn => {
       console.log('Editor: make cloth')
+      gen_aux_square((xy_origin, xy_end) => {
+        
+      })
     },
     make_rope: btn => {
       console.log('Editor: make rope')
+      gen_aux_line((xy_origin, xy_end) => {
+        
+      })
     },
     make_stave: btn => {
       console.log('Editor: make stave')
+      gen_aux_line((xy_origin, xy_end) => {
+        
+      })
     },
     make_breakable: btn => {
       console.log('Editor: make breakable')
+      gen_aux_square((xy_origin, xy_end) => {
+        
+      })
     },
     exit_editor: btn => {
       console.log('Exit editor, player take over events')
@@ -194,6 +258,30 @@ create_editor = (be, ie) => {
   
   return ({
     get_auxiliary_lines,
+  })
+},
+
+Rectangle = (x, y, w, h) => {
+  const
+  p1 = Point(x, y),
+  p2 = Point(x + w, y),
+  p3 = Point(x + w, y + h),
+  p4 = Point(x, y + h),
+
+  c1 = Bone(p1, p2),
+  c2 = Bone(p2, p3),
+  c3 = Bone(p3, p4),
+  c4 = Bone(p4, p1),
+  c5 = Bone(p1, p3)
+
+  points = [p1, p2, p3, p4],
+  bones = [c1, c2, c3, c4, c5],
+  fix = idx => points[idx % points.length].fix()
+  
+  return ({
+    points,
+    bones,
+    fix,
   })
 }
 

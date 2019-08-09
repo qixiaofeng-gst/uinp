@@ -23,7 +23,7 @@ WIP
 - 50% The physic mechanism for rigid body
   - method for checking point is inside polygon
   - (4h) collision
-- 20% (4h) The body editor
+- 20% (4h, 2h) The body editor
   - the ui engine, use HTML stuff
   - all editor functions
 - Mapping the map coords to screen
@@ -110,7 +110,7 @@ be = BoneEngine(gl.canvas, {show_stress: true}),
 editor = create_editor(be, ie),
 init_engines = () => {
   start_player(be, ie)
-  be.batch_add(deserialize(/*PUT objs/examples.js */))
+  be.batch_add(deserialize(/*PUT objs/perf_test.js */))
 }
 init_engines()
 
@@ -138,8 +138,13 @@ main_loop = () => {
   render()
 },
 looper = cb => {
+  const
+  ts = Date.now()
   cb()
+  console.log('cb costed: ', Date.now() - ts)
   requestAnimationFrame(delta_time => {
+    //const
+    console.log(Date.now() - ts)
     looper(cb)
   })
 }
