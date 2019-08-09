@@ -7,7 +7,6 @@ const
   min_bone_len,
   polygon_has,
   create_line,
-  calc_aabb,
   serialize,
 } = require('./geometry.js')
 
@@ -38,14 +37,9 @@ BoneEngine = (in_canvas) => {
   },
   get_bone_around = (x, y, range) => {
     range = range || default_radius
-    for (const { points, bones } of unities) {
-      const xy_arr = []
-      for (const p of points) {
-        xy_arr.push(p.get_pos())
-      }
-      
-      if (calc_aabb(xy_arr, range).has({ x, y })) {
-        for (const bone of bones) {
+    for (const unity of unities) {
+      if (unity.get_aabb(range).has({ x, y })) {
+        for (const bone of unity.bones) {
           const
           { p1, p2 } = bone,
           line = create_line(p1.get_pos(), p2.get_pos()),
@@ -58,9 +52,7 @@ BoneEngine = (in_canvas) => {
     }
     return false
   },
-  get_unity_around = (x, y, range) => {
-    const
-    p = get_point_around(x, y, range)
+  get_unity_has_p = p => {
     if (p) {
       for (const unity of unities) {
         const { points } = unity
@@ -254,7 +246,7 @@ BoneEngine = (in_canvas) => {
     get_bone_around,
     get_default_radius,
     get_unities,
-    get_unity_around,
+    get_unity_has_p,
     to_string,
     
     update,

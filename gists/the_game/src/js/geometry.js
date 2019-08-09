@@ -40,6 +40,10 @@ Point = (x, y, in_fixed) => {
     }
     pos = pos.add(v)
   },
+  teleport = v => {
+    pos = pos.add(v)
+    pre = pre.add(v)
+  },
   add_force = v => {
     if (fixed) {
       return
@@ -89,6 +93,7 @@ Point = (x, y, in_fixed) => {
     expand,
     get_pos,
     move,
+    teleport,
     add_force,
     update,
     check_walls,
@@ -175,12 +180,23 @@ Unity = (ps, bs) => {
     }
     return collision
   },
+  get_aabb = range => {
+    const xy_arr = []
+    for (const p of points) {
+      xy_arr.push(p.get_pos())
+    }
+    return calc_aabb(xy_arr, range)
+  },
   collide = unity => {
     const
     corners_a = unity.get_corners(),
     collision_a = unity.get_collision(),
     corners_b = get_corners(),
     collision_b = get_collision()
+    
+    if (false === get_aabb().overlap(unity.get_aabb())) {
+      return false
+    }
     
     for (const xy of corners_a) {
       if (polygon_has(collision_b, xy)) {
@@ -218,6 +234,7 @@ Unity = (ps, bs) => {
     bones,
     get_corners,
     get_collision,
+    get_aabb,
     collide,
   })
 },
@@ -289,29 +306,19 @@ calc_aabb = (xy_arr, margin) => {
     f_nlt(x, left) && f_ngt(x, right) &&
     f_nlt(y, top) && f_ngt(y, bottom)
   ),
-  overlap = ({
-    left,
-    right,
-    top,
-    bottom,
-  }) => (
-    has({
-      x: left,
-      y: top,
-    }) ||
-    has({
-      x: left,
-      y: bottom,
-    }) ||
-    has({
-      x: right,
-      y: top,
-    }) ||
-    has({
-      x: right,
-      y: bottom,
-    })
-  )
+  to_polygon = xy_movement => {
+    const
+    lt = XY(left, top).add(xy_movement),
+    lb = XY(left, bottom).add(xy_movement),
+    rt = XY(right, top).add(xy_movement),
+    rb = XY(right, bottom).add(xy_movement)
+    return ([
+      [lt, lb],
+      [lt, rt],
+      [lb, rb],
+      [rt, rb],
+    ])
+  }
   
   return ({
     left,
@@ -319,13 +326,13 @@ calc_aabb = (xy_arr, margin) => {
     top,
     bottom,
     has,
-    overlap,
-    over: ({ left, right, top, bottom }) => (
+    overlap: ({ left, right, top, bottom }) => (
       has({ x: left, y: top }) ||
       has({ x: left, y: bottom }) ||
       has({ x: right, y: bottom }) ||
       has({ x: left, y: top })
     ),
+    to_polygon,
   })
 },
 
@@ -477,7 +484,6 @@ module.exports = {
   XY,
   deserialize,
   serialize,
-  calc_aabb,
   create_line,
   polygon_has,
   polygon2renderable,

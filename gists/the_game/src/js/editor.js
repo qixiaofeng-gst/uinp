@@ -6,7 +6,6 @@ const
   start_player,
 } = require('./player.js'),
 {
-  calc_aabb,
   create_line,
   polygon_has,
   polygon2renderable,
@@ -26,8 +25,9 @@ setup = (be, ie) => {
     mark_fix: btn => {
       console.log('Editor: mark fix')
       ie.onmousemove = () => {
-        const { x, y } = ie.get_mouse()
-        const p = be.get_point_around(x, y)
+        const
+        { x, y } = ie.get_mouse(),
+        p = be.get_point_around(x, y)
         if (p) {
           auxiliary_lines = polygon2renderable(p.expand(5))
         } else {
@@ -35,8 +35,9 @@ setup = (be, ie) => {
         }
       }
       ie.onclick = () => {
-        const { x, y } = ie.get_mouse()
-        const p = be.get_point_around(x, y)
+        const
+        { x, y } = ie.get_mouse(),
+        p = be.get_point_around(x, y)
         if (p) {
           if (p.is_fixed()) {
             p.release()
@@ -48,10 +49,54 @@ setup = (be, ie) => {
     },
     move_fix: btn => {
       console.log('Editor: move fix')
-      // get unity
-      // get aabb
-      // aabb follow mouse
-      // move unity
+      let
+      xy_origin = false,
+      unity = false,
+      aabb = false
+      
+      const
+      clear_state = () => {
+        xy_origin = false
+        unity = false
+        aabb = false
+        auxiliary_lines = false
+      }
+      
+      ie.onmousedown = () => {
+        const
+        { x, y } = ie.get_mouse(),
+        p = be.get_point_around(x, y)
+        if (p && p.is_fixed()) {
+          unity = be.get_unity_has_p(p)
+          xy_origin = XY(x, y)
+          aabb = unity.get_aabb()
+        } else {
+          clear_state()
+        }
+      }
+      ie.onmousemove = () => {
+        if (unity) {
+          const
+          { x, y } = ie.get_mouse(),
+          xy_movement = XY(x, y).sub(xy_origin)
+          
+          auxiliary_lines = polygon2renderable(aabb.to_polygon(xy_movement))
+        }
+      }
+      ie.onmouseup = () => {
+        if (unity) {
+          const
+          { x, y } = ie.get_mouse(),
+          { points } = unity,
+          movement = XY(x, y).sub(xy_origin)
+          
+          for (const p of points) {
+            p.teleport(movement)
+          }
+        }
+        
+        clear_state()
+      }
     },
     mark_edge: btn => {
       console.log('Editor: mark edge')
