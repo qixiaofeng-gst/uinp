@@ -157,6 +157,9 @@ Bone = (in_p1, in_p2) => {
 },
 
 Unity = (ps, bs) => {
+  let
+  need_cd = false// cd: collision detection
+  
   const
   points = ps,
   bones = bs,
@@ -188,6 +191,10 @@ Unity = (ps, bs) => {
     return calc_aabb(xy_arr, range)
   },
   collide = unity => {
+    if (false === need_cd || false === unity.need_cd) {
+      return false
+    }
+    
     const
     corners_a = unity.get_corners(),
     collision_a = unity.get_collision(),
@@ -227,11 +234,13 @@ Unity = (ps, bs) => {
     if (false == corners.includes(p2)) {
       corners.push(p2)
     }
+    need_cd = ((edges.length === corners.length) && (edges.length > 0))
   }
   
   return ({
     points,
     bones,
+    need_cd,
     get_corners,
     get_collision,
     get_aabb,

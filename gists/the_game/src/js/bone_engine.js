@@ -124,21 +124,6 @@ BoneEngine = (in_canvas) => {
     if (kinematics && kinematics.update) {
       kinematics.update(points, bones)
     }
-    
-    for (let i = 0; i < unities.length; ++i) {
-      for (let j = 0; j < unities.length; ++j) {
-        if (i === j) {
-          continue
-        }
-        
-        const
-        a = unities[i],
-        b = unities[j]
-        if (a.collide(b)) {
-          //TODO console.log('damn the colliding')
-        }
-      }
-    }
   },
   
   get_bones = () => bones,

@@ -2,12 +2,30 @@ const
 {
   XY,
 } = require('./geometry.js'),
-pass_per_update = 6,
+pass_per_update = 1,
 delta_per_update = 1 / pass_per_update,
-gravity = XY(0, 0.98),
+gravity = XY(0, 0.098),
 start_player = (be, ie) => {
   let dragging = false
   const
+  collide = () => {
+    const
+    unities = be.get_unities()
+    for (let i = 0; i < unities.length; ++i) {
+      for (let j = 0; j < unities.length; ++j) {
+        if (i === j) {
+          continue
+        }
+        
+        const
+        a = unities[i],
+        b = unities[j]
+        if (a.collide(b)) {
+          //TODO console.log('damn the colliding')
+        }
+      }
+    }
+  },
   update = (points, bones, pass) => {
     if (undefined == pass) {
       pass = 0
@@ -32,6 +50,8 @@ start_player = (be, ie) => {
     
     if (pass < pass_per_update) {
       update(points, bones, pass + 1)
+    } else {
+      collide()
     }
   },
   end_drag = () => {

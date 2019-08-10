@@ -17,6 +17,16 @@ BoneEngine = require('js/bone_engine.js'),
   create_editor,
 } = require('js/editor.js'),
 
+dom_fps = document.getElementById('fps'),
+dom_cost = document.getElementById('cost'),
+set_fps = num => dom_fps.innerHTML = num,
+set_cost = num => dom_cost.innerHTML = num,
+one_second = 1000
+
+let
+frame_counter = 0,
+last_start_count_time = Date.now()
+
 /**
 WIP
 - 80% Shaders for rendering basic geometries
@@ -37,6 +47,7 @@ DONE
 - (4.0h) hover to show collision shape
 */
 
+const
 canvas_size = {
   width: 900,
   height: 900,
@@ -101,12 +112,15 @@ init_scene = () => {
   gl.enable(gl.BLEND)
   
   gl.canvas.oncontextmenu = e => e.preventDefault()
+  
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 }
 init_scene()
 
 const
 ie = InputEngine(gl.canvas),
-be = BoneEngine(gl.canvas, {show_stress: true}),
+be = BoneEngine(gl.canvas),
 editor = create_editor(be, ie),
 init_engines = () => {
   start_player(be, ie)
@@ -116,9 +130,6 @@ init_engines()
 
 const
 render = () => {
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-  
   prgm_render.use()
   
   const hovering = editor.get_auxiliary_lines()
@@ -127,11 +138,12 @@ render = () => {
   }
   draw_bones(bones2renderable(be.get_bones()))
   
+  /*//Performance issue in belows
   prgm_dot.use()
   const dots = points2dots(be.get_points())
   for (const d of dots) {
     draw_plane(d)
-  }
+  }*/
 },
 main_loop = () => {
   be.update()
@@ -141,10 +153,19 @@ looper = cb => {
   const
   ts = Date.now()
   cb()
-  console.log('cb costed: ', Date.now() - ts)
+  set_cost(Date.now() - ts)
   requestAnimationFrame(delta_time => {
-    //const
-    console.log(Date.now() - ts)
+    const
+    now = Date.now(),
+    delta = now - last_start_count_time
+    if (one_second <= delta) {
+      const fps = frame_counter * one_second / delta
+      set_fps(fps.toFixed(1))
+      last_start_count_time = now
+      frame_counter = 1
+    } else {
+      ++frame_counter
+    }
     looper(cb)
   })
 }
