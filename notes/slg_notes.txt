@@ -1,16 +1,31 @@
-CDN
+test-1: 111100000030200, 486,17
+test-2: 111100000030800
+test-3: 111100000030801
+test-4: 111100000030802
+删掉 hunt_stage_prototype 中的 strength, level, animation_art_resource 字段。
+crystal 外围，pillar 中心
+bunker 外围，fort 中心
 
-卡池延迟时间放到 game_progress_meta_prototype 中
+新手引导思路：
+# 全部在前端解决，服务器端只存一个进度值
+# 新手引导代码与所有其它 UI 代码拆解开来
 
-insert into city_level_prototype select level, 2, art_resource_image, art_resource_animation, is_valid from city_level_prototype where terrain_type = 1;
+情报界面刷新无部队时自动关闭。
 
-城市外观
-193,264
+服务端
+3. 情报协议实现，1 天
+4. 迷你地图协议开发，2 天
 
+客户端
+1. 全迷你地图，1 天
+2. 洲迷你地图，2 天
+3. 情报详情界面，2 天
+
+map.3004.out_of_range 超出侦察范围
 
 text_data_ 系列是策划使用的
 text_msg_ 系列是开发使用的
-数据表出错先看 250 中数据表，别问其他人了。
+数据表出错先看 250 中数据表。
 
 地图、据点相关原型表让策划填写
 BUG：每次启动服务器，game.progress 值是 1 不论原本是多少
@@ -33,7 +48,7 @@ BUG：每次启动服务器，game.progress 值是 1 不论原本是多少
 
 insert into map2cover(map_id, cover_type, owner_id, peace_time) select map_id + 10, 3, owner_id, peace_time from map2cover where owner_id = 1000100000021201 and cover_type = 3;
 
-set @temp_player_id = 1000100000000200;
+set @temp_player_id = 111100000030800;
 insert into map2cover(map_id, cover_type, owner_id, peace_time) select map_id, 3, @temp_player_id, 0 from map_collect where player_id = @temp_player_id;
 insert into player2resource_domain(map_id, player_id, durability) select map_id, @temp_player_id, 10 from map_collect where player_id = @temp_player_id;
 delete from map_collect where player_id = @temp_player_id;
