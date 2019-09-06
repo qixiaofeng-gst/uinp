@@ -1,14 +1,29 @@
-test-1: 111100000030200, 486,17
-test-2: 111100000030800
-test-3: 111100000030801
-test-4: 111100000030802
+新手引导
+第一次战斗时服务端几率出错：
+[INFO ][21:50:19,699][cmdExecutor-1-thread-1] (player.cmd.LoginHandler1001) - 玩家：111100000000000,使用网络类型：wifi
+[INFO ][21:50:37,594][cmdExecutor-1-thread-4] (core.cmd.AbstractCmdHandler) - 协议-1021-报错-playerId:111100000000000
+java.lang.IllegalArgumentException: bound must be positive
+	at java.util.Random.nextInt(Unknown Source)
+	at org.apache.commons.lang.math.JVMRandom.nextInt(JVMRandom.java:118)
+	at org.apache.commons.lang.math.RandomUtils.nextInt(RandomUtils.java:88)
+	at org.apache.commons.lang.math.RandomUtils.nextInt(RandomUtils.java:74)
+	at com.rhea.ws.game.battle.object.BattleExecutor.selectDefendOfficer(BattleExecutor.java:221)
+	at com.rhea.ws.game.battle.object.BattleExecutor.officerAction(BattleExecutor.java:164)
+	at com.rhea.ws.game.battle.object.BattleExecutor.normalBattleRound(BattleExecutor.java:129)
+	at com.rhea.ws.game.battle.object.BattleExecutor.startBattle(BattleExecutor.java:72)
+	at com.rhea.ws.game.battle.event.PlayerVsNpcBattleHandler.startBattle(PlayerVsNpcBattleHandler.java:37)
+	at com.rhea.ws.game.player.cmd.SetPlayerNewbieStepHandler1021.newbieBattle(SetPlayerNewbieStepHandler1021.java:61)
+	at com.rhea.ws.game.player.cmd.SetPlayerNewbieStepHandler1021.doExecute(SetPlayerNewbieStepHandler1021.java:47)
+	at com.rhea.ws.game.core.cmd.AbstractCmdHandler.execute(AbstractCmdHandler.java:115)
+	at com.rhea.ws.game.core.cmd.GameCmdDispatcher$GameCmdExecuteTask.run(GameCmdDispatcher.java:231)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
 
-新手引导我按全部我来做来估算时间吧，因为大陈什么时候能做战斗引导是不确定的，小陈暂时也不能考虑在内。
-动画部分都是美术做好了，我这边只负责播放，6 条动画大概 0.5 天。
-语音播放前面说了是 2 天。
-目前做的点击引导 1.5 天。
-战斗引导需要干涉战斗逻辑，这一部分对战斗的修改约 2 天。实现引导粗略估 1 天。
-动画部分按乐观估计的话，总计 7 天。没有什么大坑的话，到下周三（9.11）能完成。
+下列改法不可行，因为客户端信息没更新。
+UPDATE `game`.`map_cell_prototype` SET `id`='924379', `area`='4', `terrain_type`='2', `terrain_level`='2', `is_player_start`='0' WHERE (`id`='924379');
+UPDATE `game`.`map_cell_prototype` SET `id`='925378', `area`='4', `terrain_type`='1', `terrain_level`='1', `is_player_start`='0' WHERE (`id`='925378');
+UPDATE `game`.`map_cell_prototype` SET `id`='923381', `area`='4', `terrain_type`='2', `terrain_level`='2', `is_player_start`='0' WHERE (`id`='923381');
 
 crystal 外围，pillar 中心
 bunker 外围，fort 中心
