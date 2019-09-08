@@ -1,16 +1,12 @@
-db.user.find({ 'mc_member.Mobile': '15800336184' })
-db.user.find({ _id: ObjectId('5d6bdd09e87c084e92636604') })
-                              5d6a312ce87c084e92635f56
-                              5d6bdd22e87c084e92636605
-db.admin_order.find({ pay_id: ObjectId('5d6bdd22e87c084e92636605') })
+db.user.find({ 'mc_member.Mobile': '18621508640' })
+db.user.find({ _id: ObjectId('5d706e4ee87c084e92637021') })
+                              5d706ec4e87c084e92637025
+db.admin_order.find({ pay_id: ObjectId('5d706ec4e87c084e92637025') })
 db.admin_gb.find({ _id: ObjectId('5d69fbc6e87c084e92635e3b') })
 db.admin_order.find({ group_id: ObjectId('5d69fbc6e87c084e92635e3b') })
 more /hd1/forever_logs/gOlQ.log | grep -C 20 '2019-8-31 12:46:5'
 
 redux/mobox
-
-13671701928 用户收券手机 15951531717
-13052318609 用户收券手机 15901952961
 
 # 开发信息
 #* 图解开源协议 https://www.cnblogs.com/KruceCoder/p/7991052.html
