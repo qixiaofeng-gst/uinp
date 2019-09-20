@@ -57,7 +57,7 @@ BUG：每次启动服务器，game.progress 值是 1 不论原本是多少
 
 insert into map2cover(map_id, cover_type, owner_id, peace_time) select map_id + 10, 3, owner_id, peace_time from map2cover where owner_id = 1000100000021201 and cover_type = 3;
 
-set @temp_player_id = 111100000030800;
+set @temp_player_id = 111100000000804;
 insert into map2cover(map_id, cover_type, owner_id, peace_time) select map_id, 3, @temp_player_id, 0 from map_collect where player_id = @temp_player_id;
 insert into player2resource_domain(map_id, player_id, durability) select map_id, @temp_player_id, 10 from map_collect where player_id = @temp_player_id;
 delete from map_collect where player_id = @temp_player_id;
