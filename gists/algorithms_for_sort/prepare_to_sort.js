@@ -19,6 +19,9 @@ module.exports = {
     }
   },
   swap: (to_sort, a, b) => {
+    if (a == b) {
+      return
+    }
     const tmp = to_sort[a]
     to_sort[a] = to_sort[b]
     to_sort[b] = tmp
