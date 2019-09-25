@@ -1,3 +1,5 @@
+cd /mnt/c/Users/qixia/Documents/uinp/gists/poj
+
 创业公司干了 7 年，创业成功率太低，自身的成长也停滞了，与我职业规划的预期不符合，我现在希望在前端领域能够专精，而不是如同当前什么都做又不精通。
 
 像素管道 js > style > layout > paint > composite
@@ -29,6 +31,9 @@
    - 
 11. react 组件生命周期、vue 组件生命周期
    - 
+12. 自行实现 JS instanceof
+13. webpack、gulp 实践
+   
 
 BEM: block, element, modifier.
 block, 1. nested structure 2. arbitrary placement 3. re-use
