@@ -10,20 +10,18 @@ using namespace std;
 
 struct NumberPart {
   int length;
+  int decimal_length;
   int mami[arr_size];
   
   NumberPart();
   void CopyFrom(NumberPart& src);
-  void Append(int n);
+  void Append(int, bool);
   void ShiftToTail();
 };
 
 bool digital_gt_zero(NumberPart&);
-bool decimal_gt_zero(NumberPart&);
 void digital_mul(NumberPart&, NumberPart&);
-void decimal_mul(NumberPart&, NumberPart&);
 void print_digital(NumberPart&);
-void print_decimal(NumberPart&);
 
 int main()
 {
@@ -32,56 +30,36 @@ int main()
   string number;
   int p;
   while (cin >> number >> p) {
-    try {
-      NumberPart input_digital;
-      NumberPart input_decimal;
-      NumberPart result_digital;
-      NumberPart result_decimal;
+    NumberPart input_digital;
+    NumberPart result_digital;
 
-      bool is_decimal = false;
-      for (int i = 0; i < input_length; ++i) {
-        int current = number[i] - zero;
-        if (0 > current) {
-          is_decimal = true;
-          continue;
-        }
-       
-        if (is_decimal) {
-          input_decimal.Append(current);
-        } else {
-          input_digital.Append(current);
-        }
-      }
-      input_digital.ShiftToTail();
-      result_digital.CopyFrom(input_digital);
-      result_decimal.CopyFrom(input_decimal);
-      
-      if (0 == p) {
-        cout << "1" << endl;
+    bool is_decimal = false;
+    for (int i = 0; i < input_length; ++i) {
+      int current = number[i] - zero;
+      if (0 > current) {
+        is_decimal = true;
         continue;
       }
-      for (int i = 1; i < p; ++i) {
-        digital_mul(result_digital, input_digital);
-        decimal_mul(result_decimal, input_decimal);
-      }
-      
-      if (digital_gt_zero(result_digital)) {
-        print_digital(result_digital);
-      }
-      if (decimal_gt_zero(result_decimal)) {
-        cout << ".";
-        print_decimal(result_decimal);
-      }
-      cout << endl;
-    } catch (const char* msg) {
-      cout << ">>>> error catched: " << msg << endl;
+
+      input_digital.Append(current, is_decimal);
     }
+    input_digital.ShiftToTail();
+    result_digital.CopyFrom(input_digital);
+    
+    for (int i = 1; i < p; ++i) {
+      digital_mul(result_digital, input_digital);
+    }
+    result_digital.decimal_length = input_digital.decimal_length * p;
+    result_digital.length = input_digital.length * p;
+    
+    print_digital(result_digital);
   }
   return 0;
 }
 
 void digital_add(NumberPart& result, NumberPart& to_add) {
-  const int first = arr_size - to_add.length;
+  const int length = to_add.length > result.length ? to_add.length : result.length;
+  const int first = arr_size - length;
   const int tail = arr_size - 1;
   int carry = 0;
   for (int i = tail; i >= first; --i) {
@@ -89,9 +67,11 @@ void digital_add(NumberPart& result, NumberPart& to_add) {
     result.mami[i] = added % ten;
     carry = added / ten;
   }
-  result.mami[first - 1] += carry;
-  if (carry > 0 && result.length <= to_add.length) {
-    result.length = to_add.length + 1;
+  if (carry > 0) {
+    result.mami[first - 1] += carry;
+    result.length = (length + 1);
+  } else {
+    result.length = length;
   }
 }
 
@@ -122,97 +102,66 @@ void digital_mul(NumberPart& result, NumberPart& base) {
   result.CopyFrom(calculating);
 }
 
-void decimal_add(NumberPart& result, NumberPart& to_add) {
-  const int first = 0;
-  const int tail = to_add.length - 1;
-  int carry = 0;
-  for (int i = tail; i >= first; --i) {
-    const int added = carry + result.mami[i] + to_add.mami[i];
-    result.mami[i] = added % ten;
-    carry = added / ten;
-  }
-}
-
-void decimal_mul(NumberPart& result, NumberPart& base, int multiplier, int shift) {
-  NumberPart calculating;
-  calculating.length = base.length + shift;
-  const int first = 0;
-  const int tail = base.length - 1;
-  int carry = 0;
-  for (int i = tail; i >= first; --i) {
-    const int shifted = i + shift;
-    const int multiplied = carry + base.mami[i] * multiplier;
-    calculating.mami[shifted] += multiplied % ten;
-    carry = multiplied / ten;
-  }
-  calculating.mami[first + shift - 1] = carry;
-  decimal_add(result, calculating);
-}
-
-void decimal_mul(NumberPart& result, NumberPart& base) {
-  NumberPart calculating;
-  calculating.length = result.length + base.length;
-  const int first = 0;
-  const int tail = base.length - 1;
-  for (int i = tail; i >= first; --i) {
-    decimal_mul(calculating, result, base.mami[i], i + 1);
-  }
-  result.CopyFrom(calculating);
-}
-
 void print_digital(NumberPart& n) {
   const int first = arr_size - n.length;
+  const int dot = arr_size - n.decimal_length;
+  bool meet_dot = false;
+  bool meet_non_zero = false;
   for (int i = first; i < arr_size; ++i) {
-    cout << n.mami[i];
+    if (dot == i) {
+      meet_dot = true;
+      cout << ".";
+    }
+    const int current = n.mami[i];
+    if (current > 0) {
+      meet_non_zero = true;
+    }
+    if (false == meet_dot && false == meet_non_zero) {
+      continue;
+    }
+    cout << current;
   }
-}
-
-void print_decimal(NumberPart& n) {
-  for (int i = 0; i < n.length; ++i) {
-    cout << n.mami[i];
-  }
+  cout << endl;
 }
 
 NumberPart::NumberPart() {
   this->length = 0;
+  this->decimal_length = 0;
   memset(this->mami, 0, arr_size * sizeof(int));
 }
 
 void NumberPart::CopyFrom(NumberPart& src) {
   this->length = src.length;
+  this->decimal_length = src.decimal_length;
   memcpy(this->mami, src.mami, arr_size * sizeof(int));
 }
 
-void NumberPart::Append(int n) {
+void NumberPart::Append(int n, bool d) {
   const int i = this->length++;
   this->mami[i] = n;
+  if (d) {
+    this->decimal_length++;
+  }
 }
 
 void NumberPart::ShiftToTail() {
-  for (int i = 0, j = arr_size - this->length; i < this->length; ++i, ++j) {
+  if (this->decimal_length <= this->length) {
+    int count = 0;
+    for (int i = this->length - 1, j = 0; j < this->decimal_length; ++j, --i) {
+      if (0 == this->mami[i]) {
+        ++count;
+      } else {
+        break;
+      }
+    }
+    this->length -= count;
+    this->decimal_length -= count;
+  }
+  
+  const int non_zero_start = 0;
+  const int non_zero_end = this->length - 1;
+  for (int i = non_zero_end, j = arr_size - 1; i >= non_zero_start; --i, --j) {
     this->mami[j] = this->mami[i];
     this->mami[i] = 0;
   }
-}
-
-bool digital_gt_zero(NumberPart& n) {
-  bool is_zero = true;
-  for (int i = arr_size - n.length; i < arr_size; ++i) {
-    if (n.mami[i] > 0) {
-      is_zero = false;
-      break;
-    }
-  }
-  return false == is_zero;
-}
-
-bool decimal_gt_zero(NumberPart& n) {
-  bool is_zero = true;
-  for (int i = 0; i < n.length; ++i) {
-    if (n.mami[i] > 0) {
-      is_zero = false;
-      break;
-    }
-  }
-  return false == is_zero;
 }
