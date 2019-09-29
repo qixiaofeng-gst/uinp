@@ -1,17 +1,22 @@
-/* 1002 */
+/*
+1002
 
-#include <iostream>
+Important: cin is very slow, fread is a good choice for massive data
+cint cost 70-150s
+fread cost about 50s
+*/
+
+#include <stdio.h>
 #include <string>
 #include <cstring>
+//#include <time.h>
 
 #define num_length 7
-#define dash_pos 3
+#define separater 10000
 #define ten 10
-#define input_limit 100000
 
 using namespace std;
 
-const int mem_len = num_length * sizeof(int);
 /*
 A, B, and C map to 2
 D, E, and F map to 3
@@ -76,121 +81,64 @@ int get_number(int code) {
   return map[code - zero];
 }
 
-struct PhoneNumber {
-  PhoneNumber* next;
-  int count;
-  int numbers[num_length];
-  int code;
-  
-  PhoneNumber(string str_num) {
-    code = 0;
-    for (int i = 0, j = 0, p = num_length - 1; i < str_num.length(); ++i) {
-      const int current = get_number(str_num[i]);
-      if (current < 0) {
-        continue;
-      }
-      numbers[j++] = current;
-      int to_add = current;
-      for (int n = 0; n < p; ++n) {
-        to_add *= ten;
-      }
-      code += to_add;
-      --p;
-      if (num_length == j) {
-        break;
-      }
-    }
-    count = 1;
-    next = NULL;
-  }
-  
-  void Print() {
-    for (int i = 0; i < num_length; ++i) {
-      if (dash_pos == i) {
-        cout << "-";
-      }
-      cout << numbers[i];
-    }
-    cout << " " << count << endl;
-  }
-  
-  void Increase() {
-    count++;
-  }
-  
-  int Sub(PhoneNumber* another) {
-    return code - another->code;
-  }
-  
-  bool IsValid() {
-    return count > 1;
-  }
-};
+const int counter_size = 10000000;
+int counter[counter_size];
 
-void Insert(PhoneNumber* parent, PhoneNumber* pn) {
-  while (false == (NULL == parent)) {
-    //cout << parent << " ==== 2" << endl;
-    if (NULL == parent->next) {
-      parent->next = pn;
-      break;
-    } else {
-      const int trait = pn->Sub(parent->next);
-      if (0 > trait) {
-        pn->next = parent->next;
-        parent->next = pn;
-        break;
-      } else if (0 == trait) {
-        delete pn;
-        parent->next->Increase();
-        break;
-      } else {
-        parent = parent->next;
-      }
+int get_code(int seven_nums[]) {
+  int code = 0;
+  for (int i = 0, p = num_length - 1; i < num_length; ++i, --p) {
+    int to_add = seven_nums[i];
+    for (int j = 0; j < p; ++j) {
+      to_add *= ten;
     }
+    code += to_add;
   }
+  return code;
+}
+
+void print_phone_number(int pn) {
+  const int first = pn / separater;
+  const int last = pn % separater;
+  printf("%03d-%04d %d\n", first, last, counter[pn]);
 }
 
 int main()
 {
+  //time_t start = time(NULL);
+  memset(counter, 0, counter_size * sizeof(int));
   int count = 0;
-  cin >> count;
-  count = count > input_limit ? input_limit : count;
-  const int length = count;
-  PhoneNumber* head = NULL;
-  while (count-- > 0) {
-    string str_num;
-    cin >> str_num;
-    PhoneNumber* pn = new PhoneNumber(str_num);
-    //cout << str_num << " ==== 1" << endl;
-    if (NULL == head) {
-      head = pn;
-    } else {
-      const int trait = pn->Sub(head);
-      if (0 > trait) {
-        pn->next = head;
-        head = pn;
-      } else if (0 == trait) {
-        delete pn;
-        head->Increase();
-      } else {
-        Insert(head, pn);
+  scanf("%d", &count);
+  char temp[count];
+  int readed = 0;
+  int processed = 0;
+  int cache[num_length];
+  do {
+    readed = fread(temp, 1, count, stdin);
+    //printf("%d <<<< \n", readed);
+    for (int i = 0; i < readed; ++i) {
+      const int current = get_number(temp[i]);
+      if (current < 0) {
+        continue;
+      }
+      cache[processed++] = current;
+      if (num_length == processed) {
+        //printf("%d\n", get_code(cache));
+        processed = 0;
+        counter[get_code(cache)]++;
       }
     }
-  }
+  } while (readed == count);
   
   int printed = 0;
-  PhoneNumber* current = head;
-  while (false == (current == NULL)) {
-    PhoneNumber* to_delete = current;
-    if (current->IsValid()) {
+  for (int i = 0; i < counter_size; ++i) {
+    if (counter[i] > 1) {
       printed++;
-      current->Print();
+      print_phone_number(i);
     }
-    current = current->next;
-    delete to_delete;
   }
   if (0 == printed) {
-    cout << "No duplicates." << endl;
+    printf("No duplicates.\n");
   }
+  //cout << "Time cost: " << (time(NULL) - start) << "s." << endl;
   return 0;
 }
