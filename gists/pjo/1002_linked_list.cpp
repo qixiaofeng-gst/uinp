@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <string>
-#include <cstring>
+#include <time.h>
 
 #define num_length 7
 #define dash_pos 3
@@ -11,7 +11,6 @@
 
 using namespace std;
 
-const int mem_len = num_length * sizeof(int);
 /*
 A, B, and C map to 2
 D, E, and F map to 3
@@ -129,7 +128,6 @@ struct PhoneNumber {
 
 void Insert(PhoneNumber* parent, PhoneNumber* pn) {
   while (false == (NULL == parent)) {
-    //cout << parent << " ==== 2" << endl;
     if (NULL == parent->next) {
       parent->next = pn;
       break;
@@ -152,16 +150,15 @@ void Insert(PhoneNumber* parent, PhoneNumber* pn) {
 
 int main()
 {
+  time_t start = time(NULL);
   int count = 0;
   cin >> count;
   count = count > input_limit ? input_limit : count;
   const int length = count;
   PhoneNumber* head = NULL;
-  while (count-- > 0) {
-    string str_num;
-    cin >> str_num;
+  string str_num;
+  while ((cin >> str_num) && ((count--) > 0)) {
     PhoneNumber* pn = new PhoneNumber(str_num);
-    //cout << str_num << " ==== 1" << endl;
     if (NULL == head) {
       head = pn;
     } else {
@@ -192,5 +189,6 @@ int main()
   if (0 == printed) {
     cout << "No duplicates." << endl;
   }
+  cout << "Time cost: " << (time(NULL) - start) << "ms." << endl;
   return 0;
 }
