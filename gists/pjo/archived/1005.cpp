@@ -1,6 +1,7 @@
 /*
 1005
 
+area of circle = pi * r^2
 const float year_lose = 50.0f
 area of semicircle a = 1/2 * pi * r^2
 n * year_lose = 1/2 * pi * r^2
