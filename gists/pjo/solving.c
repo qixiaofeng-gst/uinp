@@ -2,6 +2,7 @@
 1006
 */
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #define up_limit 21252
