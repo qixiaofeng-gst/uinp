@@ -1,5 +1,5 @@
 cd /mnt/c/Users/qixia/Documents/uinp/gists/pjo
-g++ solving.cpp && less input.txt | ./a.out
+gcc solving.c && less input.txt | ./a.out
 BDUSS=Gd0VWU4SjVmVDZMTmg2MFZ5WXE2Y0lsTFpHd2ljcnJXVUpOWXVYMnp0ZjM3YmhkRVFBQUFBJCQAAAAAAAAAAAEAAAALbo46cWlfeGlhb2ZlbmcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPdgkV33YJFdO; STOKEN=4c4b144b3021fd377c776a1eb5154596f44f1571882db141985f640207447c61
 
 keep fit: jeff cavaliere 5 minutes
