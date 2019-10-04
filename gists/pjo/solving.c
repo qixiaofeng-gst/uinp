@@ -10,6 +10,16 @@ Run ID    User         Problem  Result    Memory  Time  Language  Code Length  S
 */
 
 #include <stdio.h>
+#include <time.h>
+
+#ifdef ONLINE_JUDGE
+  #define debug_p //
+#else
+  #define debug_p printf
+#endif
+
+//#define time_func_M time(NULL)
+#define time_func_M clock()
 
 int calc(int exists[], int index) {
   int unsortedness = 0;
@@ -43,49 +53,24 @@ int get_unsortedness(char input[], int length) {
   return unsortedness;
 }
 
-void quick_sort(int to_sort[][2], int start, int end) {
-  if (start >= end) {
-    return;
-  }
-  const int limit = end - start;
-  int gts[limit][2];
-  int lts[limit][2];
-  int gt_count = 0;
-  int lt_count = 0;
-  
-  int pivot_mami[2];
-  pivot_mami[0] = to_sort[start][0];
-  pivot_mami[1] = to_sort[start][1];
-  
-  for (int i = start + 1; i <= end; ++i) {
-    if (to_sort[start][0] > to_sort[i][0]) {
-      lts[lt_count][0] = to_sort[i][0];
-      lts[lt_count][1] = to_sort[i][1];
-      lt_count++;
-    } else {
-      gts[gt_count][0] = to_sort[i][0];
-      gts[gt_count][1] = to_sort[i][1];
-      gt_count++;
+void swap(int to_swap[][2], int i_a, int i_b) {
+  const int tmp_0 = to_swap[i_a][0],
+            tmp_1 = to_swap[i_a][1];
+  to_swap[i_a][0] = to_swap[i_b][0];
+  to_swap[i_a][1] = to_swap[i_b][1];
+  to_swap[i_b][0] = tmp_0;
+  to_swap[i_b][1] = tmp_1;
+}
+
+void insertion_sort(int to_sort[][2], int length) {
+  for (int i = 1; i < length; ++i) {
+    for (int j = i; j > 0; --j) {
+      if (to_sort[j][0] >= to_sort[j - 1][0]) {
+        break;
+      }
+      swap(to_sort, j, j - 1);
     }
   }
-  int idx = start;
-  for (int i = 0; i < lt_count; ++i) {
-    to_sort[idx][0] = lts[i][0];
-    to_sort[idx][1] = lts[i][1];
-    idx++;
-  }
-  const int pivot = idx;
-  to_sort[idx][0] = pivot_mami[0];
-  to_sort[idx][1] = pivot_mami[1];
-  idx++;
-  for (int i = 0; i < gt_count; ++i) {
-    to_sort[idx][0] = gts[i][0];
-    to_sort[idx][1] = gts[i][1];
-    idx++;
-  }
-  
-  quick_sort(to_sort, start, pivot - 1);
-  quick_sort(to_sort, pivot + 1, end);
 }
 
 int main()
@@ -103,9 +88,11 @@ int main()
     idx[0] = get_unsortedness(input, length);
     idx[1] = i;
   }
-  quick_sort(index, 0, line_count - 1);
+  insertion_sort(index, line_count);
   for (int i = 0; i < line_count; ++i) {
     printf("%s\n", all_dna[index[i][1]]);
+    debug_p("%d <<<< the unsortedness\n", index[i][0]);
   }
+  debug_p("%ld <<<< %ld \n", time_func_M, CLOCKS_PER_SEC);
   return 0;
 }
