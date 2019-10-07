@@ -20,7 +20,7 @@ struct Node {
 int main()
 {
   struct Node to_output[numbers_count];
-  for (int i = 0; i <= numbers_count; ++i) {
+  for (int i = 0; i < numbers_count; ++i) {
     to_output[i].value = i;
     to_output[i].next_index = i + 1;
     to_output[i].prev_index = i - 1;
@@ -41,8 +41,12 @@ int main()
       const int next = to_output[index].next_index;
       const int prev = to_output[index].prev_index;
       printf(fmt, to_output[index].value);
-      to_output[next].prev_index = prev;
-      to_output[prev].next_index = next;
+      if (next < numbers_count) {
+        to_output[next].prev_index = prev; 
+      }
+      if (prev >= 0) {
+        to_output[prev].next_index = next; 
+      }
     }
     if (tail == (n % col_count)) {
       printf("\n");
