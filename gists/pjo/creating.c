@@ -5,8 +5,11 @@ Random number sequence generator
 #include <stdio.h>
 #include <stdlib.h>
 
-#define row_count 10
-#define col_count 10
+#define row_count 5
+#define col_count 5
+const int numbers_count = row_count * col_count;
+const int tail = col_count - 1;
+const char* fmt = "%-5d";
 
 struct Node {
   int value;
@@ -16,10 +19,6 @@ struct Node {
 
 int main()
 {
-  const int numbers_count = row_count * col_count;
-  const char* fmt = "%-3d";
-  int head = 0;
-  int length = numbers_count;
   struct Node to_output[numbers_count];
   for (int i = 0; i <= numbers_count; ++i) {
     to_output[i].value = i;
@@ -27,12 +26,10 @@ int main()
     to_output[i].prev_index = i - 1;
   }
   
+  int head = 0;
   printf("%d %d\n", row_count, col_count);
-  for (int n = 0; n < numbers_count; ++n) {
-    if (0 == (n % col_count)) {
-      printf("\n");
-    }
-    const int idx = rand() % (length--);
+  for (int n = 0, rest = numbers_count; n < numbers_count; ++n, --rest) {
+    const int idx = rand() % rest;
     if (0 == idx) {
       printf(fmt, to_output[head].value);
       head = to_output[head].next_index;
@@ -46,6 +43,9 @@ int main()
       printf(fmt, to_output[index].value);
       to_output[next].prev_index = prev;
       to_output[prev].next_index = next;
+    }
+    if (tail == (n % col_count)) {
+      printf("\n");
     }
   }
   return 0;
