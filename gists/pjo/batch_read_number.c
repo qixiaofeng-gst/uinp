@@ -36,5 +36,12 @@ void batch_read_number(int nums[], int count, int width) {
       int digit = buffer[i] - zero;
       number[num_length++] = digit;
     }
+    
+    if (length < count) {
+      if (readed_count < count) {
+        nums[readed_count] = d2n(number, num_length);
+      }
+      break;
+    }
   }
 }
