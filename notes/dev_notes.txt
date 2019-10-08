@@ -1,7 +1,6 @@
 cd /mnt/c/Users/qixia/Documents/uinp/gists/pjo
 gcc solving.c && less input.txt | ./a.out
 gcc creating.c && ./a.out >> input.txt
-BDUSS=Gd0VWU4SjVmVDZMTmg2MFZ5WXE2Y0lsTFpHd2ljcnJXVUpOWXVYMnp0ZjM3YmhkRVFBQUFBJCQAAAAAAAAAAAEAAAALbo46cWlfeGlhb2ZlbmcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPdgkV33YJFdO; STOKEN=4c4b144b3021fd377c776a1eb5154596f44f1571882db141985f640207447c61
 
 keep fit: jeff cavaliere 5 minutes
 
@@ -115,6 +114,7 @@ Set-NetFirewallProfile -Profile Domain, Public,Private -Enabled false
 Windows 下可创建快捷方式并添加参数
 
 # Windows 重启 LxssManager 服务可重启 Linux 子系统
+# ffplay 播放字幕 ffplay path/to/video -vf subtitles=path/to/text
 
 # Java 执行指定 jar 包中的指定 class 和 library path 的命令行：
 java -Djava.library.path=dir/path -cp xxx.jar xxx.xxx.ClassName
