@@ -9,6 +9,16 @@
     const storeKeyForFocus = "focusing-node"
     const tree = JSON.parse(localStorage.getItem(storeKeyForTree)) || {}
     const focus = JSON.parse(localStorage.getItem(storeKeyForFocus)) || []
+    
+    const countNode = (parent) => {
+      let count = 1
+      for (const k in parent) {
+        count += countNode(parent[k])
+      }
+      return count
+    }
+
+    let nodeCount = countNode(tree)
     let focusingNode = null
 
     const getCurrentDepth = () => focus.length
@@ -33,19 +43,19 @@
     const getSiblingsCountFor = node => Object.keys(node).length
 
     const saveTree = () => {
-      console.log(tree, focus)
-      localStorage.setItem(storeKeyForTree, JSON.stringify(tree))
+      const treeString = JSON.stringify(tree)
+      localStorage.setItem(storeKeyForTree, treeString)
       localStorage.setItem(storeKeyForFocus, JSON.stringify(focus))
+      console.log(treeString)
     }
 
     const addChildToTree = () => {
       const depth = getCurrentDepth()
       const focusParent = getFocusedParent()
-      console.log(focusParent, "<<<<<<<")
       const focusKey = focus[depth - 1]
       const parent = focusParent[focusKey]
-      const siblingsCount = getSiblingsCountFor(parent)
-      const key = `L${depth + 1}_${siblingsCount}`
+      const key = `L${depth + 1}_${nodeCount}`
+      nodeCount += 1
       parent[key] = {}
       focus.push(key)
       saveTree()
@@ -53,14 +63,16 @@
     }
 
     const addSiblingToTree = () => {
-      let key = "L1_0"
+      let key = `L1_${nodeCount}`
       if (isTreeEmpty()) {
+        nodeCount += 1
         tree[key] = {}
         focus.push(key)
       } else {
         const parent = getFocusedParent()
         const depth = getCurrentDepth()
-        key = `L${depth}_${getSiblingsCountFor(parent)}`
+        key = `L${depth}_${nodeCount}`
+        nodeCount += 1
         parent[key] = {}
         focus.splice(depth - 1, 1, key)
       }
@@ -75,11 +87,22 @@
     const buttonCycle = document.querySelector(".page-body-cycle")
     const holderInvisible = document.querySelector(".page.invisible")
     const holderChild = document.querySelector(".page.child-holder")
+    let addedChildListener = null
     const setChild = name => {
       if (name) {
         holderInvisible.style.display = "block"
         holderChild.style.display = "block"
         holderChild.querySelector(".page-name").innerHTML = name
+        const theBody = holderChild.querySelector(".page-body")
+        if (addedChildListener) {
+          theBody.removeEventListener(eventNameClick, addedChildListener)
+        }
+        addedChildListener = () => {
+          focus.push(name)
+          saveTree()
+          location.reload()
+        }
+        theBody.addEventListener(eventNameClick, addedChildListener)
       } else {
         holderInvisible.style.display = "none"
         holderChild.style.display = "none"
@@ -154,6 +177,16 @@
       buttonAddSibling.parentNode.parentNode.removeChild(focusingNode)
     }
 
+    const refreshChild = () => {
+      const focused = getFocused()
+      const children = Object.keys(focused)
+      if (0 < children.length) {
+        setChild(children[0])
+      } else {
+        setChild()
+      }
+    }
+
     const initView = () => {
       const depth = getCurrentDepth()
       let parent = tree
@@ -166,14 +199,7 @@
 
       if (0 < depth) {
         focusingNode = addNewPage(buttonAddSibling, focus[depth - 1])
-        const focused = getFocused()
-        const children = Object.keys(focused)
-        console.log(focused, children)
-        if (0 < children.length) {
-          setChild(children[0])
-        } else {
-          setChild()
-        }
+        refreshChild()
       }
 
       refreshButtonAddChild()
@@ -185,13 +211,14 @@
       clearSiblings()
       focusingNode = addNewPage(buttonAddSibling, addChildToTree())
       refreshButtonCycle()
+      refreshChild()
     }
     const addNewSibling = () => {
       clearSiblings()
       focusingNode = addNewPage(buttonAddSibling, addSiblingToTree())
       refreshButtonCycle()
       refreshButtonAddChild()
-      setChild()
+      refreshChild()
     }
 
     const eventNameClick = "click"
@@ -215,6 +242,7 @@
       focusingNode.querySelector(".page-name").innerHTML = cycled
       focus.splice(depthIndex, 1, cycled)
       saveTree()
+      refreshChild()
     })
 
     initView()
