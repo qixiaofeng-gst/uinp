@@ -97,6 +97,10 @@ pip install --upgrade tensorflow==1.1.0rc1
 #* 当 .gitignore 不生效时，用下列两语句
 git rm -r --cached .
 git add .
+#* 切换到远程分支 `git co --track origin/branch-name`
+#* 切换分支 `git co branch-name`
+#* 新建分支 `git co -b branch-name` + `git push origin branch-name`
+#* `git pull` 会下载并合并到本地当前分支，`git fetch` 仅下载
 
 # 常用指令
 #* 软链接 ln -s target_to_link link_name
