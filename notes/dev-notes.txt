@@ -1,3 +1,12 @@
+advices:
+1. use the github issues for task tracing?
+
+Perhaps update the manual:
+1. While running `npm install` first time under `nicelook.com`, failed with `postinstall` executing.
+    Perhaps should run `npm install typings` first
+2. `tsc --init` not working, any alternative? Or just skip it.
+3. Perhaps there should be one more guide for newbie: `grunt` then run the index.html in WebStorm to have fun.
+
 cd /mnt/c/Users/qixia/Documents/uinp/gists/pjo
 gcc solving.c && less input.txt | ./a.out
 gcc creating.c && ./a.out >> input.txt

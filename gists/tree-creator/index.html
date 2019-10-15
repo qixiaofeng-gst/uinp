@@ -5,247 +5,154 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script>window.addEventListener('load', () => {
-    const storeKeyForTree = "creating-tree"
-    const storeKeyForFocus = "focusing-node"
-    const tree = JSON.parse(localStorage.getItem(storeKeyForTree)) || {}
-    const focus = JSON.parse(localStorage.getItem(storeKeyForFocus)) || []
-    
-    const countNode = (parent) => {
-      let count = 1
-      for (const k in parent) {
-        count += countNode(parent[k])
-      }
-      return count
-    }
+    const view = {
+      get eventNameClick () { return "click" },
 
-    let nodeCount = countNode(tree)
-    let focusingNode = null
-
-    const getCurrentDepth = () => focus.length
-    const isTreeEmpty = () => (0 == getCurrentDepth())
-    const getFocusedParent = () => {
-      const depth = getCurrentDepth()
-      const depthIndex = depth - 1
-      let parent = tree
-      for (let i = 0; i < depthIndex; i += 1) {
-        parent = parent[focus[i]]
-      }
-      return parent
-    }
-    const getFocused = () => {
-      const depth = getCurrentDepth()
-      let focused = tree
-      for (let i = 0; i < depth; i += 1) {
-        focused = focused[focus[i]]
-      }
-      return focused
-    }
-    const getSiblingsCountFor = node => Object.keys(node).length
-
-    const saveTree = () => {
-      const treeString = JSON.stringify(tree)
-      localStorage.setItem(storeKeyForTree, treeString)
-      localStorage.setItem(storeKeyForFocus, JSON.stringify(focus))
-      console.log(treeString)
-    }
-
-    const addChildToTree = () => {
-      const depth = getCurrentDepth()
-      const focusParent = getFocusedParent()
-      const focusKey = focus[depth - 1]
-      const parent = focusParent[focusKey]
-      const key = `L${depth + 1}_${nodeCount}`
-      nodeCount += 1
-      parent[key] = {}
-      focus.push(key)
-      saveTree()
-      return key
-    }
-
-    const addSiblingToTree = () => {
-      let key = `L1_${nodeCount}`
-      if (isTreeEmpty()) {
-        nodeCount += 1
-        tree[key] = {}
-        focus.push(key)
-      } else {
-        const parent = getFocusedParent()
-        const depth = getCurrentDepth()
-        key = `L${depth}_${nodeCount}`
-        nodeCount += 1
-        parent[key] = {}
-        focus.splice(depth - 1, 1, key)
-      }
-      saveTree()
-      return key
-    }
-
-    const buttonClear = document.querySelector("#clear_button")
-    const pagesContainer = document.querySelector("#root")
-    const buttonAddSibling = document.querySelector(".page-body-new-sibling")
-    const buttonAddChild = document.querySelector(".page-body-new-child")
-    const buttonCycle = document.querySelector(".page-body-cycle")
-    const holderInvisible = document.querySelector(".page.invisible")
-    const holderChild = document.querySelector(".page.child-holder")
-    let addedChildListener = null
-    const setChild = name => {
-      if (name) {
-        holderInvisible.style.display = "block"
-        holderChild.style.display = "block"
-        holderChild.querySelector(".page-name").innerHTML = name
-        const theBody = holderChild.querySelector(".page-body")
-        if (addedChildListener) {
-          theBody.removeEventListener(eventNameClick, addedChildListener)
-        }
-        addedChildListener = () => {
-          focus.push(name)
-          saveTree()
+      root: null,
+      buttonAddSibling: null,
+      buttonAddChild: null,
+      buttonClear: null,
+      cache: {},
+      init() {
+        this.root = document.querySelector("#root")
+        this.buttonClear = document.querySelector("#clear_button")
+        this.buttonClear.addEventListener(this.eventNameClick, () => {
+          store.clear()
+          store.save()
           location.reload()
+        })
+
+        this.buttonAddSibling = this.createPage("Add Sibling", "+")
+        this.buttonAddChild = this.createPage("Add Child", "+")
+        this.root.appendChild(this.buttonAddSibling)
+        this.movePageTo(this.buttonAddSibling, 100, 100)
+        console.log(
+                store.focusDepth,
+                document.body.scrollHeight,
+                document.body.scrollWidth,
+                this.buttonAddSibling.scrollWidth,
+                this.buttonAddSibling.scrollHeight,
+                "<<<<"
+        )
+      },
+      createDiv(className, innerHtml) {
+        const div = document.createElement("div")
+        if (className) {
+          div.className = className
         }
-        theBody.addEventListener(eventNameClick, addedChildListener)
-      } else {
-        holderInvisible.style.display = "none"
-        holderChild.style.display = "none"
-      }
-    }
-    const refreshButtonAddChild = () => buttonAddChild.parentNode.parentElement.style.display = 0 == focus.length ? "none" : "flex"
-    const refreshButtonCycle = () => {
-      if (isTreeEmpty()) {
-        buttonCycle.parentElement.style.display = "none"
-      } else {
-        buttonCycle.parentElement.style.display = "block"
-        const parent = getFocusedParent()
-        buttonCycle.parentElement.style.visibility = getSiblingsCountFor(parent) > 1 ? "visible" : "hidden"
-      }
-    }
-
-    const createDiv = (className, innerHtml) => {
-      const div = document.createElement("div")
-      if (className) {
-        div.className = className
-      }
-      if (innerHtml) {
-        div.innerHTML = innerHtml
-      }
-      return div
+        if (innerHtml) {
+          div.innerHTML = innerHtml
+        }
+        return div
+      },
+      createPage(pageName, centerText) {
+        const newChild = this.createDiv("page focused")
+        newChild.appendChild(this.createDiv("page-name", pageName))
+        newChild.appendChild(this.createDiv("page-body", centerText))
+        return newChild
+      },
+      movePageTo(page, x, y) {
+        page.style.left = `${x}px`
+        page.style.top = `${y}px`
+      },
+      addPage(pageName, x, y) {
+        const page = this.createPage(pageName, "O")
+        this.cache[pageName] = page
+        this.movePageTo(page, x, y)
+        this.root.appendChild(page)
+      },
     }
 
-    const addCompressedLevel = (pageName, hasSibling) => {
-      const pageClass = "page-compressed"
-      const dots = "..."
-      const level = createDiv("level-compressed")
+    const store = {
+      get keyTree() {
+        return "creating-tree"
+      },
+      get keyFocus() {
+        return "focusing-node"
+      },
 
-      if (hasSibling) {
-        level.appendChild(createDiv(pageClass, dots))
-      }
-      level.appendChild(createDiv(pageClass, pageName))
-      if (hasSibling) {
-        level.appendChild(createDiv(pageClass, dots))
-      }
+      tree: null,
+      focus: null,
+      size: 0, // Number of nodes in the tree
+      countNodes(parentNode) {
+        let count = 1
+        for (const k in parentNode) {
+          count += this.countNodes(parentNode[k])
+        }
+        return count
+      },
+      load() {
+        this.tree = JSON.parse(localStorage.getItem(this.keyTree)) || {}
+        this.focus = JSON.parse(localStorage.getItem(this.keyFocus)) || []
 
-      pagesContainer.insertBefore(level, buttonAddSibling.parentNode.parentNode)
-      const levelExtend = () => {
-        const removeStart = focus.indexOf(pageName)
-        focus.splice(removeStart + 1, focus.length)
-        saveTree()
-        location.reload()
-      }
-      level.addEventListener(eventNameClick, levelExtend)
+        this.size = this.countNodes(this.tree)
+      },
+      save() {
+        localStorage.setItem(this.keyTree, JSON.stringify(this.tree))
+        localStorage.setItem(this.keyFocus, JSON.stringify(this.focus))
+        console.log(this.tree)
+      },
+      clear() {
+        for (const k in this.tree) {
+          delete this.tree[k]
+        }
+        this.focus.splice(0, this.focusDepth)
+      },
+
+      get focusDepth() {
+        return this.focus.length
+      },
+      get isEmpty() {
+        return 0 == this.focusDepth
+      },
+      get parentForFocused() {
+        const depth = this.focusDepth
+        const depthIndex = depth - 1
+        let parent = this.tree
+        for (let i = 0; i < depthIndex; i += 1) {
+          parent = parent[this.focus[i]]
+        }
+        return parent
+      },
+      get focused() {
+        return this.parentForFocused[this.focusDepth - 1]
+      },
+
+      getSiblingsCountFor(node) {
+        return Object.keys(node).length
+      },
+      addChildToTree() {
+        const depth = this.focusDepth
+        const focusParent = this.parentForFocused
+        const focusKey = focus[depth - 1]
+        const parent = focusParent[focusKey]
+        const key = `L${depth + 1}_${this.size}`
+        this.size += 1
+        parent[key] = {}
+        this.focus.push(key)
+        this.save()
+        return key
+      },
+      addSiblingToTree() {
+        let key = `L1_${this.size}`
+        if (this.isEmpty) {
+          this.tree[key] = {}
+          this.focus.push(key)
+        } else {
+          const parent = this.parentForFocused
+          const depth = this.focusDepth
+          key = `L${depth}_${this.size}`
+          parent[key] = {}
+          this.focus.splice(depth - 1, 1, key)
+        }
+        this.size += 1
+        this.save()
+        return key
+      },
     }
 
-    const clearCurrentFocus = () => {
-      const current = document.querySelector(".page.focused")
-      if (current) {
-        current.className = "page"
-      }
-    }
-
-    const addNewPage = (adder, name) => {
-      clearCurrentFocus()
-
-      const newChild = createDiv("page focused")
-      newChild.appendChild(createDiv("page-name", name))
-      newChild.appendChild(createDiv("page-body", "O"))
-      adder.parentNode.parentNode.insertBefore(newChild, adder.parentNode)
-      return newChild
-    }
-
-    const clearSiblings = () => {
-      if (null == focusingNode) {
-        return
-      }
-      buttonAddSibling.parentNode.parentNode.removeChild(focusingNode)
-    }
-
-    const refreshChild = () => {
-      const focused = getFocused()
-      const children = Object.keys(focused)
-      if (0 < children.length) {
-        setChild(children[0])
-      } else {
-        setChild()
-      }
-    }
-
-    const initView = () => {
-      const depth = getCurrentDepth()
-      let parent = tree
-      for (let i = 0; i < (depth - 1); i += 1) {
-        const count = getSiblingsCountFor(parent)
-        const parentKey = focus[i]
-        parent = parent[parentKey]
-        addCompressedLevel(parentKey, 1 < count)
-      }
-
-      if (0 < depth) {
-        focusingNode = addNewPage(buttonAddSibling, focus[depth - 1])
-        refreshChild()
-      }
-
-      refreshButtonAddChild()
-      refreshButtonCycle()
-    }
-
-    const addNewChild = () => {
-      addCompressedLevel(focus[getCurrentDepth() - 1], 1 < getSiblingsCountFor(getFocusedParent()))
-      clearSiblings()
-      focusingNode = addNewPage(buttonAddSibling, addChildToTree())
-      refreshButtonCycle()
-      refreshChild()
-    }
-    const addNewSibling = () => {
-      clearSiblings()
-      focusingNode = addNewPage(buttonAddSibling, addSiblingToTree())
-      refreshButtonCycle()
-      refreshButtonAddChild()
-      refreshChild()
-    }
-
-    const eventNameClick = "click"
-    buttonAddSibling.addEventListener(eventNameClick, () => addNewSibling())
-    buttonAddChild.addEventListener(eventNameClick, () => addNewChild())
-    buttonClear.addEventListener(eventNameClick, () => {
-      for (const k in tree) {
-        delete tree[k]
-      }
-      focus.splice(0, focus.length)
-      saveTree()
-      location.reload()
-    })
-    buttonCycle.addEventListener(eventNameClick, () => {
-      const parent = getFocusedParent()
-      const depth = getCurrentDepth()
-      const depthIndex = depth - 1
-      const siblings = Object.keys(parent)
-      const focusingIndex = siblings.indexOf(focus[depthIndex])
-      const cycled = siblings[(focusingIndex + 1) % siblings.length]
-      focusingNode.querySelector(".page-name").innerHTML = cycled
-      focus.splice(depthIndex, 1, cycled)
-      saveTree()
-      refreshChild()
-    })
-
-    initView()
+    store.load()
+    view.init()
   })</script>
 
   <style media="screen">
@@ -256,45 +163,15 @@
       padding: 0;
       width: 100vw;
       height: 100vh;
+      position: relative;
       background: #222222;
       overflow: auto;
       user-select: none;
       color: #888888;
     }
 
-    .level-compressed {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-bottom: gray solid 1px;
-    }
-
-    .level-compressed:first-child {
-      border-top: gray solid 1px;
-      margin-top: 20px;
-    }
-
-    .page-compressed {
-      display: inline-block;
-      border: gray solid 1px;
-      line-height: 30px;
-      margin: 10px;
-      padding: 10px 20px;
-    }
-
-    .level {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 20px;
-    }
-
-    .level:last-child {
-      margin-bottom: 20px;
-    }
-
     .page {
-      margin-left: 10px;
+      position: absolute;
     }
 
     .page.focused > .page-body {
@@ -308,11 +185,7 @@
       font-weight: bold;
     }
 
-    .page.invisible {
-      visibility: hidden;
-    }
-
-    .page-body, .page-body-new-sibling, .page-body-new-child, .page-body-cycle {
+    .page-body {
       display: inline-block;
       width: 160px;
       height: 250px;
@@ -323,6 +196,11 @@
       text-align: center;
       font-size: 50px;
       user-select: none;
+    }
+
+    #root {
+      position: relative;
+      display: inline-block;
     }
 
     #clear_button {
@@ -338,32 +216,6 @@
 </head>
 <body>
 <div id="clear_button">Clear Tree</div>
-<div id="root">
-  <div class="level">
-    <div class="page">
-      <div class="page-name">Cycle Sibling</div>
-      <div class="page-body-cycle">...</div>
-    </div>
-    <div class="page">
-      <div class="page-name">Create Sibling</div>
-      <div class="page-body-new-sibling">+</div>
-    </div>
-  </div>
-
-  <div class="level">
-    <div class="page invisible">
-      <div class="page-name">Invisible</div>
-      <div class="page-body">...</div>
-    </div>
-    <div class="page child-holder">
-      <div class="page-name">Child Name</div>
-      <div class="page-body">O</div>
-    </div>
-    <div class="page">
-      <div class="page-name">Create Child</div>
-      <div class="page-body-new-child">+</div>
-    </div>
-  </div>
-</div>
+<div id="root"></div>
 </body>
 </html>
