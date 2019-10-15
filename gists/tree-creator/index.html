@@ -89,12 +89,29 @@
         const parentModel = store.parentForFocused
         let maxX = 0
         for (const sibling in parentModel) {
-          const currentX = this.getLeftFor(this.cache[sibling])
+          const currentX = this.getLeftMostFor(sibling, parentModel[sibling])
           if (currentX > maxX) {
             maxX = currentX
           }
         }
-        const x = (0 === maxX) ? this.getLeftFor(this.focus) : (maxX + this.margin + page.scrollWidth)
+        const offsetX = this.margin + page.scrollWidth
+        const x = (0 === maxX) ? this.getLeftFor(this.focus) : (maxX + offsetX)
+        if (0 < maxX) {
+          let tree = store.tree
+          for (const ancestor of store.focus) {
+            let isRightSide = false
+            for (const k in tree) {
+              if (isRightSide) {
+                this.shiftFor(k, tree[k], offsetX)
+              } else {
+                if (k == ancestor) {
+                  isRightSide = true
+                }
+              }
+            }
+            tree = tree[ancestor]
+          }
+        }
         const y = this.calculateY(page)
         this.movePageTo(page, x, y)
         document.body.scrollTo(x, y)
@@ -110,7 +127,6 @@
         pageBody.appendChild(this.buttonAddChild)
         page.className = "page focused"
         this.focus = page
-        this.refreshView()
       },
       calculateY(page) {
         return this.margin + store.focusDepth * (page.scrollHeight + this.margin)
@@ -119,19 +135,21 @@
         const reference = page.style.left
         return parseInt(reference.substr(0, reference.length - 2))
       },
-      getNameFor(page) {
-        return page.querySelector(".page-name").innerHTML
+      getLeftMostFor(pageName, model) {
+        const children = Object.keys(model)
+        const { length } = children
+        if (0 === length) {
+          return this.getLeftFor(this.cache[pageName])
+        } else {
+          const leftMostName = children[length - 1]
+          return this.getLeftMostFor(leftMostName, model[leftMostName])
+        }
       },
-      refreshView() {
-        const siblings = Object.keys(store.parentForFocused)
-        const children = Object.keys(store.focused)
-        for (const pageName in this.cache) {
-          const page = this.cache[pageName]
-          if (store.focus.includes(pageName) || siblings.includes(pageName) || children.includes(pageName)) {
-            page.style.visibility = "visible"
-          } else {
-            page.style.visibility = "hidden"
-          }
+      shiftFor(pageName, model, offsetX) {
+        const page = this.cache[pageName]
+        page.style.left = `${this.getLeftFor(page) + offsetX}px`
+        for (const k in model) {
+          this.shiftFor(k, model[k], offsetX)
         }
       },
     }
@@ -157,7 +175,6 @@
       load() {
         this.tree = JSON.parse(localStorage.getItem(this.keyTree)) || {}
         this.focus = JSON.parse(localStorage.getItem(this.keyFocus)) || []
-
         this.size = this.countNodes(this.tree)
       },
       save() {
@@ -180,6 +197,9 @@
       },
       get parentForFocused() {
         const depth = this.focusDepth
+        if (0 === depth) {
+          return {}
+        }
         const depthIndex = depth - 1
         let parent = this.tree
         for (let i = 0; i < depthIndex; i += 1) {
@@ -200,6 +220,10 @@
         const parent = this.focused
         const key = `L${depth + 1}_${this.size}`
         this.size += 1
+        if (undefined == parent) {
+          console.log("damn it <<<<<<<")
+          return
+        }
         parent[key] = {}
         this.focus.push(key)
         this.save()
