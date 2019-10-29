@@ -65,6 +65,12 @@ git_link() { ## Used to link local with remote repo.
   git plom --allow-unrelated-histories
 }
 
+git_ps() { ## Used to push current branch.
+  local branch=`git name-rev --name-only HEAD`
+  echo "git push origin ${branch}"
+  git push origin ${branch}
+}
+
 git_up() { ## Used to update the git remote url.
   for url in `git remote -v`; do
     if [ 'git@github.com' == ${url:0:14} ]; then

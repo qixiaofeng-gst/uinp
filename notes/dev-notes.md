@@ -1,3 +1,8 @@
+ * Member arrange rules:
+ * 1. Fields first. Static goes first. Public goes first, then protected, private last. Readonly goes first.
+ * 2. Constructor follows.
+ * 3. Methods last. Abstract goes first. Public goes first, then protected, private last. Static goes last.
+
 # About MVP:
 1. `view` use `presenter`, hold an instance of `presenter`
 1. `presenter` query and translate data to `model`
