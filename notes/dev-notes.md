@@ -1,4 +1,4 @@
-Member arrange rules:
+# Class member arrange rules:
 1. Fields first. Static goes first. Public goes first, then protected, private last. Readonly goes first.
 2. Constructor follows.
 3. Methods last. Abstract goes first. Public goes first, then protected, private last. Static goes last.
