@@ -87,6 +87,7 @@ setup_git() { ## Used to set my email and name for git.
 }
 
 enhance_git() { ## Used to set several convenient alias for git.
+  git config --global alias.b "branch"
   git config --global alias.st "status"
   git config --global alias.ci "commit -m"
   git config --global alias.co "checkout"
