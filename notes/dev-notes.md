@@ -115,6 +115,7 @@ git add .
 * `git pull` 会下载并合并到本地当前分支，`git fetch` 仅下载
 * 撤销上次提交并保留所有修改 `git reset --soft revision-hash`
 * 回退某个文件到历史版本 `git co revision_hash -- file/path`
+* 查看 head 与前一 commit 的差异 `git diff head~1 head`
 
 # 常用指令
 * 软链接 link-node -s target_to_link link_name
