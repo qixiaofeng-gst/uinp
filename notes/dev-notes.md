@@ -156,7 +156,8 @@ Windows 下可创建快捷方式并添加参数
 
 * Windows 重启 LxssManager 服务可重启 Linux 子系统
 * ffplay 播放字幕 ffplay path/to/video -vf subtitles=path/to/text
-* gpg 检查文件签名 sha256sum the-file-to-check 与网站列出的 sha256 签名进行比对
+* gpg 检查文件签名 sha256sum/md5sum the-file-to-check 与网站列出的 sha256/md5 签名进行比对
+* wget download mirror of website: wget -m -p http://www.xxx.com
 
 * Java 执行指定 jar 包中的指定 class 和 library path 的命令行：
 `java -Djava.library.path=dir/path -cp xxx.jar xxx.xxx.ClassName`
