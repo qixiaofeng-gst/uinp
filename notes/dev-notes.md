@@ -1,86 +1,14 @@
-# Class member arrange rules:
-1. Fields first. Static goes first. Public goes first, then protected, private last. Readonly goes first.
-2. Constructor follows.
-3. Methods last. Abstract goes first. Public goes first, then protected, private last. Static goes last.
-
-# About MVP:
-1. `view` use `presenter`, hold an instance of `presenter`
-1. `presenter` query and translate data to `model`
-1. `presenter` hold instance of `view`
-1. `view` use `model`, hold instances of `model`\
-Compliment:
-1. Only `Fragment` is `view`, `Component`s are component of view.
-
-# About files structure:
-1. every module has `contract`, `model`, `presenter`, and `view`
-1. every module should only has one `Fragment`, no limit on number of `comparent-only-nodeent`
-
-Advices for team:
-1. Use the github issues for task tracing?
-2. More documents/guide-text for newbie?
-
-Perhaps update the manual:
-1. While running `npm install` first time under `nicelook.com`, failed with `postinstall` executing.
-    Perhaps should run `npm install typings` first
-2. `tsc --init` not working, any alternative? Or just skip it.
-3. Perhaps there should be one more guide for newbie: `grunt` then run the index.html in WebStorm to have fun.
-
-Quick guide for pjo with gcc:
+# Quick guide for pjo with gcc:
 1. `cd /mnt/c/Users/qixia/Documents/uinp/gists/pjo`
 2. `gcc solving.c && less input.txt | ./a.out`
 3. `gcc creating.c && ./a.out >> input.txt`
 
 **Keep fit: Jeff Cavaliere 5 minutes**
 
-自省三问：
+# 自省三问：
 1. 我的观念中哪些是错误的？
 2. 别人觉得深不可测的事情，我能了解多少？
 3. 大脑中究竟是什么在误导我？
-
-c 的类型前置语法，迫使声明数组、指针、方法的时候，命名夹在类型当中，使得阅读变得相当困难。
-go 的类型后置语法主要是为了解决前述问题。
-
-快手的面试题：
-1. offsetWidth, scrollWidth, clientWidth 是什么，异同
-2. 垂直布局的几种实现方案
-3. setTimeout 和 promise 的执行时机
-4. js 运算时的类型转换 1 + [], 1 + [1, 2, 3, 4], 1 + '1', 1 * '3'
-5. Promise.all 自行实现
-6. commonjs 和 es6 的 require 和 import 的区别
-7. [7, 6, 4, 1, 2, 3] 按日期排的价格，求最大可能的利润
-
-像素管道 js > style > layout > paint > composite
-优化的核心思想是，影响尽量少的环节
-
-1. 算法练习
-   - 排序已经差不多够了
-2. 树、图复习
-   - 已经看过了二叉、B-树
-   - 没有练习过，但是聊起来差不多够了
-3. React、VUE 源码阅读
-   - 没有
-4. ()* 的解，* 可用作空字符串、左括号或右括号，左右括号必须成对，判断输入字符串是否有效
-   - 解出来了，正向来一次，反向来一次，过了，但是感觉可能有漏洞
-5. id + 时间戳的日志，shell 命令输出按出现次数排序的 id
-6. 前后端分离
-   - 老做法是服务端产出所有内容
-   - 现在是服务端只给数据、客户端负责呈现
-   - 老做法耦合严重，维护不易
-   - 现在新的做法可以前后端并行开发，各自更专注
-7. JQuery 或 Vue、React 开发的区别
-8. Local Storage、Cookie 和 Session Storage
-9. 优化网页渲染性能
-   - 聊起来应该差不多了，暂时还没面试时用过
-0. 浏览器跨域访问
-   - jsonp
-0. react 组件生命周期、vue 组件生命周期
-0. 自行实现 JS instanceof
-0. webpack、gulp 实践
-
-BEM: block, element, modifier.
-block, 1. nested structure 2. arbitrary placement 3. re-use
-element, a constituent part of a block that can't be used outside of it
-modifier, defines the appearance and behavior of a block or an element
 
 db.user.find({ 'mc_member.Mobile': '18621508640' })
 db.user.find({ _id: ObjectId('5d706e4ee87c084e92637021') })
@@ -100,6 +28,7 @@ redux/mobox
 pip search --version tensorflow
 pip install --upgrade tensorflow==1.1.0rc1
 ```
+* WebStorm 编辑器批量处理行尾：选中一目录后，菜单 File -> LineSeparators 选择一个行尾格式即可。
 
 # 版本工具备忘
 * SVN http://earth.bao.ac.cn/svn/gsegment/trunk/***
