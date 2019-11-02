@@ -71,6 +71,12 @@ git_ps() { ## Used to push current branch.
   git push origin ${branch}
 }
 
+git_pl() { ## Used to pull current branch.
+  local branch=`git name-rev --name-only HEAD`
+  echo "git pull origin ${branch}"
+  git pull origin ${branch}
+}
+
 git_up() { ## Used to update the git remote url.
   for url in `git remote -v`; do
     if [ 'git@github.com' == ${url:0:14} ]; then

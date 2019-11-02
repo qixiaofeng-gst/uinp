@@ -84,10 +84,26 @@ Set-NetFirewallProfile -Profile Domain, Public,Private -Enabled false
 "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --disable-web-security --user-data-dir="D:/TempDocs/chrome_data/"
 Windows 下可创建快捷方式并添加参数
 
+# 杂项
 * Windows 重启 LxssManager 服务可重启 Linux 子系统
 * ffplay 播放字幕 ffplay path/to/video -vf subtitles=path/to/text
 * gpg 检查文件签名 sha256sum/md5sum the-file-to-check 与网站列出的 sha256/md5 签名进行比对
-* wget download mirror of website: wget -m -p http://www.xxx.com
+* wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
+```
+wget --recursive --level=inf --page-requisites --convert-links \
+     --adjust-extension --span-hosts --domains=domainA,domainB domainA
+The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
+-r = --recursive
+-l <depth> = --level=<depth>
+-E = --adjust-extension
+-p = --page-requisites
+-K = --backup-converted
+-k = --convert-links
+-D <domain-list> = --domain-list=<domain-list>
+-H = --span-hosts
+-np = --no-parent
+-U <agent-string> = --user-agent=<agent-string>
+```
 
 * Java 执行指定 jar 包中的指定 class 和 library path 的命令行：
 `java -Djava.library.path=dir/path -cp xxx.jar xxx.xxx.ClassName`
