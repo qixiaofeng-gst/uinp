@@ -76,6 +76,8 @@
     }),
     add = Symbol('add'),
     cut = Symbol('cut'),
+    feed = Symbol('feed'),
+    name = Symbol('name'),
     view = Symbol('view'),
     new_svg = tag => {
       const
@@ -85,15 +87,27 @@
         _2dash = str => str.replace(/_/g, '-'),
         accessors = {
           get: (_target, p, _receiver) => {
-            if (view === p) {
-              return element
-            } else if (add === p) {
-              return child => element.appendChild(child)
-            } else if (cut === p) {
-              return child => element.removeChild(child)
-            } else {
-              console.error(`${p} is touched unexpectedly.`)
-              throw msg_never_touch_me
+            switch (p) {
+              case name: {
+                return tag
+              }
+              case view: {
+                return element
+              }
+              case add: {
+                return child => element.appendChild(child)
+              }
+              case cut: {
+                return child => element.removeChild(child)
+              }
+              case feed: {
+                return () => {
+                  throw 'Not implemented'
+                }
+              }
+              default:
+                console.error(`${p} is touched unexpectedly.`)
+                throw msg_never_touch_me
             }
           },
           set: (_target, p, value, _receiver) => {
@@ -146,12 +160,13 @@
         limit = lineValues.length,
         line = new_svg('polyline'),
         increment = this.#width / (limit - 1),
-        coords = []
+        xCoords = [],
+        lists = [xCoords, lineValues]
       for (let i = 0, x = 0; i < limit; ++i, x += increment) {
-        coords.push(`${x},${lineValues[i]}`)
+        xCoords.push(x)
       }
 
-      line.svg_points = coords.join(space)
+      line.svg_points = lists2pairs(lists).map(([x, y]) => `${x},${y}`).join(space)
       line.svg_stroke = random_color()
       line.svg_stroke_width = 1
       line.svg_fill_opacity = 0
