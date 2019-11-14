@@ -5,6 +5,7 @@
     precision = 2,
     highPrecision = 4,
     color_base = 0xeeeeee,
+    // running_days_per_year = 260,
     clamp_float = num => parseFloat(num.toFixed(highPrecision)),
     clamp_str = (str, width = 6) => str.length > width ? str.substr(0, width) : str + `${(() => {
       const limit = width - str.length
@@ -24,33 +25,6 @@
         pairs.push([listA[i], listB[i]])
       }
       return pairs
-    },
-    calc_average = arr => (arr.reduce((sum, curr) => sum + curr, 0) / arr.length),
-    calc_standard_deviation = arr => {
-      const arr_avg = calc_average(arr)
-      const sum_d = (sum, curr) => sum + Math.pow(curr - arr_avg, 2)
-      return Math.sqrt(arr.reduce(sum_d, 0) / arr.length)
-    },
-    // en: use it as a action at every element
-    calc_standard_unit = arr => {
-      const arr_sd = calc_standard_deviation(arr)
-      const arr_avg = calc_average(arr)
-      return (
-        0 === arr_sd ?
-          arr.map(() => 1) : // here 0 and 1 mean same
-          arr.map(num => (num - arr_avg) / arr_sd)
-      )
-    },
-    calc_correlation_for_lists = lists => {
-      const [x_arr, y_arr] = lists
-      const limit = Math.min(x_arr.length, y_arr.length)
-      const x_arr_in_su = calc_standard_unit(x_arr)
-      const y_arr_in_su = calc_standard_unit(y_arr)
-      let sum = 0
-      for (let i = 0; i < limit; ++i) {
-        sum += (x_arr_in_su[i] * y_arr_in_su[i])
-      }
-      return (sum / limit).toPrecision(precision)
     },
     xmlns = 'http://www.w3.org/2000/svg',
     msg_never_touch_me = 'Never touch me',
@@ -149,6 +123,14 @@
       return this.#averages[this.#count - 1]
     }
 
+    get averages() {
+      return this.#averages
+    }
+
+    get array() {
+      return this.#array
+    }
+
     constructor() {
     }
 
@@ -220,6 +202,7 @@
     #svgProxy = new_svg('svg')
     #width = 800
     #height = 300
+    #niceLines = []
 
     constructor() {
       this.#svgProxy.css_width = `${this.#width}px`
@@ -246,11 +229,64 @@
       return circle
     }
 
-    newLine(lineValues) {
+    newNiceLine(numbers) {
       const
-        limit = lineValues.length,
+        index = this.#niceLines.length,
+        niceArray = new NiceArray().addNumbers(numbers),
+        niceLine = {
+          model: niceArray,
+          color: random_color(),
+          valueLine: false,
+          averageLine: false,
+          standardDeviationLine: false,
+          standardUnitLine: false,
+          deviationSquareLine: false,
+        },
+        valueLine = this.#newLine(niceArray.array)
+      valueLine.svg_stroke = niceLine.color
+      this.addChild(valueLine)
+      this.#niceLines.push(niceLine)
+      return index
+    }
+
+    addNumberToNiceLine(number, iLine) {
+      // TODO Just do it
+      console.log('Here add number and update')
+      return this
+    }
+
+    activateAverageLineFor(iLine, isActivate = true) {
+      const niceLine = this.#niceLines[iLine]
+      if (false === niceLine.averageLine) {
+        niceLine.averageLine = this.#newLine(niceLine.model.averages)
+        niceLine.averageLine.svg_stroke = niceLine.color
+        niceLine.averageLine.css_display = 'none'
+        this.addChild(niceLine.averageLine)
+      }
+      if (isActivate) {
+        niceLine.averageLine.css_display = 'unset'
+      } else {
+        niceLine.averageLine.css_display = 'none'
+      }
+      return this
+    }
+
+    calcCorrelationOf(iLineA, iLineB) {
+      const
+        niceLineA = this.#niceLines[iLineA],
+        niceLineB = this.#niceLines[iLineB]
+      return niceLineA.model.calcCorrelationTo(niceLineB.model)
+    }
+
+    #newLine = function (lineValues) {
+      const limit = lineValues.length
+      if (limit < 2) {
+        throw 'At least two values should be given.'
+      }
+      const
+        self = this,
         line = new_svg('polyline'),
-        increment = this.#width / (limit - 1),
+        increment = self.#width / (limit - 1),
         xCoords = [],
         lists = [xCoords, lineValues]
       for (let i = 0, x = 0; i < limit; ++i, x += increment) {
@@ -258,7 +294,7 @@
       }
 
       line.svg_points = lists2pairs(lists).map(([x, y]) => `${x},${y}`).join(space)
-      line.svg_stroke = random_color()
+      line.svg_stroke = 'black'
       line.svg_stroke_width = 1
       line.svg_fill_opacity = 0
       return line
@@ -285,32 +321,54 @@
     )), 'expected: 1.00')
 
   window.onload = () => {
+    let addedValueCount = 2
     const
+      valueCountLimit = 50,
       svgCanvas = new SC(),
       outputText = document.createElement('span'),
       firstPoint = svgCanvas.newPoint(20, 20),
       generateRandomValues = () => {
         const
-          limit = 260,
           valueDomain = 300,
           result = []
 
-        for (let x = 0; x < limit; ++x) {
+        for (let x = 0; x < valueCountLimit; ++x) {
           result.push(Math.ceil(Math.random() * valueDomain))
         }
         return result
       },
       lineAValues = generateRandomValues(),
       lineBValues = generateRandomValues(),
-      toCalc = [lineAValues, lineBValues]
+      iLineA = svgCanvas.newNiceLine(lineAValues.slice(0, 2)),
+      iLineB = svgCanvas.newNiceLine(lineBValues.slice(0, 2)),
+      timeInterval = 1000,
+      animate = (startTime = 0) => {
+        const doIt = deltaTime => {
+          const
+            timePassed = deltaTime - startTime,
+            shouldUpdate = timeInterval < timePassed,
+            timeForNext = shouldUpdate ? deltaTime : startTime
+          if (shouldUpdate) {
+            svgCanvas
+              .addNumberToNiceLine(lineAValues[addedValueCount], iLineA)
+              .addNumberToNiceLine(lineAValues[addedValueCount], iLineB)
+            addedValueCount++
+          }
+          if (addedValueCount < valueCountLimit) {
+            animate(timeForNext)
+          } else {
+            console.log('Animation end.')
+          }
+        }
+        requestAnimationFrame(doIt)
+      }
 
+    outputText.innerHTML = `cr of pairs to draw: ${svgCanvas.calcCorrelationOf(iLineA, iLineB)}`
     document.body.appendChild(outputText)
-    outputText.innerHTML = `cr of pairs to draw: ${calc_correlation_for_lists(toCalc)}`
     svgCanvas
-      .addChild(svgCanvas.newPoint(50, 50))
       .addChild(firstPoint)
       .cutChild(firstPoint)
-      .addChild(svgCanvas.newLine(lineAValues))
-      .addChild(svgCanvas.newLine(lineBValues))
+      .activateAverageLineFor(iLineA)
+    animate()
   }
 })()
