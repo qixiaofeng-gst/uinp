@@ -5,6 +5,33 @@
     precision = 2,
     highPrecision = 4,
     color_base = 0xeeeeee,
+    make_const = data => {
+      const
+        result = {},
+        const_description = {
+          writable: false,
+          enumerable: true,
+        }
+      for (const k in data) {
+        if (data.hasOwnProperty(k)) {
+          const_description.value = data[k]
+          Object.defineProperty(result, k, const_description)
+        }
+      }
+      return result
+    },
+    ns = make_const({
+      add: Symbol('add'),
+      cut: Symbol('cut'),
+      feed: Symbol('feed'),
+      name: Symbol('name'),
+      view: Symbol('view'),
+      valueLine: Symbol('valueLine'),
+      averageLine: Symbol('averageLine'),
+      standardDeviationLine: Symbol('standardDeviationLine'),
+      standardUnitLine: Symbol('standardUnitLine'),
+      deviationSquareLine: Symbol('deviationSquareLine'),
+    }),
     // running_days_per_year = 260,
     clamp_float = num => parseFloat(num.toFixed(highPrecision)),
     clamp_str = (str, width = 6) => str.length > width ? str.substr(0, width) : str + `${(() => {
@@ -36,11 +63,6 @@
         return false
       },
     }),
-    add = Symbol('add'),
-    cut = Symbol('cut'),
-    feed = Symbol('feed'),
-    name = Symbol('name'),
-    view = Symbol('view'),
     new_svg = tag => {
       const
         element = document.createElementNS(xmlns, tag),
@@ -50,22 +72,17 @@
         accessors = {
           get: (_target, p, _receiver) => {
             switch (p) {
-              case name: {
+              case ns.name: {
                 return tag
               }
-              case view: {
+              case ns.view: {
                 return element
               }
-              case add: {
+              case ns.add: {
                 return child => element.appendChild(child)
               }
-              case cut: {
+              case ns.cut: {
                 return child => element.removeChild(child)
-              }
-              case feed: {
-                return () => {
-                  throw 'Not implemented'
-                }
               }
               default:
                 console.error(`${p} is touched unexpectedly.`)
@@ -125,6 +142,18 @@
 
     get averages() {
       return this.#averages
+    }
+
+    get standardDeviations() {
+      return this.#standardDeviations
+    }
+
+    get standardUnits() {
+      return this.#standardUnits
+    }
+
+    get deviationSquares() {
+      return this.#deviationSquares
     }
 
     get array() {
@@ -208,16 +237,16 @@
       this.#svgProxy.css_width = `${this.#width}px`
       this.#svgProxy.css_height = `${this.#height}px`
       this.#svgProxy.svg_viewBox = `0 0 ${this.#width} ${this.#height}`
-      document.body.appendChild(this.#svgProxy[view])
+      document.body.appendChild(this.#svgProxy[ns.view])
     }
 
     addChild(elementProxy) {
-      this.#svgProxy[add](elementProxy[view])
+      this.#svgProxy[ns.add](elementProxy[ns.view])
       return this
     }
 
     cutChild(elementProxy) {
-      this.#svgProxy[cut](elementProxy[view])
+      this.#svgProxy[ns.cut](elementProxy[ns.view])
       return this
     }
 
@@ -236,37 +265,58 @@
         niceLine = {
           model: niceArray,
           color: random_color(),
-          valueLine: false,
-          averageLine: false,
-          standardDeviationLine: false,
-          standardUnitLine: false,
-          deviationSquareLine: false,
-        },
-        valueLine = this.#newLine(niceArray.array)
-      valueLine.svg_stroke = niceLine.color
-      this.addChild(valueLine)
+          lineNames: [
+            ns.valueLine,
+            ns.averageLine,
+            ns.standardDeviationLine,
+            ns.standardUnitLine,
+            ns.deviationSquareLine,
+          ],
+          [ns.valueLine]: {
+            [ns.view]: false,
+            [ns.feed]: () => niceArray.array,
+          },
+          [ns.averageLine]: {
+            [ns.view]: false,
+            [ns.feed]: () => niceArray.averages,
+          },
+          [ns.standardDeviationLine]: {
+            [ns.view]: false,
+            [ns.feed]: () => niceArray.standardDeviations,
+          },
+          [ns.standardUnitLine]: {
+            [ns.view]: false,
+            [ns.feed]: () => niceArray.standardUnits,
+          },
+          [ns.deviationSquareLine]: {
+            [ns.view]: false,
+            [ns.feed]: () => niceArray.deviationSquares,
+          },
+        }
       this.#niceLines.push(niceLine)
+      this.activateLineFor(index, ns.valueLine)
       return index
     }
 
     addNumberToNiceLine(number, iLine) {
-      // TODO Just do it
-      console.log('Here add number and update')
+      const niceLine = this.#niceLines[iLine]
+      niceLine.model.newNumber = number
+      for (const k of niceLine.lineNames) {
+        if (niceLine.hasOwnProperty(k)) {
+          const lineView = niceLine[k][ns.view]
+          if (lineView) {
+            this.cutChild(lineView)
+            this.#createLineForNiceLine(niceLine, k)
+          }
+        }
+      }
       return this
     }
 
-    activateAverageLineFor(iLine, isActivate = true) {
+    activateLineFor(iLine, nsName) {
       const niceLine = this.#niceLines[iLine]
-      if (false === niceLine.averageLine) {
-        niceLine.averageLine = this.#newLine(niceLine.model.averages)
-        niceLine.averageLine.svg_stroke = niceLine.color
-        niceLine.averageLine.css_display = 'none'
-        this.addChild(niceLine.averageLine)
-      }
-      if (isActivate) {
-        niceLine.averageLine.css_display = 'unset'
-      } else {
-        niceLine.averageLine.css_display = 'none'
+      if (false === niceLine[nsName][ns.view]) {
+        this.#createLineForNiceLine(niceLine, nsName)
       }
       return this
     }
@@ -276,6 +326,17 @@
         niceLineA = this.#niceLines[iLineA],
         niceLineB = this.#niceLines[iLineB]
       return niceLineA.model.calcCorrelationTo(niceLineB.model)
+    }
+
+    #createLineForNiceLine = function (niceLine, lineName) {
+      const
+        self = this,
+        lineView = self.#newLine(niceLine[lineName][ns.feed]())
+      lineView.svg_stroke = niceLine.color
+      self.addChild(lineView)
+
+      niceLine[lineName][ns.view] = lineView
+      return lineView
     }
 
     #newLine = function (lineValues) {
@@ -341,7 +402,7 @@
       lineBValues = generateRandomValues(),
       iLineA = svgCanvas.newNiceLine(lineAValues.slice(0, 2)),
       iLineB = svgCanvas.newNiceLine(lineBValues.slice(0, 2)),
-      timeInterval = 1000,
+      timeInterval = 200,
       animate = (startTime = 0) => {
         const doIt = deltaTime => {
           const
@@ -351,8 +412,9 @@
           if (shouldUpdate) {
             svgCanvas
               .addNumberToNiceLine(lineAValues[addedValueCount], iLineA)
-              .addNumberToNiceLine(lineAValues[addedValueCount], iLineB)
+              .addNumberToNiceLine(lineBValues[addedValueCount], iLineB)
             addedValueCount++
+            outputText.innerHTML = `cr of pairs to draw: ${svgCanvas.calcCorrelationOf(iLineA, iLineB)}`
           }
           if (addedValueCount < valueCountLimit) {
             animate(timeForNext)
@@ -363,12 +425,12 @@
         requestAnimationFrame(doIt)
       }
 
-    outputText.innerHTML = `cr of pairs to draw: ${svgCanvas.calcCorrelationOf(iLineA, iLineB)}`
     document.body.appendChild(outputText)
     svgCanvas
       .addChild(firstPoint)
       .cutChild(firstPoint)
-      .activateAverageLineFor(iLineA)
+      .activateLineFor(iLineA, ns.averageLine)
+      .activateLineFor(iLineA, ns.standardDeviationLine)
     animate()
   }
 })()
