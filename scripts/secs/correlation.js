@@ -278,6 +278,7 @@
           },
           [ns.averageLine]: {
             [ns.view]: false,
+            // TODO perhaps ns.feed replaced with ns.draw
             [ns.feed]: () => niceArray.averages,
           },
           [ns.standardDeviationLine]: {
@@ -296,6 +297,10 @@
       this.#niceLines.push(niceLine)
       this.activateLineFor(index, ns.valueLine)
       return index
+    }
+
+    newHorizontalLine(number) {
+      return this.#newLine([number, number])
     }
 
     addNumberToNiceLine(number, iLine) {
@@ -431,6 +436,7 @@
       .cutChild(firstPoint)
       .activateLineFor(iLineA, ns.averageLine)
       .activateLineFor(iLineA, ns.standardDeviationLine)
+      .addChild(svgCanvas.newHorizontalLine(150))
     animate()
   }
 })()
