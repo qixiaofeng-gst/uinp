@@ -237,12 +237,24 @@
     #niceLines = []
     #valueMax = Number.MIN_SAFE_INTEGER
     #valueMin = Number.MAX_SAFE_INTEGER
+    #xWindowSize = 20
+    #isFixedWindow = false
 
     constructor() {
       this.#svgProxy.css_width = `${this.#width}px`
       this.#svgProxy.css_height = `${this.#height}px`
       this.#svgProxy.svg_viewBox = `0 0 ${this.#width} ${this.#height}`
       document.body.appendChild(this.#svgProxy[ns.view])
+    }
+
+    setFixedWindow(isFixed = true) {
+      this.#isFixedWindow = isFixed
+      return this
+    }
+
+    setWindowSize(windowSize) {
+      this.#xWindowSize = windowSize
+      return this
     }
 
     addChild(elementProxy) {
@@ -342,6 +354,17 @@
       return niceLineA.model.calcCorrelationTo(niceLineB.model)
     }
 
+    #updateWindowSize = function (valueCount) {
+      const
+        self = this
+      if (self.#isFixedWindow) {
+        return
+      }
+      if (self.#xWindowSize < valueCount) {
+        self.#xWindowSize = valueCount
+      }
+    }
+
     #createLineForNiceLine = function (niceLine, lineName) {
       const
         self = this,
@@ -356,10 +379,11 @@
     #newLine = function (rawValues) {
       const
         self = this,
-        limit = rawValues.length
-      if (limit < 2) {
+        valueCount = rawValues.length
+      if (valueCount < 2) {
         throw 'At least two values should be given.'
       }
+      self.#updateWindowSize(valueCount)
       for (const value of rawValues) {
         if (value < self.#valueMin) {
           self.#valueMin = value
@@ -369,15 +393,19 @@
         }
       }
       const
+        windowSize = self.#xWindowSize,
+        limit = windowSize > valueCount ? valueCount : windowSize,
         valueDomain = (self.#valueMax - self.#valueMin) || 1,
         heightDomainRatio = self.#height / valueDomain,
         lineValues = rawValues.map(value => (self.#valueMax - value) * heightDomainRatio),
         line = new_svg('polyline'),
-        increment = self.#width / (limit - 1),
+        increment = self.#width / (windowSize - 1),
         xCoords = [],
-        lists = [xCoords, lineValues]
-      for (let i = 0, x = 0; i < limit; ++i, x += increment) {
+        yCoords = [],
+        lists = [xCoords, yCoords]
+      for (let i = 0, x = 0, y = valueCount - limit; i < limit; ++i, x += increment, ++y) {
         xCoords.push(x)
+        yCoords.push(lineValues[y])
       }
 
       line.svg_points = lists2pairs(lists).map(([x, y]) => `${x},${y}`).join(space)
@@ -453,6 +481,7 @@
 
     document.body.appendChild(outputText)
     svgCanvas
+      .setFixedWindow()
       .addChild(firstPoint)
       .cutChild(firstPoint)
       .activateLineFor(iLineA, ns.averageLine)
