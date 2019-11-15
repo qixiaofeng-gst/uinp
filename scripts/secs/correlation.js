@@ -23,15 +23,17 @@
     ns = make_const({
       add: Symbol('add'),
       cut: Symbol('cut'),
-      feed: Symbol('feed'),
       name: Symbol('name'),
       text: Symbol('text'),
       view: Symbol('view'),
+      draw: Symbol('draw'),
       valueLine: Symbol('valueLine'),
       averageLine: Symbol('averageLine'),
       standardDeviationLine: Symbol('standardDeviationLine'),
       standardUnitLine: Symbol('standardUnitLine'),
       deviationSquareLine: Symbol('deviationSquareLine'),
+      maxLine: Symbol('maxLine'),
+      minLine: Symbol('minLine'),
     }),
     // running_days_per_year = 260,
     clamp_float = num => parseFloat(num.toFixed(highPrecision)),
@@ -105,6 +107,21 @@
         }
 
       return new Proxy(never_touch_me, accessors)
+    },
+    new_circle = (x, y, r) => {
+      const circle = new_svg('circle')
+      circle.svg_cx = x
+      circle.svg_cy = y
+      circle.svg_r = r
+      return circle
+    },
+    new_polyline = strPoints => {
+      const line = new_svg('polyline')
+      line.svg_points = strPoints
+      line.svg_stroke = 'black'
+      line.svg_stroke_width = 1
+      line.svg_fill_opacity = 0
+      return line
     }
 
   class NiceArray {
@@ -161,6 +178,14 @@
 
     get array() {
       return this.#array
+    }
+
+    get maximumValue() {
+      return this.#max
+    }
+
+    get minimumValue() {
+      return this.#min
     }
 
     constructor() {
@@ -268,11 +293,7 @@
     }
 
     newPoint(x, y) {
-      const circle = new_svg('circle')
-      circle.svg_cx = x
-      circle.svg_cy = y
-      circle.svg_r = 1
-      return circle
+      return new_circle(x, y, 1)
     }
 
     newNiceLine(numbers) {
@@ -288,27 +309,36 @@
             ns.standardDeviationLine,
             ns.standardUnitLine,
             ns.deviationSquareLine,
+            ns.maxLine,
+            ns.minLine,
           ],
           [ns.valueLine]: {
             [ns.view]: false,
-            [ns.feed]: () => niceArray.array,
+            [ns.draw]: () => this.#newLine(niceArray.array),
           },
           [ns.averageLine]: {
             [ns.view]: false,
-            // TODO perhaps ns.feed replaced with ns.draw
-            [ns.feed]: () => niceArray.averages,
+            [ns.draw]: () => this.#newLine(niceArray.averages),
           },
           [ns.standardDeviationLine]: {
             [ns.view]: false,
-            [ns.feed]: () => niceArray.standardDeviations,
+            [ns.draw]: () => this.#newLine(niceArray.standardDeviations),
           },
           [ns.standardUnitLine]: {
             [ns.view]: false,
-            [ns.feed]: () => niceArray.standardUnits,
+            [ns.draw]: () => this.#newLine(niceArray.standardUnits),
           },
           [ns.deviationSquareLine]: {
             [ns.view]: false,
-            [ns.feed]: () => niceArray.deviationSquares,
+            [ns.draw]: () => this.#newLine(niceArray.deviationSquares),
+          },
+          [ns.maxLine]: {
+            [ns.view]: false,
+            [ns.draw]: () => this.#newHorizontalLine(niceArray.maximumValue),
+          },
+          [ns.minLine]: {
+            [ns.view]: false,
+            [ns.draw]: () => this.#newHorizontalLine(niceArray.minimumValue),
           },
         }
       this.#niceLines.push(niceLine)
@@ -316,9 +346,12 @@
       return index
     }
 
-    newHorizontalLine(number) {
-      const line = this.#newLine([number, number])
-      const text = new_svg('title')
+    #newHorizontalLine = function (number) {
+      const
+        self = this,
+        y = self.#processValues([number])[0],
+        line = new_polyline(`0,${y} ${self.#width},${y}`),
+        text = new_svg('title')
       text[ns.text] = 'God damn it'
       line[ns.add](text[ns.view])
       return line
@@ -368,7 +401,7 @@
     #createLineForNiceLine = function (niceLine, lineName) {
       const
         self = this,
-        lineView = self.#newLine(niceLine[lineName][ns.feed]())
+        lineView = niceLine[lineName][ns.draw]()
       lineView.svg_stroke = niceLine.color
       self.addChild(lineView)
 
@@ -384,21 +417,10 @@
         throw 'At least two values should be given.'
       }
       self.#updateWindowSize(valueCount)
-      for (const value of rawValues) {
-        if (value < self.#valueMin) {
-          self.#valueMin = value
-        }
-        if (value > self.#valueMax) {
-          self.#valueMax = value
-        }
-      }
       const
         windowSize = self.#xWindowSize,
         limit = windowSize > valueCount ? valueCount : windowSize,
-        valueDomain = (self.#valueMax - self.#valueMin) || 1,
-        heightDomainRatio = self.#height / valueDomain,
-        lineValues = rawValues.map(value => (self.#valueMax - value) * heightDomainRatio),
-        line = new_svg('polyline'),
+        lineValues = self.#processValues(rawValues),
         increment = self.#width / (windowSize - 1),
         xCoords = [],
         yCoords = [],
@@ -408,11 +430,26 @@
         yCoords.push(lineValues[y])
       }
 
-      line.svg_points = lists2pairs(lists).map(([x, y]) => `${x},${y}`).join(space)
-      line.svg_stroke = 'black'
-      line.svg_stroke_width = 1
-      line.svg_fill_opacity = 0
-      return line
+      return new_polyline(lists2pairs(lists).map(([x, y]) => `${x},${y}`).join(space))
+    }
+
+    #processValues = function (rawValues) {
+      const self = this
+      rawValues.forEach(value => self.#updateMinAndMaxBy(value))
+      const
+        valueDomain = (self.#valueMax - self.#valueMin) || 1,
+        heightDomainRatio = self.#height / valueDomain
+      return rawValues.map(value => (self.#valueMax - value) * heightDomainRatio)
+    }
+
+    #updateMinAndMaxBy = function (value) {
+      const self = this
+      if (value < self.#valueMin) {
+        self.#valueMin = value
+      }
+      if (value > self.#valueMax) {
+        self.#valueMax = value
+      }
     }
   }
 
@@ -482,11 +519,13 @@
     document.body.appendChild(outputText)
     svgCanvas
       .setFixedWindow()
+      .setWindowSize(13)
       .addChild(firstPoint)
       .cutChild(firstPoint)
       .activateLineFor(iLineA, ns.averageLine)
       .activateLineFor(iLineA, ns.standardDeviationLine)
-      .addChild(svgCanvas.newHorizontalLine(150))
+      .activateLineFor(iLineA, ns.maxLine)
+      .activateLineFor(iLineA, ns.minLine)
     animate()
   }
 })()
