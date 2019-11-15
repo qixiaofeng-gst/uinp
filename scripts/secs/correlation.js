@@ -25,6 +25,7 @@
       cut: Symbol('cut'),
       feed: Symbol('feed'),
       name: Symbol('name'),
+      text: Symbol('text'),
       view: Symbol('view'),
       valueLine: Symbol('valueLine'),
       averageLine: Symbol('averageLine'),
@@ -90,7 +91,9 @@
             }
           },
           set: (_target, p, value, _receiver) => {
-            if (p.startsWith(svg_prefix)) {
+            if (p === ns.text) {
+              element.innerHTML = value
+            } else if (p.startsWith(svg_prefix)) {
               element.setAttributeNS(null, _2dash(p.substr(4)), value)
             } else if (p.startsWith(css_prefix)) {
               element.style[p.substr(4)] = value
@@ -232,6 +235,8 @@
     #width = 800
     #height = 300
     #niceLines = []
+    #valueMax = Number.MIN_SAFE_INTEGER
+    #valueMin = Number.MAX_SAFE_INTEGER
 
     constructor() {
       this.#svgProxy.css_width = `${this.#width}px`
@@ -300,7 +305,11 @@
     }
 
     newHorizontalLine(number) {
-      return this.#newLine([number, number])
+      const line = this.#newLine([number, number])
+      const text = new_svg('title')
+      text[ns.text] = 'God damn it'
+      line[ns.add](text[ns.view])
+      return line
     }
 
     addNumberToNiceLine(number, iLine) {
@@ -344,13 +353,25 @@
       return lineView
     }
 
-    #newLine = function (lineValues) {
-      const limit = lineValues.length
+    #newLine = function (rawValues) {
+      const
+        self = this,
+        limit = rawValues.length
       if (limit < 2) {
         throw 'At least two values should be given.'
       }
+      for (const value of rawValues) {
+        if (value < self.#valueMin) {
+          self.#valueMin = value
+        }
+        if (value > self.#valueMax) {
+          self.#valueMax = value
+        }
+      }
       const
-        self = this,
+        valueDomain = (self.#valueMax - self.#valueMin) || 1,
+        heightDomainRatio = self.#height / valueDomain,
+        lineValues = rawValues.map(value => (self.#valueMax - value) * heightDomainRatio),
         line = new_svg('polyline'),
         increment = self.#width / (limit - 1),
         xCoords = [],
