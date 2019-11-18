@@ -34,6 +34,7 @@
       deviationSquareLine: Symbol('deviationSquareLine'),
       maxLine: Symbol('maxLine'),
       minLine: Symbol('minLine'),
+      auxiliaries: Symbol('auxiliaries'),
     }),
     // running_days_per_year = 260,
     clamp_float = num => parseFloat(num.toFixed(highPrecision)),
@@ -69,6 +70,7 @@
     new_svg = tag => {
       const
         element = document.createElementNS(xmlns, tag),
+        auxiliaries = [],
         svg_prefix = 'svg_',
         css_prefix = 'css_',
         _2dash = str => str.replace(/_/g, '-'),
@@ -95,6 +97,16 @@
           set: (_target, p, value, _receiver) => {
             if (p === ns.text) {
               element.innerHTML = value
+            } else if (p === ns.auxiliaries) {
+              if (undefined === value) {
+                const count = auxiliaries.length
+                for (let i = count - 1; i >= 0; --i) {
+                  const aux = auxiliaries.splice(i, 1)[0]
+                  aux[ns.view].remove()
+                }
+              } else {
+                auxiliaries.push(value)
+              }
             } else if (p.startsWith(svg_prefix)) {
               element.setAttributeNS(null, _2dash(p.substr(4)), value)
             } else if (p.startsWith(css_prefix)) {
@@ -257,8 +269,11 @@
 
   class SC {
     #svgProxy = new_svg('svg')
-    #width = 800
-    #height = 300
+    #canvasWidth = 800
+    #canvasHeight = 300
+    #chartWidth = 600
+    #chartHeight = 200
+    #chartStartX = 200
     #niceLines = []
     #valueMax = Number.MIN_SAFE_INTEGER
     #valueMin = Number.MAX_SAFE_INTEGER
@@ -266,9 +281,9 @@
     #isFixedWindow = false
 
     constructor() {
-      this.#svgProxy.css_width = `${this.#width}px`
-      this.#svgProxy.css_height = `${this.#height}px`
-      this.#svgProxy.svg_viewBox = `0 0 ${this.#width} ${this.#height}`
+      this.#svgProxy.css_width = `${this.#canvasWidth}px`
+      this.#svgProxy.css_height = `${this.#canvasHeight}px`
+      this.#svgProxy.svg_viewBox = `0 0 ${this.#canvasWidth} ${this.#canvasHeight}`
       document.body.appendChild(this.#svgProxy[ns.view])
     }
 
@@ -346,17 +361,6 @@
       return index
     }
 
-    #newHorizontalLine = function (number) {
-      const
-        self = this,
-        y = self.#processValues([number])[0],
-        line = new_polyline(`0,${y} ${self.#width},${y}`),
-        text = new_svg('title')
-      text[ns.text] = 'God damn it'
-      line[ns.add](text[ns.view])
-      return line
-    }
-
     addNumberToNiceLine(number, iLine) {
       const niceLine = this.#niceLines[iLine]
       niceLine.model.newNumber = number
@@ -364,6 +368,7 @@
         if (niceLine.hasOwnProperty(k)) {
           const lineView = niceLine[k][ns.view]
           if (lineView) {
+            lineView[ns.auxiliaries] = undefined
             this.cutChild(lineView)
             this.#createLineForNiceLine(niceLine, k)
           }
@@ -385,6 +390,31 @@
         niceLineA = this.#niceLines[iLineA],
         niceLineB = this.#niceLines[iLineB]
       return niceLineA.model.calcCorrelationTo(niceLineB.model)
+    }
+
+    #newHorizontalLine = function (number) {
+      const
+        self = this,
+        y = self.#processValues([number])[0],
+        line = new_polyline(`${self.#chartStartX},${y} ${self.#canvasWidth},${y}`),
+        text = new_svg('title'),
+        valueText = new_svg('text')
+      text[ns.text] = 'God damn it'
+      line[ns.add](text[ns.view])
+      line[ns.auxiliaries] = valueText
+
+      valueText[ns.text] = `${number}`
+      valueText.svg_x = self.#chartStartX
+      valueText.svg_y = y
+      valueText.svg_stroke = 'black'
+      valueText.svg_dominant_baseline = (y < 20 ?
+        'hanging' :
+        (((self.#chartHeight - y) < 20 ?
+          'baseline' :
+          'middle')))
+      valueText.svg_text_anchor = 'end'
+      self.addChild(valueText)
+      return line
     }
 
     #updateWindowSize = function (valueCount) {
@@ -421,11 +451,15 @@
         windowSize = self.#xWindowSize,
         limit = windowSize > valueCount ? valueCount : windowSize,
         lineValues = self.#processValues(rawValues),
-        increment = self.#width / (windowSize - 1),
+        increment = self.#chartWidth / (windowSize - 1),
         xCoords = [],
         yCoords = [],
         lists = [xCoords, yCoords]
-      for (let i = 0, x = 0, y = valueCount - limit; i < limit; ++i, x += increment, ++y) {
+      for (
+        let i = 0, x = self.#chartStartX, y = valueCount - limit;
+        i < limit;
+        ++i, x += increment, ++y
+      ) {
         xCoords.push(x)
         yCoords.push(lineValues[y])
       }
@@ -438,7 +472,7 @@
       rawValues.forEach(value => self.#updateMinAndMaxBy(value))
       const
         valueDomain = (self.#valueMax - self.#valueMin) || 1,
-        heightDomainRatio = self.#height / valueDomain
+        heightDomainRatio = self.#chartHeight / valueDomain
       return rawValues.map(value => (self.#valueMax - value) * heightDomainRatio)
     }
 
