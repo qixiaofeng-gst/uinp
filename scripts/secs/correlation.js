@@ -134,6 +134,41 @@
       line.svg_stroke_width = 1
       line.svg_fill_opacity = 0
       return line
+    },
+    new_pie = percentage => {
+      const
+        abs = Math.abs(percentage),
+        theta = Math.PI * abs * .02,
+        sin = Math.sin(theta),
+        cos = Math.cos(theta),
+        p = abs <= 50 ? ['0 1', '1 0'] : ['1 1', '0 0'],
+        x = 50,
+        y = 50,
+        r = 10,
+        g = new_svg('g'),
+        partA = new_svg('path'),
+        partB = new_svg('path')
+      g[ns.add](partA[ns.view])
+      g[ns.add](partB[ns.view])
+      partA.svg_d = `
+        M ${x} ${y}
+        L ${x - r} ${y}
+        A ${r} ${r} 0 ${p[0]} ${x - cos * r} ${y - sin * r}
+        Z
+      `
+      partA.svg_stroke = 'black'
+      partA.svg_fill = (percentage < 0) ? 'red' : 'green'
+      partA.svg_fill_opacity = .5
+
+      partB.svg_d = `
+        M ${x} ${y}
+        L ${x - r} ${y}
+        A ${r} ${r} 0 ${p[1]} ${x - cos * r} ${y - sin * r}
+        Z
+      `
+      partB.svg_stroke = 'black'
+      partB.svg_fill_opacity = 0
+      return g
     }
 
   class NiceArray {
@@ -509,7 +544,7 @@
   window.onload = () => {
     let addedValueCount = 2
     const
-      valueCountLimit = 50,
+      valueCountLimit = 150,
       svgCanvas = new SC(),
       outputText = document.createElement('span'),
       firstPoint = svgCanvas.newPoint(20, 20),
@@ -527,7 +562,7 @@
       lineBValues = generateRandomValues(),
       iLineA = svgCanvas.newNiceLine(lineAValues.slice(0, 2)),
       iLineB = svgCanvas.newNiceLine(lineBValues.slice(0, 2)),
-      timeInterval = 200,
+      timeInterval = 50,
       animate = (startTime = 0) => {
         const doIt = deltaTime => {
           const
@@ -556,6 +591,8 @@
       .setWindowSize(13)
       .addChild(firstPoint)
       .cutChild(firstPoint)
+      .addChild(new_pie(-60))
+      .addChild(new_pie(-40))
       .activateLineFor(iLineA, ns.averageLine)
       .activateLineFor(iLineA, ns.standardDeviationLine)
       .activateLineFor(iLineA, ns.maxLine)
