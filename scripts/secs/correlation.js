@@ -1,5 +1,6 @@
 (() => {
   const
+    isDebugging = false,
     empty = '',
     space = ' ',
     precision = 2,
@@ -144,7 +145,7 @@
         p = abs <= 50 ? ['0 1', '1 0'] : ['1 1', '0 0'],
         x = 50,
         y = 50,
-        r = 10,
+        r = 20,
         g = new_svg('g'),
         partA = new_svg('path'),
         partB = new_svg('path')
@@ -244,8 +245,8 @@
     }
 
     calcCorrelationTo(niceArray) {
-      this.#debug(false)
-      niceArray.#debug(false)
+      this.#debug(isDebugging)
+      niceArray.#debug(isDebugging)
       const isNiceArray = niceArray instanceof NiceArray
       if (false === isNiceArray) {
         return 0
@@ -542,7 +543,9 @@
     )), 'expected: 1.00')
 
   window.onload = () => {
-    let addedValueCount = 2
+    let
+      addedValueCount = 2,
+      correlationPie = undefined
     const
       valueCountLimit = 150,
       svgCanvas = new SC(),
@@ -574,7 +577,9 @@
               .addNumberToNiceLine(lineAValues[addedValueCount], iLineA)
               .addNumberToNiceLine(lineBValues[addedValueCount], iLineB)
             addedValueCount++
-            outputText.innerHTML = `cr of pairs to draw: ${svgCanvas.calcCorrelationOf(iLineA, iLineB)}`
+            correlationPie && svgCanvas.cutChild(correlationPie)
+            correlationPie = new_pie(svgCanvas.calcCorrelationOf(iLineA, iLineB) * 100)
+            svgCanvas.addChild(correlationPie)
           }
           if (addedValueCount < valueCountLimit) {
             animate(timeForNext)
@@ -585,14 +590,13 @@
         requestAnimationFrame(doIt)
       }
 
+    outputText.innerHTML = '>>>>>>> Nothing special <<<<<<<'
     document.body.appendChild(outputText)
     svgCanvas
       .setFixedWindow()
       .setWindowSize(13)
       .addChild(firstPoint)
       .cutChild(firstPoint)
-      .addChild(new_pie(-60))
-      .addChild(new_pie(-40))
       .activateLineFor(iLineA, ns.averageLine)
       .activateLineFor(iLineA, ns.standardDeviationLine)
       .activateLineFor(iLineA, ns.maxLine)
