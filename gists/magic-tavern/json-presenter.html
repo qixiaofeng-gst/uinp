@@ -1,0 +1,132 @@
+<html lang="CN">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Presenter</title>
+  <script>
+    window.addEventListener('load', () => {
+      const
+        input = document.createElement('textarea'),
+        output = document.createElement('div'),
+        convertButton = document.createElement('button'),
+        dash = '-',
+        toggleSize = '14px'
+
+      input.value = `
+      {
+        "abc": "edf",
+        "array": [0, 1, 2, 3],
+        "number": 0,
+        "object": {
+          "a": 123,
+          "b": "another string",
+          "c": {
+            "d": 0.55,
+            "e": ["a", "b"]
+          }
+        }
+      }
+      `
+      convertButton.innerText = '转 JSON'
+      convertButton.onclick = () => {
+        output.innerHTML = ''
+        try {
+          const
+            target = JSON.parse(input.value)
+          if (target instanceof Object) {
+            const showObject = (container, obj, key) => {
+              const
+                keys = Object.keys(obj),
+                count = keys.length,
+                wholeDiv = document.createElement('div'),
+                prefixSpan = document.createElement('span'),
+                toggleButton = document.createElement('span'),
+                collapsedContent = document.createElement('span'),
+                expandedContent = document.createElement('div'),
+                suffixSpan = document.createElement('span'),
+                isArray = Array.isArray(obj)
+              let prefixString = undefined === key ? '' : `"${key}" : `
+              if ((obj instanceof Object) && false === isArray) {
+                prefixString += '{'
+                suffixSpan.innerText = '}'
+
+                toggleButton.innerText = `${count}`
+                toggleButton.style.display = 'inline-block'
+                toggleButton.style.cursor = 'pointer'
+                toggleButton.style.lineHeight = toggleSize
+                toggleButton.style.width = toggleSize
+                toggleButton.style.fontSize = '10px'
+                toggleButton.style.border = '1px solid black'
+                toggleButton.style.textAlign = 'center'
+                toggleButton.style.margin = '0 2px'
+                toggleButton.onclick = () => {
+                  if (dash === toggleButton.innerText) {
+                    toggleButton.innerText = `${count}`
+                    collapsedContent.style.display = 'inline'
+                    expandedContent.style.display = 'none'
+                  } else {
+                    toggleButton.innerText = dash
+                    collapsedContent.style.display = 'none'
+                    expandedContent.style.display = 'block'
+                  }
+                }
+                prefixSpan.innerText = prefixString
+                prefixSpan.appendChild(toggleButton)
+
+                expandedContent.style.marginLeft = '2rem'
+                for (const k of keys) {
+                  obj.hasOwnProperty(k) && showObject(expandedContent, obj[k], k)
+                }
+
+                collapsedContent.innerText = '...'
+              } else {
+                prefixSpan.innerText = prefixString
+                if ('string' === typeof(obj)) {
+                  collapsedContent.innerText = `"${obj}"`
+                } else if (isArray) {
+                  collapsedContent.innerText = '[...]'
+                } else {
+                  collapsedContent.innerText = obj
+                }
+              }
+
+              expandedContent.style.display = 'none'
+
+              wholeDiv.appendChild(prefixSpan)
+              wholeDiv.appendChild(collapsedContent)
+              wholeDiv.appendChild(expandedContent)
+              wholeDiv.appendChild(suffixSpan)
+              container.appendChild(wholeDiv)
+            }
+            showObject(output, target)
+          } else {
+            output.innerText = target
+          }
+        } catch (e) {
+          output.innerText = `输入内容：${input.value}\n出错了：${e.message}`
+        }
+      }
+
+      output.style.userSelect = 'none'
+
+      document.body.appendChild(input)
+      document.body.appendChild(output)
+      document.body.appendChild(convertButton)
+    })
+  </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 10px;
+      height: 100%;
+      box-sizing: border-box;
+      display: grid;
+      grid-gap: 10px;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 40px;
+    }
+  </style>
+</head>
+
+<body>
+</body>
+</html>
