@@ -60,7 +60,7 @@ JSON的层级展开和收缩显示
                 prefixString += '{'
                 suffixSpan.innerText = '}'
 
-                toggleButton.innerText = `${count}`
+                toggleButton.innerText = dash
                 toggleButton.style.display = 'inline-block'
                 toggleButton.style.cursor = 'pointer'
                 toggleButton.style.lineHeight = toggleSize
@@ -89,6 +89,7 @@ JSON的层级展开和收缩显示
                 }
 
                 collapsedContent.innerText = '...'
+                collapsedContent.style.display = 'none'
               } else {
                 prefixSpan.innerText = prefixString
                 if ('string' === typeof(obj)) {
@@ -98,9 +99,8 @@ JSON的层级展开和收缩显示
                 } else {
                   collapsedContent.innerText = obj
                 }
+                expandedContent.style.display = 'none'
               }
-
-              expandedContent.style.display = 'none'
 
               wholeDiv.appendChild(prefixSpan)
               wholeDiv.appendChild(collapsedContent)
