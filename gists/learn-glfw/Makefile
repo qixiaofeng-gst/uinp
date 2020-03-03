@@ -1,5 +1,5 @@
 #OBJS specifies which files to compile as part of the project
-OBJS = 01_hello_SDL.cpp
+OBJS = learning.cpp
 
 #CC specifies which compiler we're using
 CC = g++
@@ -23,7 +23,7 @@ COMPILER_FLAGS = -w -Wl,-subsystem,windows
 LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2_mixer -lSDL2 -loleaut32 -limm32 -lversion -lole32 -lgdi32 -lsetupapi -lwinmm -lws2_32
 
 #OBJ_NAME specifies the name of our exectuable
-OBJ_NAME = 01_hello_SDL
+OBJ_NAME = test
 
 #This is the target that compiles our executable
 all : $(OBJS)
