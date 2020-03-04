@@ -1,4 +1,4 @@
-/******* Includes and global constants *******/
+//Using SDL and standard IO
 #include <SDL.h>
 #include <stdio.h>
 #include <string>
@@ -23,21 +23,22 @@ const std::string qxf_c_BmpPaths[ SurfaceIndexLimit ] = {
   "testleft.bmp",
 };
 
-/******* Method declarations *******/
 bool qxf_Init();
 bool qxf_LoadMedia();
 bool qxf_Close();
 
-/******* Global variables *******/
 SDL_Surface* qxf_LoadSurface( std::string path );
 
-SDL_Window* qxf_g_Window = NULL;
-SDL_Surface* qxf_g_ScreenSurface = NULL;
+//The window we'll be rendering to
+SDL_Window* gWindow = NULL;
+    
+//The surface contained by the window
+SDL_Surface* gScreenSurface = NULL;
 
-SDL_Surface* qxf_g_CurrentImageSurface = NULL;
-SDL_Surface* qxf_g_PreloadedImageSurface[ SurfaceIndexLimit ];
+//The image we will load and show on the screen
+SDL_Surface* qxf_g_CurrentSurface = NULL;
+SDL_Surface* qxf_g_PreloadedSurfaces[ SurfaceIndexLimit ];
 
-/******* Method definitions *******/
 bool qxf_Init()
 {
   bool success = true;
@@ -51,11 +52,11 @@ bool qxf_Init()
   else
   {
     //Create window
-    qxf_g_Window = SDL_CreateWindow(
+    gWindow = SDL_CreateWindow(
       "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
       qxf_c_ScreenWidth, qxf_c_ScreenHeight, SDL_WINDOW_SHOWN
     );
-    if( qxf_g_Window == NULL )
+    if( gWindow == NULL )
     {
       printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
       success = false;
@@ -63,7 +64,7 @@ bool qxf_Init()
     else
     {
       //Get window surface
-      qxf_g_ScreenSurface = SDL_GetWindowSurface( qxf_g_Window );
+      gScreenSurface = SDL_GetWindowSurface( gWindow );
     }
   }
 
@@ -76,11 +77,11 @@ bool qxf_LoadMedia()
 
   for ( int i = 0; i < SurfaceIndexLimit; ++i )
   {
-    qxf_g_PreloadedImageSurface[ i ] = qxf_LoadSurface
+    qxf_g_PreloadedSurfaces[ i ] = qxf_LoadSurface
     (
       qxf_c_BmpPaths[ i ].c_str()
     );
-    if( qxf_g_PreloadedImageSurface[ i ] == NULL )
+    if( qxf_g_PreloadedSurfaces[ i ] == NULL )
     {
       printf(
         "Unable to load image %s! SDL Error: %s\n",
@@ -97,13 +98,13 @@ bool qxf_Close()
 {
   //Deallocate surface
   for ( int i = 0; i < SurfaceIndexLimit; ++i ) {
-    SDL_FreeSurface( qxf_g_PreloadedImageSurface[ i ] );
-    qxf_g_PreloadedImageSurface[ i ] = NULL;
+    SDL_FreeSurface( qxf_g_PreloadedSurfaces[ i ] );
+    qxf_g_PreloadedSurfaces[ i ] = NULL;
   }
 
   //Destroy window
-  SDL_DestroyWindow( qxf_g_Window );
-  qxf_g_Window = NULL;
+  SDL_DestroyWindow( gWindow );
+  gWindow = NULL;
 
   //Quit SDL subsystems
   SDL_Quit();
@@ -111,23 +112,14 @@ bool qxf_Close()
 
 SDL_Surface* qxf_LoadSurface( std::string path )
 {
-  SDL_Surface* optimizedSurface = NULL;
-  SDL_Surface* loadedSurface = SDL_LoadBMP( path.c_str() );
-  if( loadedSurface == NULL )
-  {
-    printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
-  }
-  else
-  {
-    optimizedSurface = SDL_ConvertSurface( loadedSurface, qxf_g_ScreenSurface->format, 0 );
-    if ( optimizedSurface == NULL )
+    //Load image at specified path
+    SDL_Surface* loadedSurface = SDL_LoadBMP( path.c_str() );
+    if( loadedSurface == NULL )
     {
-      printf( "Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+      printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
     }
-    SDL_FreeSurface( loadedSurface );
-  }
 
-  return optimizedSurface;
+    return loadedSurface;
 }
 
 int main( int argc, char* args[] )
@@ -148,7 +140,7 @@ int main( int argc, char* args[] )
     {
       //Main loop flag
       bool quit = false;
-      qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[ SurfaceIndexDefault ];
+      qxf_g_CurrentSurface = qxf_g_PreloadedSurfaces[ SurfaceIndexDefault ];
 
       //Event handler
       SDL_Event e;
@@ -166,31 +158,26 @@ int main( int argc, char* args[] )
             switch ( e.key.keysym.sym )
             {
             case SDLK_UP:
-              qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[ SurfaceIndexUp ];
+              qxf_g_CurrentSurface = qxf_g_PreloadedSurfaces[ SurfaceIndexUp ];
               break;
             case SDLK_DOWN:
-              qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[ SurfaceIndexDown ];
+              qxf_g_CurrentSurface = qxf_g_PreloadedSurfaces[ SurfaceIndexDown ];
               break;
             case SDLK_RIGHT:
-              qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[ SurfaceIndexRight ];
+              qxf_g_CurrentSurface = qxf_g_PreloadedSurfaces[ SurfaceIndexRight ];
               break;
             case SDLK_LEFT:
-              qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[ SurfaceIndexLeft ];
+              qxf_g_CurrentSurface = qxf_g_PreloadedSurfaces[ SurfaceIndexLeft ];
               break;
-            case SDLK_ESCAPE:
-              quit = true;
             default:
-              qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[ SurfaceIndexDefault ];
+              qxf_g_CurrentSurface = qxf_g_PreloadedSurfaces[ SurfaceIndexDefault ];
             }
           }
         }
-        SDL_Rect stretchRect;
-        stretchRect.x = 0;
-        stretchRect.y = 0;
-        stretchRect.w = qxf_c_ScreenWidth;
-        stretchRect.h = qxf_c_ScreenHeight;
-				SDL_BlitScaled( qxf_g_CurrentImageSurface, NULL, qxf_g_ScreenSurface, &stretchRect );
-        SDL_UpdateWindowSurface( qxf_g_Window ); 
+        //Apply the image
+        SDL_BlitSurface( qxf_g_CurrentSurface, NULL, gScreenSurface, NULL );
+        //Update the surface
+        SDL_UpdateWindowSurface( gWindow ); 
       }
     }
   }

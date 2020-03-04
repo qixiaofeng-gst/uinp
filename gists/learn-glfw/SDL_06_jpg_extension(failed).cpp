@@ -1,5 +1,6 @@
 /******* Includes and global constants *******/
 #include <SDL.h>
+#include <SDL_image.h>
 #include <stdio.h>
 #include <string>
 
@@ -16,11 +17,11 @@ const int qxf_c_ScreenWidth = 640;
 const int qxf_c_ScreenHeight = 480;
 
 const std::string qxf_c_BmpPaths[ SurfaceIndexLimit ] = {
-  "tmp.bmp",
-  "testup.bmp",
-  "testdown.bmp",
-  "testright.bmp",
-  "testleft.bmp",
+  "tmp.jpg",
+  "testup.jpg",
+  "testdown.jpg",
+  "testright.jpg",
+  "testleft.jpg",
 };
 
 /******* Method declarations *******/
@@ -62,8 +63,16 @@ bool qxf_Init()
     }
     else
     {
-      //Get window surface
-      qxf_g_ScreenSurface = SDL_GetWindowSurface( qxf_g_Window );
+      int imgFlag = IMG_INIT_JPG;
+      if ( false == ( IMG_Init( imgFlag ) & imgFlag ) )
+      {
+        printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+        success = false;
+      }
+      else
+      {
+        qxf_g_ScreenSurface = SDL_GetWindowSurface( qxf_g_Window ); 
+      }
     }
   }
 
@@ -112,10 +121,10 @@ bool qxf_Close()
 SDL_Surface* qxf_LoadSurface( std::string path )
 {
   SDL_Surface* optimizedSurface = NULL;
-  SDL_Surface* loadedSurface = SDL_LoadBMP( path.c_str() );
+  SDL_Surface* loadedSurface = IMG_Load( path.c_str() );
   if( loadedSurface == NULL )
   {
-    printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+    printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), IMG_GetError() );
   }
   else
   {
@@ -177,8 +186,6 @@ int main( int argc, char* args[] )
             case SDLK_LEFT:
               qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[ SurfaceIndexLeft ];
               break;
-            case SDLK_ESCAPE:
-              quit = true;
             default:
               qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[ SurfaceIndexDefault ];
             }

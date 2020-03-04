@@ -6,9 +6,11 @@ CC = g++
 
 #INCLUDE_PATHS specifies the additional include paths we'll need
 INCLUDE_PATHS = -IC:\tools\mingw17.1\include\SDL2
+# -IC:\mingw_dev_lib\include -IC:\tools\mingw17.1\x86_64-w64-mingw32\include
 
 #LIBRARY_PATHS specifies the additional library paths we'll need
-LIBRARY_PATHS = -LC:\tools\mingw17.1\lib
+LIBRARY_PATHS = -LC:\tools\mingw17.1\lib 
+# -LC:\tools\mingw17.1\x86_64-w64-mingw32\lib
 
 #COMPILER_FLAGS specifies the additional compilation options we're using
 # -w suppresses all warnings
