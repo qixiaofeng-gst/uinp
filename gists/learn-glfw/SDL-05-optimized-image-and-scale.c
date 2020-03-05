@@ -1,7 +1,7 @@
 /******* Includes and global constants *******/
 #include <SDL.h>
 #include <stdio.h>
-#include <string>
+#include <stdbool.h>
 
 enum qxf_enum_SurfaceIndex {
   SurfaceIndexDefault,
@@ -15,7 +15,7 @@ enum qxf_enum_SurfaceIndex {
 const int qxf_c_ScreenWidth = 640;
 const int qxf_c_ScreenHeight = 480;
 
-const std::string qxf_c_BmpPaths[ SurfaceIndexLimit ] = {
+char* qxf_c_BmpPaths[ SurfaceIndexLimit ] = {
   "tmp.bmp",
   "testup.bmp",
   "testdown.bmp",
@@ -29,7 +29,7 @@ bool qxf_LoadMedia();
 bool qxf_Close();
 
 /******* Global variables *******/
-SDL_Surface* qxf_LoadSurface( std::string path );
+SDL_Surface* qxf_LoadSurface( char* path );
 
 SDL_Window* qxf_g_Window = NULL;
 SDL_Surface* qxf_g_ScreenSurface = NULL;
@@ -76,15 +76,12 @@ bool qxf_LoadMedia()
 
   for ( int i = 0; i < SurfaceIndexLimit; ++i )
   {
-    qxf_g_PreloadedImageSurface[ i ] = qxf_LoadSurface
-    (
-      qxf_c_BmpPaths[ i ].c_str()
-    );
+    qxf_g_PreloadedImageSurface[ i ] = qxf_LoadSurface( qxf_c_BmpPaths[ i ] );
     if( qxf_g_PreloadedImageSurface[ i ] == NULL )
     {
       printf(
         "Unable to load image %s! SDL Error: %s\n",
-        qxf_c_BmpPaths[ i ].c_str(), SDL_GetError()
+        qxf_c_BmpPaths[ i ], SDL_GetError()
       );
       success = false;
     }
@@ -109,20 +106,20 @@ bool qxf_Close()
   SDL_Quit();
 }
 
-SDL_Surface* qxf_LoadSurface( std::string path )
+SDL_Surface* qxf_LoadSurface( char* path )
 {
   SDL_Surface* optimizedSurface = NULL;
-  SDL_Surface* loadedSurface = SDL_LoadBMP( path.c_str() );
+  SDL_Surface* loadedSurface = SDL_LoadBMP( path );
   if( loadedSurface == NULL )
   {
-    printf( "Unable to load image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+    printf( "Unable to load image %s! SDL Error: %s\n", path, SDL_GetError() );
   }
   else
   {
     optimizedSurface = SDL_ConvertSurface( loadedSurface, qxf_g_ScreenSurface->format, 0 );
     if ( optimizedSurface == NULL )
     {
-      printf( "Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError() );
+      printf( "Unable to optimize image %s! SDL Error: %s\n", path, SDL_GetError() );
     }
     SDL_FreeSurface( loadedSurface );
   }
