@@ -18,11 +18,20 @@ COMPILER_FLAGS = -w -Wl,-subsystem,windows
 #LINKER_FLAGS specifies the libraries we're linking against
 #Original tutorial version below:
 #LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2_mixer -lSDL2
-LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2_mixer -lSDL2 -loleaut32 -limm32 -lversion -lole32 -lgdi32 -lsetupapi -lwinmm -lws2_32
+LINKER_FLAGS = -lmingw32 -lSDL2main -lSDL2_mixer -lSDL2\
+	-loleaut32 -limm32 -lversion -lole32\
+	-lgdi32 -lsetupapi -lwinmm -lws2_32
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = test
 
 #This is the target that compiles our executable
-all : $(OBJS)
-	$(CC) $(OBJS) -o $(OBJ_NAME) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS)
+${OBJ_NAME} : $(OBJS) learning.res
+	$(CC) $(OBJS) -o $(OBJ_NAME) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(COMPILER_FLAGS) $(LINKER_FLAGS) learning.res
+
+learning.res : learning.rc
+	windres learning.rc -O coff -o learning.res
+
+.PHONY: clean
+clean:
+	del learning.res

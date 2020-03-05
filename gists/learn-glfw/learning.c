@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "resource.h"
+
 enum qxf_enum_SurfaceIndex {
   SurfaceIndexDefault,
   SurfaceIndexUp,
