@@ -62,6 +62,15 @@ git push -u origin master
 ```
 * 在 windows 下使命令脱离 cmd 执行的方法（关闭 cmd 后进程将退出，因此大多数情况无效）：
 `start "command_name" /B command_and_paramters > somefile.txt`
+* windows 下环境变量相关命令：
+```
+@rem List environment variables:
+set
+@rem Set user variables:
+setx VNAME "path\or\something"
+@rem Set system variables:
+setx VNAME "path\or\something" /M
+```
 
 # Windows 中安装 MongoDB 服务
 * 创建数据文件和日志文件目录；
