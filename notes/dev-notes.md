@@ -3,13 +3,15 @@
 2. `gcc solving.c && less input.txt | ./a.out`
 3. `gcc creating.c && ./a.out >> input.txt`
 
-**Keep fit: Jeff Cavaliere 5 minutes**
+**Keep fit: Jeff Cavaliere 5 minutes**  
+redux/mobox
 
 # 自省三问：
 1. 我的观念中哪些是错误的？
 2. 别人觉得深不可测的事情，我能了解多少？
 3. 大脑中究竟是什么在误导我？
 
+```
 db.user.find({ 'mc_member.Mobile': '18621508640' })
 db.user.find({ _id: ObjectId('5d706e4ee87c084e92637021') })
                               5d706ec4e87c084e92637025
@@ -17,8 +19,7 @@ db.admin_order.find({ pay_id: ObjectId('5d706ec4e87c084e92637025') })
 db.admin_gb.find({ _id: ObjectId('5d69fbc6e87c084e92635e3b') })
 db.admin_order.find({ group_id: ObjectId('5d69fbc6e87c084e92635e3b') })
 more /hd1/forever_logs/gOlQ.log | grep -C 20 '2019-8-31 12:46:5'
-
-redux/mobox
+```
 
 # 开发信息
 * 图解开源协议 https://www.cnblogs.com/KruceCoder/p/7991052.html
@@ -59,7 +60,9 @@ git push -u origin master
 * 在 linux 下，两种使命令脱离 shell 执行的方法：
   1. nohup command_and_paramters &
   1. command_and_paramters </dev/null &>/dev/null &
-* 查 linux 已占用端口 sudo lsof -i -P -n | grep LISTEN
+* linux 查已占用端口 sudo lsof -i -P -n | grep LISTEN
+* linux 下查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`
+* linux 下查看总体存储空间 `df`
 * 在 windows 下使命令脱离 cmd 执行的方法（关闭 cmd 后进程将退出，因此大多数情况无效）：
 `start "command_name" /B command_and_paramters > somefile.txt`
 * windows 下环境变量相关命令：
@@ -88,7 +91,7 @@ storage:
 Set-NetFirewallProfile -Profile Domain, Public,Private -Enabled false
 
 # 常用正则
-* 分节删除：\r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n
+* 分节删除：`\r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n`
 
 # Web 前端开发跨域 Chrome 设置
 "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --disable-web-security --user-data-dir="D:/TempDocs/chrome_data/"
