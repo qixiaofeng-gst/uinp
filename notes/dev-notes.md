@@ -47,6 +47,12 @@ git add .
 * 查看 head 与前一 commit 的差异 `git diff head~1 head`
 * 关闭自动行尾转换 `git config --global core.autocrlf false`
 * 清理所有已删除分支 `git fetch --prune --all` 或者 `git remote prune origin`
+* 推送本地工程到远程空工程
+```
+git pull origin master --allow-unrelated-histories
+git remote add origin git@blablabla:url
+git push -u origin master
+```
 
 # 常用指令
 * 软链接 link-node -s target_to_link link_name
@@ -54,12 +60,6 @@ git add .
   1. nohup command_and_paramters &
   1. command_and_paramters </dev/null &>/dev/null &
 * 查 linux 已占用端口 sudo lsof -i -P -n | grep LISTEN
-* GIT 推送本地工程到远程空工程
-```
-git pull origin master --allow-unrelated-histories
-git remote add origin git@blablabla:url
-git push -u origin master
-```
 * 在 windows 下使命令脱离 cmd 执行的方法（关闭 cmd 后进程将退出，因此大多数情况无效）：
 `start "command_name" /B command_and_paramters > somefile.txt`
 * windows 下环境变量相关命令：
@@ -69,7 +69,7 @@ set
 @rem Set user variables:
 setx VNAME "path\or\something"
 @rem Set system variables:
-setx VNAME "path\or\something" /M
+setx VNAME "%VREF%\path\or\something" /M
 ```
 
 # Windows 中安装 MongoDB 服务
