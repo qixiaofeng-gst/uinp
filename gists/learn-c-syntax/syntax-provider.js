@@ -1,6 +1,6 @@
 (() => {/** Start of wrapper function */
 
-const source = `
+const str_source = `
 A.1 Lexical grammar
 A.1.1 Lexical elements
 (6.4) token:
@@ -585,10 +585,13 @@ n-wchar-sequence nondigit
 
 console.log(`
 TODO:
+1. provide function: explain head entry, prevent recursive, terminate with terminal entry
+
+DONE:
 1. parse out all entries (entry is the first line of a rule)
 2. parse out head entry (head entry is a entry never be used by any entry)
 3. specify terminal entry (terminal entry is a entry does not depend any entry)
-4. provide function: explain head entry, prevent recursive, terminate with terminal entry
+4. parse out special head entry (all entries that depend on the entry lead to recursive dependency to it self)
 
 Notes:
 set regex.lastIndex could control the regex.exec start point
@@ -596,12 +599,73 @@ set regex.lastIndex could control the regex.exec start point
 
 /** Eliminate titles */
 const str_empty = ''
+const str_word_gap = '&nbsp;&nbsp; '
+const int_word_gap_length = str_word_gap.length
 const p_title = /[\r\n]A(?:\.\d)+.+/g
 const p_entry = /^(\((?:\d+\.)+\d+\))\s([-\w]+):(?:[^\r\n](.+))?$/gm
 const p_lineEnd = /[\r\n]/
 const p_space = /\s/
 const p_optional = /(?<word>.+)opt$/
-const sourceWithoutTitle = source.replace(p_title, str_empty)
+const str_sourceWithoutTitle = str_source.replace(p_title, str_empty)
+const div_terminals = document.getElementById('terminals')
+const div_normals = document.getElementById('normals')
+
+const createEntry = entry => entry.isTerminal ?
+  createTerminalEntry(entry) :
+  createNormalEntry(entry)
+const createTerminalEntry = entry => {
+  const div_entry = createDiv()
+  div_entry.innerHTML = entry.name
+  div_entry.style.color = 'red'
+  
+  const div_line = createLine()
+  let words = str_empty
+  for (const line of entry.lines) {
+    for (const { word } of line) {
+      words += (word + str_word_gap)
+    }
+  }
+  div_line.innerHTML = words
+  
+  div_entry.appendChild(div_line)
+  div_terminals.appendChild(div_entry)
+}
+const createNormalEntry = entry => {
+  const div_entry = createDiv()
+  div_entry.innerHTML = entry.name
+  div_entry.style.color = 'green'
+  
+  for (const line of entry.lines) {
+    const div_line = createLine()
+    for (const { word, isOptional, isTerminal } of line) {
+      const span_word = createWord()
+      span_word.innerHTML = isOptional ? `[[${word}]]` : word
+      if (isTerminal) {
+        span_word.style.color = 'red'
+      } else {
+        span_word.className = 'clickable'
+        span_word.addEventListener('click', () => {
+          allEntries[word].DOM.style.display = 'block'
+          div_line.appendChild(allEntries[word].DOM)
+        })
+      }
+      div_line.appendChild(span_word)
+    }
+    div_entry.appendChild(div_line)
+  }
+  
+  entry.isHead || (div_entry.style.display = 'none')
+  div_normals.appendChild(div_entry)
+  entry.DOM = div_entry
+}
+const createLine = () => {
+  const div_line = createDiv()
+  div_line.className = 'line'
+  div_line.style.color = 'white'
+  return div_line
+}
+const createWord = () => document.createElement('span')
+const createDiv = () => document.createElement('div')
 
 /** Parse out all entries */
 /**
@@ -613,11 +677,14 @@ entry {
   isHead: boolean,
   valueStart: int,
   valueEnd: int,
+  DOM: HTMLElement,
+  users: [string, ...],
   lines: [
     [
       {
         isOptional: boolean,
         isTerminal: boolean,
+        hasReference: boolean,
         word: string,
         fullText: string,
       },
@@ -627,69 +694,112 @@ entry {
   ]
 }
 */
-const srcLength = sourceWithoutTitle.length
 const allEntries = {}
-let result = 'tmp', count = 0, lastEntry = undefined
-while (result = p_entry.exec(sourceWithoutTitle)) {
-  const [fullText, reference, name] = result
-  lastEntry && (lastEntry.valueEnd = result.index)
-  lastEntry = {
-    name,
-    reference,
-    fullText,
-    isTerminal: result[3] === 'one of',
-    isHead: true,
-    valueStart: p_entry.lastIndex,
-    valueEnd: srcLength,
-    lines: [],
+const parseEntry = () => {
+  const srcLength = str_sourceWithoutTitle.length
+  let result = 'tmp', count = 0, lastEntry = undefined
+  while (result = p_entry.exec(str_sourceWithoutTitle)) {
+    const [fullText, reference, name] = result
+    lastEntry && (lastEntry.valueEnd = result.index)
+    lastEntry = {
+      name,
+      reference,
+      fullText,
+      isTerminal: result[3] === 'one of',
+      isHead: true,
+      valueStart: p_entry.lastIndex,
+      valueEnd: srcLength,
+      DOM: undefined,
+      users: [],
+      lines: [],
+    }
+    if (result[3] && false === lastEntry.isTerminal) {
+      console.warn('======= Exception detected for entry style')
+    }
+    allEntries[name] = lastEntry
   }
-  if (result[3] && false === lastEntry.isTerminal) {
-    console.warn('======= Exception detected for entry style')
-  }
-  allEntries[name] = lastEntry
 }
-
-count = 0
-for (const key in allEntries) {
-  const { isTerminal, valueEnd, valueStart, lines } = allEntries[key]
-  const values = sourceWithoutTitle.substr(valueStart, valueEnd - valueStart)
-  const rawLines = values.split(p_lineEnd)
-  rawLines.splice(rawLines.length - 1, 1)
-  rawLines.splice(0, 1)
-  for (const rawLine of rawLines) {
-    const rawWords = rawLine.split(p_space)
-    const words = []
-    for (const rawWord of rawWords) {
-      const word = {
-        isOptional: false,
-        isTerminal: false,
-        word: rawWord,
-        fullText: rawWord,
-      }
-      words.push(word)
-      const matchResult = rawWord.match(p_optional)
-      if (matchResult) {
-        word.isOptional = true
-        word.word = matchResult.groups.word
-      }
-      const referencedEntry = allEntries[word.word]
-      if(referencedEntry) {
-        referencedEntry.isTerminal && (word.isTerminal = true)
-        const isSelf = word.word === key
-        if (referencedEntry.isHead && false === isSelf) {
-          referencedEntry.isHead = false
+const parseWords = () => {
+  let count = 0
+  for (const key in allEntries) {
+    const entry = allEntries[key]
+    const { isTerminal, valueEnd, valueStart, lines } = entry
+    const values = str_sourceWithoutTitle.substr(valueStart, valueEnd - valueStart)
+    const rawLines = values.split(p_lineEnd)
+    rawLines.splice(rawLines.length - 1, 1)
+    rawLines.splice(0, 1)
+    let hasDependency = false
+    for (const rawLine of rawLines) {
+      const rawWords = rawLine.split(p_space)
+      const words = []
+      for (const rawWord of rawWords) {
+        const word = {
+          isOptional: false,
+          isTerminal: false,
+          hasReference: false,
+          word: rawWord,
+          fullText: rawWord,
+        }
+        words.push(word)
+        const matchResult = rawWord.match(p_optional)
+        if (matchResult) {
+          word.isOptional = true
+          word.word = matchResult.groups.word
+        }
+        const referencedEntry = allEntries[word.word]
+        if(referencedEntry) {
+          referencedEntry.isTerminal && (word.isTerminal = true)
+          const isOther = false === (word.word === key)
+          if (isOther) {
+            hasDependency = true
+            word.hasReference = true
+            referencedEntry.users.push(key)
+          }
+          referencedEntry.isHead && isOther && (referencedEntry.isHead = false)
         }
       }
+      lines.push(words)
     }
-    lines.push(words)
+    entry.isTerminal = (false === hasDependency)
   }
-  isTerminal && console.log(`>>>>>>> ${++count}`, key)
+}
+const parseSpecialHeadEntry = () => {
+  let count = 0
+  for (const key in allEntries) {
+    const entry = allEntries[key]
+    if (entry.isHead || entry.isTerminal) {
+      continue
+    }
+    if (searchForHeadUser(entry, [])) {
+      continue
+    }
+    entry.isHead = true
+    console.log(`${++count}`, key)
+  }
+}
+const searchForHeadUser = ({ name, users }, searchedNames) => {
+  if (searchedNames.includes(name)) {
+    return false
+  }
+  searchedNames.push(name)
+  for (const userName of users) {
+    const entry = allEntries[userName]
+    if (entry.isHead) {
+      return true
+    } else {
+      if (searchForHeadUser(entry, searchedNames)) {
+        return true
+      }
+    }
+  }
+  return false
 }
 
-count = 0
+parseEntry()
+parseWords()
+parseSpecialHeadEntry()
 for (const key in allEntries) {
-  const { isHead, lines } = allEntries[key]
-  isHead && console.log(`======= ${++count}`, key, lines)
+  createEntry(allEntries[key])
 }
 
 /** End of wrapper function */})()
