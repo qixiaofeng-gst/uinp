@@ -595,8 +595,13 @@ set regex.lastIndex could control the regex.exec start point
 `)
 
 /** Eliminate titles */
+const str_empty = ''
 const p_title = /[\r\n]A(?:\.\d)+.+/g
-const sourceWithoutTitle = source.replace(p_title, '')
+const p_entry = /^(\((?:\d+\.)+\d+\))\s([-\w]+):(?:[^\r\n](.+))?$/gm
+const p_lineEnd = /[\r\n]/
+const p_space = /\s/
+const p_optional = /(?<word>.+)opt$/
+const sourceWithoutTitle = source.replace(p_title, str_empty)
 
 /** Parse out all entries */
 /**
@@ -609,12 +614,19 @@ entry {
   valueStart: int,
   valueEnd: int,
   lines: [
-    [{ isOptional: boolean, isTerminal: boolean, word: string }, ...],
+    [
+      {
+        isOptional: boolean,
+        isTerminal: boolean,
+        word: string,
+        fullText: string,
+      },
+      ...
+    ],
     ...
   ]
 }
 */
-const p_entry = /^(\((?:\d+\.)+\d+\))\s([-\w]+):(?:[^\r\n](.+))?$/gm
 const srcLength = sourceWithoutTitle.length
 const allEntries = {}
 let result = 'tmp', count = 0, lastEntry = undefined
@@ -637,9 +649,47 @@ while (result = p_entry.exec(sourceWithoutTitle)) {
   allEntries[name] = lastEntry
 }
 
+count = 0
 for (const key in allEntries) {
-  const { isTerminal, valueEnd, valueStart } = allEntries[key]
-  isTerminal && console.log(key, valueStart, valueEnd)
+  const { isTerminal, valueEnd, valueStart, lines } = allEntries[key]
+  const values = sourceWithoutTitle.substr(valueStart, valueEnd - valueStart)
+  const rawLines = values.split(p_lineEnd)
+  rawLines.splice(rawLines.length - 1, 1)
+  rawLines.splice(0, 1)
+  for (const rawLine of rawLines) {
+    const rawWords = rawLine.split(p_space)
+    const words = []
+    for (const rawWord of rawWords) {
+      const word = {
+        isOptional: false,
+        isTerminal: false,
+        word: rawWord,
+        fullText: rawWord,
+      }
+      words.push(word)
+      const matchResult = rawWord.match(p_optional)
+      if (matchResult) {
+        word.isOptional = true
+        word.word = matchResult.groups.word
+      }
+      const referencedEntry = allEntries[word.word]
+      if(referencedEntry) {
+        referencedEntry.isTerminal && (word.isTerminal = true)
+        const isSelf = word.word === key
+        if (referencedEntry.isHead && false === isSelf) {
+          referencedEntry.isHead = false
+        }
+      }
+    }
+    lines.push(words)
+  }
+  isTerminal && console.log(`>>>>>>> ${++count}`, key)
+}
+
+count = 0
+for (const key in allEntries) {
+  const { isHead, lines } = allEntries[key]
+  isHead && console.log(`======= ${++count}`, key, lines)
 }
 
 /** End of wrapper function */})()
