@@ -585,13 +585,15 @@ n-wchar-sequence nondigit
 
 console.log(`
 TODO:
-1. provide function: explain head entry, prevent recursive, terminate with terminal entry
+1. prevent recursive expand
+2. auto expand
 
 DONE:
 1. parse out all entries (entry is the first line of a rule)
 2. parse out head entry (head entry is a entry never be used by any entry)
 3. specify terminal entry (terminal entry is a entry does not depend any entry)
 4. parse out special head entry (all entries that depend on the entry lead to recursive dependency to it self)
+5. provide function: explain head entry, prevent recursive, terminate with terminal entry
 
 Notes:
 set regex.lastIndex could control the regex.exec start point
