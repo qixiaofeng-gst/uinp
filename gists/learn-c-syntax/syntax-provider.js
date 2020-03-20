@@ -609,14 +609,20 @@ const p_optional = /(?<word>.+)opt$/
 const str_sourceWithoutTitle = str_source.replace(p_title, str_empty)
 const div_terminals = document.getElementById('terminals')
 const div_normals = document.getElementById('normals')
+const color_red = '#f06060'
+const event_click = 'click'
 
-const createEntry = entry => entry.isTerminal ?
-  createTerminalEntry(entry) :
-  createNormalEntry(entry)
+const createTopEntry = entry => {
+  if (entry.isTerminal) {
+    div_terminals.appendChild(createTerminalEntry(entry))
+  } else {
+    entry.isHead && div_normals.appendChild(createNormalEntry(entry))
+  }
+}
 const createTerminalEntry = entry => {
   const div_entry = createDiv()
   div_entry.innerHTML = entry.name
-  div_entry.style.color = 'red'
+  div_entry.style.color = color_red
   
   const div_line = createLine()
   let words = str_empty
@@ -628,12 +634,13 @@ const createTerminalEntry = entry => {
   div_line.innerHTML = words
   
   div_entry.appendChild(div_line)
-  div_terminals.appendChild(div_entry)
+  return div_entry
 }
-const createNormalEntry = entry => {
+const createNormalEntry = (entry, visibleNames = [entry.name]) => {
   const div_entry = createDiv()
+  div_entry.syntax_entry_name = entry.name
   div_entry.innerHTML = entry.name
-  div_entry.style.color = 'green'
+  div_entry.style.color = '#60f060'
   
   for (const line of entry.lines) {
     const div_line = createLine()
@@ -641,27 +648,30 @@ const createNormalEntry = entry => {
       const span_word = createWord()
       span_word.innerHTML = isOptional ? `[[${word}]]` : word
       if (isTerminal) {
-        span_word.style.color = 'red'
+        span_word.style.color = color_red
       } else {
-        span_word.className = 'clickable'
-        span_word.addEventListener('click', () => {
-          allEntries[word].DOM.style.display = 'block'
-          div_line.appendChild(allEntries[word].DOM)
-        })
+        if (visibleNames.includes(word)) {
+          span_word.innerHTML = `{{${span_word.innerHTML}}}`
+        } else if (allEntries[word]) {
+          span_word.className = 'clickable'
+          const onClick = () => {
+            span_word.removeEventListener(event_click, onClick)
+            const subEntry = allEntries[word]
+            const div_subEntry = createNormalEntry(subEntry, [word])
+            div_line.appendChild(div_subEntry)
+          }
+          span_word.addEventListener(event_click, onClick)
+        }
       }
       div_line.appendChild(span_word)
     }
     div_entry.appendChild(div_line)
   }
-  
-  entry.isHead || (div_entry.style.display = 'none')
-  div_normals.appendChild(div_entry)
-  entry.DOM = div_entry
+  return div_entry
 }
 const createLine = () => {
   const div_line = createDiv()
   div_line.className = 'line'
-  div_line.style.color = 'white'
   return div_line
 }
 const createWord = () => document.createElement('span')
@@ -677,7 +687,6 @@ entry {
   isHead: boolean,
   valueStart: int,
   valueEnd: int,
-  DOM: HTMLElement,
   users: [string, ...],
   lines: [
     [
@@ -709,7 +718,6 @@ const parseEntry = () => {
       isHead: true,
       valueStart: p_entry.lastIndex,
       valueEnd: srcLength,
-      DOM: undefined,
       users: [],
       lines: [],
     }
@@ -799,7 +807,7 @@ parseEntry()
 parseWords()
 parseSpecialHeadEntry()
 for (const key in allEntries) {
-  createEntry(allEntries[key])
+  createTopEntry(allEntries[key])
 }
 
 /** End of wrapper function */})()
