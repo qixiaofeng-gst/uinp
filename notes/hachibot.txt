@@ -2,9 +2,12 @@
 http://www.hachibot.vip
 
 调研项目：
-https://github.com/leggedrobotics/raisimGym
-https://github.com/leggedrobotics/towr - installing
-https://github.com/mit-biomimetics/Cheetah-Software - focus
+https://github.com/leggedrobotics/raisimGym - working on it
+https://github.com/leggedrobotics/towr
+https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
+
+Useful information:
+1. pybind11 is the bridge between c++ and python
 
 目标：
 1. raisimLib 捋清楚：先读一读 manual。
@@ -37,13 +40,6 @@ pip3 install pyglet-1.5.0-py2.py3-none-any.whl future-0.18.2.tar.gz
 pip3 install atari_py-0.2.6-cp36-cp36m-manylinux1_x86_64.whl numpy-1.18.2-cp36-cp36m-manylinux1_x86_64.whl six-1.14.0-py2.py3-none-any.whl
 ------- setup raisimGym demo:
 python3 setup.py install --CMAKE_PREFIX_PATH $LOCAL_BUILD --env anymal
-
-几个我想问的问题：
-面向什么群体？
-提供什么？（娱乐？功能？伙伴？）
-到什么程度了？（想法以及实现，生产流程）
-
-Accessing Linux (WSL) files from Windows using \\wsl$
 
 强化学习（Reinforcement Learning, RL），又称再励学习、评价学习或增强学习，是机器学习的范式和方法论之一。
 强化学习是智能体（Agent）以“试错”的方式进行学习，通过与环境进行交互获得的奖赏指导行为，目标是使智能体获得最大的奖赏。
