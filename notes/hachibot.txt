@@ -14,7 +14,7 @@ Useful information:
 4. Eigen: C++ template library for matrix/verctor/numerical solver, pure header files without binary library
 5. Executables for Qt might start correctly with -qt=qt5 as argument
 
-这两天对需求和代码粗浅的理解之后，大概弄了个分层设计（没什么高深的，分个层方便描述、理解和沟通）：
+这两天对需求和代码粗浅的理解之后，大概弄了个分层设计（没什么高深的，分个层方便描述、理解和沟通，预期每一层都至少是一个独立工程）：
 1. 描述格式适配（输入层）
    - 输入：URDF，SDF，MJCF 等格式
    - 输出：单一格式的机器人描述，比如 URDF，或者我们自定
@@ -33,16 +33,6 @@ Useful information:
    - 输出：用于控制机器人或模拟器的可执行程序
    - 主要需要将训练过的控制模型针对不同目标进行处理
    - 可能是个工具集合，针对不同目标有不同工具
-
-高效 C++ 笔记:
-1. C++ 是四个子语言的集合：C、面向对象的 C++、使用模板的 C++、STL
-2. 避免使用 #define，使用 const、enum 和 inline 替代
-3. 尽可能地使用 const，只要可以用就用，滥用它
-4. 记得初始化，对象使用前保证它被初始化，对成员变量在构造方法上使用初始化列表
-...
-18. 在设计类时，着意提升使用时的犯错成本
--------
-尽量多用真正的私有成员，需要使用特殊设计模式实现私有
 
 目标：
 1. raisimLib 捋清楚：先读一读 manual。

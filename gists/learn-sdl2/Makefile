@@ -4,9 +4,9 @@ RES_FILE = learning.res
 #CC specifies which compiler we're using
 CC = gcc
 
-INCLUDE_PATHS = -IC:\tools\mingw17.1\include\SDL2
+INCLUDE_PATHS = -IC:\tools\install-free\mingw17.1\include\SDL2
 
-LIBRARY_PATHS = -LC:\tools\mingw17.1\lib
+LIBRARY_PATHS = -LC:\tools\install-free\mingw17.1\lib
 
 # -w suppresses all warnings
 # -Wl,-subsystem,windows gets rid of the console window

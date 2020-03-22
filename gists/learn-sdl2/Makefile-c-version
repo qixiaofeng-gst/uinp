@@ -5,10 +5,10 @@ OBJS = learning.c
 CC = gcc
 
 #INCLUDE_PATHS specifies the additional include paths we'll need
-INCLUDE_PATHS = -IC:\tools\mingw17.1\include\SDL2
+INCLUDE_PATHS = -IC:\tools\install-free\mingw17.1\include\SDL2
 
 #LIBRARY_PATHS specifies the additional library paths we'll need
-LIBRARY_PATHS = -LC:\tools\mingw17.1\lib
+LIBRARY_PATHS = -LC:\tools\install-free\mingw17.1\lib
 
 #COMPILER_FLAGS specifies the additional compilation options we're using
 # -w suppresses all warnings
