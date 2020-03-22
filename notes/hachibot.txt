@@ -5,14 +5,50 @@ http://www.hachibot.vip
 https://github.com/leggedrobotics/raisimGym - working on it
 https://github.com/leggedrobotics/towr
 https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
+\\wsl$\Ubuntu-18.04\home\qixiaofeng\git-repos
 
 Useful information:
 1. pybind11 is the bridge between c++ and python
+2. check Qt installation: qtdiag
+3. URDF: Unified Robot Description Format; SDF: Simulation Description Format; MJCF: Multi-Joint dynamics with Contact Format
+4. Eigen: C++ template library for matrix/verctor/numerical solver, pure header files without binary library
+5. Executables for Qt might start correctly with -qt=qt5 as argument
+
+这两天对需求和代码粗浅的理解之后，大概弄了个分层设计（没什么高深的，分个层方便描述、理解和沟通）：
+1. 描述格式适配（输入层）
+   - 输入：URDF，SDF，MJCF 等格式
+   - 输出：单一格式的机器人描述，比如 URDF，或者我们自定
+   - 对不同目标（模拟器或机器人）可能要进行数值调整，因此输出可能针对不同目标生成独立的版本
+   - 可能是个工具集合，针对不同格式和目标有不同工具
+2. 机器人控制模型训练（训练层，核心工程）
+   - 输入：机器人描述，环境描述，训练过的控制模型
+   - 输出：训练过的控制模型
+   - 预期是 C++ 和 Python 混合的工程
+   - 与输入层类似，可能针对不同目标需要不同的训练环境
+   - 本层的输入输出在概念上是有不同目标之分的，但是代码逻辑上是不用区分不同目标的
+   - 本层的输入输出的内容格式和训练逻辑是稳定的、一致的
+   - 模型的训练预期是要依赖某种模拟器的，最好能选一个开源的模拟器
+3. 机器人控制模型导出（转译/输出层）
+   - 输入：训练过的控制模型
+   - 输出：用于控制机器人或模拟器的可执行程序
+   - 主要需要将训练过的控制模型针对不同目标进行处理
+   - 可能是个工具集合，针对不同目标有不同工具
+
+高效 C++ 笔记:
+1. C++ 是四个子语言的集合：C、面向对象的 C++、使用模板的 C++、STL
+2. 避免使用 #define，使用 const、enum 和 inline 替代
+3. 尽可能地使用 const，只要可以用就用，滥用它
+4. 记得初始化，对象使用前保证它被初始化，对成员变量在构造方法上使用初始化列表
+...
+18. 在设计类时，着意提升使用时的犯错成本
+-------
+尽量多用真正的私有成员，需要使用特殊设计模式实现私有
 
 目标：
 1. raisimLib 捋清楚：先读一读 manual。
 2. 把 raisimGym 的流程捋清楚：训练是依据的什么？训练结果是怎么运行出来的？
 3. 找到抽取相对独立的训练算法的方式。
+4. 设计出能部署至不同对象（模拟器，真机）的部署系统。
 
 杨淼提供的目标：
 1. raisimGym(rsg) 依赖的是 raisimLib 的仿真环境，我们需要提供对其他仿真环境的支持，比如 mit、ROS 等
