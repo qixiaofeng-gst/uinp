@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <cstring>
 
+#include "../include/board.h"
+
 /*
 Invoke below:
   system("some-command");
@@ -128,6 +130,7 @@ int main()
   int step = 0;
   while (false == (inputX == c_exit_flag || inputY == c_exit_flag)) {
     system("CLS");
+    test();
     std::cout << physic_board << "Last: " << inputX << inputY << msg << ", put:";
     std::cin >> inputX >> inputY;
     util.parseCoordinates(inputX, inputY);
