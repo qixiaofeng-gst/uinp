@@ -7,6 +7,12 @@ https://github.com/leggedrobotics/towr
 https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
 \\wsl$\Ubuntu-18.04\home\qixiaofeng\git-repos
 
+In machine learning, the perceptron is an algorithm for supervised learning of binary classifiers.
+
+数值的研究方式是什么？
+- 是不是存在一个实践检验过的模型，能指导数值的调整？
+- 还是目前都是使用试验、记录、再试验的方式收集经验数据？
+
 Useful information:
 1. pybind11 is the bridge between c++ and python
 2. check Qt installation: qtdiag
