@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "../include/board.h"
+using qxf::gomoku::test;
 
 /*
 Invoke below:
@@ -72,7 +73,7 @@ class CoordinatesTool {
     indexY = charToIndex(y);
     isValid = indexY > 0;
   }
-  
+
   private:
   CoordinatesTool():
     isValid(false),

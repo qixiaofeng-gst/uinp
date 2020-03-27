@@ -110,6 +110,8 @@ Windows 下可创建快捷方式并添加参数
 * select 语句可以用在 from 和 where 之后
 * from 之后可以放多个表（或 select 语句），此时 from 对应的 select 语句中所有列需带表名
 * SVN 解决树冲突，需先 svn resolve --accept=working，accept 的参数值随需要而定
+* git-bash 出现 There are no available terminals (-1) 的错误时，用 cmd 输入 tasklist 找到 ssh 或者 ssh-agent 之类的进程，然后 taskkill /F /IM xxx.exe 干掉，通常能解决问题
+* linux 下查看系统中已经安装的 python 模块：pydoc modules
 
 wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
 ```

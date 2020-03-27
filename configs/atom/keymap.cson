@@ -1,0 +1,19 @@
+# This configuration file take effect by putting it under "~/.atom/".
+# You can find more information about keymaps in these guides:
+# * http://flight-manual.atom.io/using-atom/sections/basic-customization/#customizing-keybindings
+# * http://flight-manual.atom.io/behind-atom/sections/keymaps-in-depth/
+#
+# If you're having trouble with your keybindings not working, try the
+# Keybinding Resolver: `Cmd+.` on macOS and `Ctrl+.` on other platforms. See the
+# Debugging Guide for more information:
+# * http://flight-manual.atom.io/hacking-atom/sections/debugging/#check-the-keybindings
+#
+# This file uses CoffeeScript Object Notation (CSON).
+# Atom Flight Manual:
+# http://flight-manual.atom.io/using-atom/sections/basic-customization/#configuring-with-cson
+'.tree-view':
+  'ctrl-enter': 'tree-view:show-in-file-manager'
+  'ctrl-m': 'markdown-preview:open'
+
+'atom-text-editor':
+  'ctrl-enter': 'qxf:show-in-folder'

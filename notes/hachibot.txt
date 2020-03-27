@@ -7,7 +7,35 @@ https://github.com/leggedrobotics/towr
 https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
 \\wsl$\Ubuntu-18.04\home\qixiaofeng\git-repos
 
+Four steps in a training iteration: forward pass, loss function, backward pass, weight update
+Convolution layer extract specific characteristics, which is expressed by filters, out of before layer
+Padding (zeros around before layer) helps to reserve the size of the layer after applied filter
+Choosing hyperparameter(filter size, stride, padding) largely depend on the type of data that you have
+Nonlinear layers introduces nonlinearity, e.g. f(x) = max(0, x) which is ReLU (rectified linear units), tanh, sigmoid
+Pooling layers(or downsampling layer), mainly three types: max pooling, average pooling and L2-norm pooling
+# composite with a filter with stride that is same as its size, and a function, which is max/average/L2-norm implied, for generating output
+# reduced afterward computation complexity
+# control overfitting, which might lead to 100% fitting on training set but 50% or less on test/validation set
+Dropout layers drops out a random activations set by setting them to zero
+* also introduced to alleviate overfitting problem
+* only used during training, not in test/validation
+Network in Network Layers refers to conv layer with 1x1xN filters
+Objects for networks: classification, localization, detection and segmentation
+Transfer learning is the process of taking a pre-trained model (the weights and parameters of a network that has been trained on a large dataset by somebody else) and “fine-tuning” the model with your own dataset. The idea is that this pre-trained model will act as a feature extractor. You will remove the last layer of the network and replace it with your own classifier (depending on what your problem space is).
+Data augmentation techniques are a way to artificially expand your dataset. Some popular augmentations are grayscales, horizontal flips, vertical flips, random crops, color jitters, translations, rotations, and much more.
+
 In machine learning, the perceptron is an algorithm for supervised learning of binary classifiers.
+PD(proportional-derivative) controller: TeX[[ f = k_p (x_{ref}-x) + k_d (v_{ref}-v), k_p = \omega_n^2, k_d = 2 \xi \omega_n ]]
+
+As of 2016, AlphaGo's algorithm uses a combination of machine learning and tree search techniques, combined with extensive training, both from human and computer play. It uses Monte Carlo tree search, guided by a "value network" and a "policy network," both implemented using deep neural network technology.
+The application of Monte Carlo tree search in games is based on many playouts also called roll-outs. In each playout, the game is played out to the very end by selecting moves at random. The final game result of each playout is then used to weight the nodes in the game tree so that better nodes are more likely to be chosen in future playouts.
+Each round of Monte Carlo tree search consists of four steps:
+Selection: start from root R and select successive child nodes until a leaf node L is reached. The root is the current game state and a leaf is any node from which no simulation (playout) has yet been initiated. The section below says more about a way of biasing choice of child nodes that lets the game tree expand towards the most promising moves, which is the essence of Monte Carlo tree search.
+Expansion: unless L ends the game decisively (e.g. win/loss/draw) for either player, create one (or more) child nodes and choose node C from one of them. Child nodes are any valid moves from the game position defined by L.
+Simulation: complete one random playout from node C. This step is sometimes also called playout or rollout. A playout may be as simple as choosing uniform random moves until the game is decided (for example in chess, the game is won, lost, or drawn).
+Backpropagation: use the result of the playout to update information in the nodes on the path from C to R.
+
+Turing machine M = <A, S, R, I, F, b, s0>. A is alphabet symbols. S is states set. R is rules table. I is input symbols, subset of A. F is final states, subset of S. b is the blank symbol. s0 is the initial state.
 
 数值的研究方式是什么？
 - 是不是存在一个实践检验过的模型，能指导数值的调整？

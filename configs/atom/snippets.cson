@@ -1,0 +1,12 @@
+# This configuration file take effect by putting it under "~/.atom/".
+# This file uses CoffeeScript Object Notation (CSON).
+# Atom Flight Manual:
+# http://flight-manual.atom.io/using-atom/sections/basic-customization/#_cson
+'.source.cpp, .source.hpp, .source.h, .source.c, .source.cc':
+  'namespace':
+    'prefix': 'nam'
+    'body': """
+    namespace $1 {
+    $2
+    } //end of namespace $1
+    """
