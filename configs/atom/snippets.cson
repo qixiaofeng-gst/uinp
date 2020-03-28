@@ -10,3 +10,14 @@
     $2
     } //end of namespace $1
     """
+
+  '#define guard':
+    'prefix': 'dfg'
+    'body': """
+    #ifndef $1
+    #define $1
+
+    $2
+
+    #endif // guard end for $1
+    """

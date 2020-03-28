@@ -3,7 +3,12 @@
 #include <cstring>
 
 #include "../include/board.h"
+#include "../include/coordinates-tool.h"
 using qxf::gomoku::test;
+using qxf::gomoku::Board;
+using qxf::gomoku::CoordinatesTool;
+using qxf::gomoku::c_zero;
+using qxf::gomoku::c_board_width;
 
 /*
 Invoke below:
@@ -12,10 +17,11 @@ for use some command-line tool. e.g.
   system("CLS");
 */
 
-const char c_zero = '0';
+/**
+*/
+
 const char c_exit_flag = 'x';
 const int c_logic_board_width = 15;
-const int c_board_width = 32;
 const char* const c_msg_invalid = " is invalid";
 const char* const c_msg_occupied = " is occupied";
 const char* const c_msg_empty = "";
@@ -39,71 +45,6 @@ e|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_\n\
 f|_|_|_|_|_|_|_|_|_|_|_|_|_|_|_\n";
 short logical_board[c_board_width][c_board_width];
 short play_records[c_board_width * c_board_width + 1];
-
-class CoordinatesTool {
-  public:
-  static CoordinatesTool& instance()
-  {
-    static CoordinatesTool self;
-    return self;
-  }
-  inline bool isCoordinatesValid()
-  {
-    return isValid;
-  }
-  inline int x()
-  {
-    return indexX;
-  }
-  inline int y()
-  {
-    return indexY;
-  }
-  inline int indexForPhysicBoard()
-  {
-    return indexX * 2 + indexY * c_board_width;
-  }
-  void parseCoordinates(char x, char y)
-  {
-    isValid = false;
-    indexX = charToIndex(x);
-    if (0 == indexX) {
-      return;
-    }
-    indexY = charToIndex(y);
-    isValid = indexY > 0;
-  }
-
-  private:
-  CoordinatesTool():
-    isValid(false),
-    indexX(0),
-    indexY(0)
-  {
-  }
-  ~CoordinatesTool()
-  {
-  }
-  inline int charToIndex(char c)
-  {
-    if (c > c_zero && c <= nine) {
-      return c - c_zero;
-    } else if (c >= a && c <= f) {
-      return c - a + 10;
-    } else {
-      return 0; // invalid index
-    }
-  }
-
-  private:
-  const char nine = '9';
-  const char a = 'a';
-  const char f = 'f';
-
-  bool isValid;
-  int indexX;
-  int indexY;
-};
 
 bool isValidCoordinates(char x, char y)
 {
@@ -132,6 +73,7 @@ int main()
   while (false == (inputX == c_exit_flag || inputY == c_exit_flag)) {
     system("CLS");
     test();
+    Board board();
     std::cout << physic_board << "Last: " << inputX << inputY << msg << ", put:";
     std::cin >> inputX >> inputY;
     util.parseCoordinates(inputX, inputY);
