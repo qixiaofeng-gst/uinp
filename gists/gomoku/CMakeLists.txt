@@ -9,3 +9,4 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 target_link_libraries(gomoku PUBLIC board)
+target_link_libraries(gomoku PUBLIC coordinates-tool)

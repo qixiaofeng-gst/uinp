@@ -17,6 +17,11 @@ void test()
   std::cout << output << std::endl;
 }
 
+void Board::test()
+{
+  std::cout << "Board::test invoked" << std::endl;
+}
+
 Board::Board():
   impl(new BoardImpl())
 {

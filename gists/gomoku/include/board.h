@@ -12,6 +12,7 @@ void test();
 
 class Board {
   public:
+    static void test();
     Board();
   private:
     std::unique_ptr<BoardImpl> impl;

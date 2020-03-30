@@ -1,72 +1,30 @@
 #ifndef COORDINATES_TOOL_H_
 #define COORDINATES_TOOL_H_
 
+#include <memory>
+
 namespace qxf {
 namespace gomoku {
 
 const char c_zero = '0';
 const int c_board_width = 32;
 
+class CoordinatesToolImpl;
+
 class CoordinatesTool {
 public:
-  static CoordinatesTool& instance()
-  {
-    static CoordinatesTool self;
-    return self;
-  }
-  inline bool isCoordinatesValid()
-  {
-    return isValid;
-  }
-  inline int x()
-  {
-    return indexX;
-  }
-  inline int y()
-  {
-    return indexY;
-  }
-  inline int indexForPhysicBoard()
-  {
-    return indexX * 2 + indexY * c_board_width;
-  }
-  void parseCoordinates(char x, char y)
-  {
-    isValid = false;
-    indexX = charToIndex(x);
-    if (0 == indexX) {
-      return;
-    }
-    indexY = charToIndex(y);
-    isValid = indexY > 0;
-  }
+  static CoordinatesTool& instance();
+
+  bool isCoordinatesValid();
+  int x();
+  int y();
+  int indexForPhysicBoard();
+  void parseCoordinates(char x, char y);
 
 private:
-  CoordinatesTool():
-    isValid(false),
-    indexX(0),
-    indexY(0)
-  {}
+  CoordinatesTool();
   ~CoordinatesTool() = default;
-  inline int charToIndex(char c)
-  {
-    if (c > c_zero && c <= nine) {
-      return c - c_zero;
-    } else if (c >= a && c <= f) {
-      return c - a + 10;
-    } else {
-      return 0; // invalid index
-    }
-  }
-
-private:
-  const char nine = '9';
-  const char a = 'a';
-  const char f = 'f';
-
-  bool isValid;
-  int indexX;
-  int indexY;
+  std::unique_ptr<CoordinatesToolImpl> impl;
 };
 
 } //end of namespace gomoku

@@ -10,18 +10,7 @@ using qxf::gomoku::CoordinatesTool;
 using qxf::gomoku::c_zero;
 using qxf::gomoku::c_board_width;
 
-/*
-Invoke below:
-  system("some-command");
-for use some command-line tool. e.g.
-  system("CLS");
-*/
-
-/**
-*/
-
 const char c_exit_flag = 'x';
-const int c_logic_board_width = 15;
 const char* const c_msg_invalid = " is invalid";
 const char* const c_msg_occupied = " is occupied";
 const char* const c_msg_empty = "";
@@ -73,6 +62,7 @@ int main()
   while (false == (inputX == c_exit_flag || inputY == c_exit_flag)) {
     system("CLS");
     test();
+    Board::test();
     Board board();
     std::cout << physic_board << "Last: " << inputX << inputY << msg << ", put:";
     std::cin >> inputX >> inputY;
