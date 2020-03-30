@@ -64,6 +64,7 @@ git push -u origin master
 * linux 查已占用端口 sudo lsof -i -P -n | grep LISTEN
 * linux 下查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`
 * linux 下查看总体存储空间 `df`
+* Under ubuntu use `cat /etc/X11/default-display-manager` to check which display manager being used.
 * 在 windows 下使命令脱离 cmd 执行的方法（关闭 cmd 后进程将退出，因此大多数情况无效）：
 `start "command_name" /B command_and_paramters > somefile.txt`
 * windows 下环境变量相关命令：
