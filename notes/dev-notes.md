@@ -54,6 +54,7 @@ git pull origin master --allow-unrelated-histories
 git remote add origin git@blablabla:url
 git push -u origin master
 ```
+* View remote branches `git branch -r` or `git branch -a`
 
 # 常用指令
 * 软链接 link-node -s target_to_link link_name
