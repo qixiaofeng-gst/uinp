@@ -10,6 +10,10 @@ add_executable(gomoku src/gomoku.cpp)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib/)
+# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib/)
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin/)
+
 target_link_libraries(gomoku PUBLIC
   board
   coordinates-tool)

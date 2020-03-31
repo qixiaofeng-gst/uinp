@@ -42,7 +42,7 @@ git add .
 * 切换到远程分支 `git co --track origin/branch-name`
 * 切换分支 `git co branch-name`
 * 新建分支 `git co -b branch-name` + `git push origin branch-name`
-* `git pull` 会下载并合并到本地当前分支，`git fetch` 仅下载
+* 下载并合并到本地当前分支 `git pull`，仅下载 `git fetch`
 * 撤销上次提交并保留所有修改 `git reset --soft revision-hash`
 * 回退某个文件到历史版本 `git co revision_hash -- file/path`
 * 查看 head 与前一 commit 的差异 `git diff head~1 head`
@@ -54,7 +54,7 @@ git pull origin master --allow-unrelated-histories
 git remote add origin git@blablabla:url
 git push -u origin master
 ```
-* View remote branches `git branch -r` or `git branch -a`
+* 查看远程分支 `git branch -r` or `git branch -a`
 
 # 常用指令
 * 软链接 link-node -s target_to_link link_name
