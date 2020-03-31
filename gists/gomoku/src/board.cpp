@@ -1,21 +1,21 @@
 #include <iostream>
 
-#include "board.h"
-#include "impl/board.h"
+#include "board.hpp"
+#include "impl/board.hpp"
 
 namespace qxf {
 namespace gomoku {
 
-void Board::test()
-{
-  std::string output("Test method invoked.");
-  std::cout << output << std::endl;
-}
-
 Board::Board():
   impl(new BoardImpl())
 {
-  std::cout << "Board constructed" << std::endl;
+  std::string output("Board constructed");
+  std::cout << output << std::endl;
+}
+
+void Board::play(unsigned int x, unsigned int y)
+{
+  std::cout << "Play at " << x << "," << y << std::endl;
 }
 
 } //end of namespace gomoku

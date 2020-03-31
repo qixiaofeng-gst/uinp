@@ -3,7 +3,7 @@ project(gomoku VERSION 0.1)
 
 include_directories(include src)
 
-add_library(board STATIC src/board.cpp src/impl/board.cpp)
+add_library(board STATIC src/board.cpp)
 add_library(coordinates-tool STATIC src/coordinates-tool.cpp)
 add_executable(gomoku src/gomoku.cpp)
 

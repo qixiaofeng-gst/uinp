@@ -10,7 +10,7 @@ class BoardImpl;
 class Board {
 public:
   Board();
-  void test();
+  void play(unsigned int x, unsigned int y);
 private:
   std::unique_ptr<BoardImpl> impl;
 };

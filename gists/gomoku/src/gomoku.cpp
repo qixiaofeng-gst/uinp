@@ -1,10 +1,9 @@
 #include <iostream>
-#include <stdlib.h>
 #include <cstring>
 
-#include "board.h"
-#include "impl/board.h"
-#include "coordinates-tool.h"
+#include "board.hpp"
+#include "impl/board.hpp"
+#include "coordinates-tool.hpp"
 using qxf::gomoku::Board;
 using qxf::gomoku::CoordinatesTool;
 using qxf::gomoku::c_zero;
@@ -71,7 +70,7 @@ int main()
   while (false == (inputX == c_exit_flag || inputY == c_exit_flag)) {
     clearScreen();
     Board board;
-    board.test();
+    board.play(inputX, inputY);
     std::cout << physic_board << "Last: " << inputX << inputY << msg << ", put:";
     std::cin >> inputX >> inputY;
     util.parseCoordinates(inputX, inputY);
