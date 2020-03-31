@@ -7,15 +7,12 @@ namespace qxf {
 namespace gomoku {
 
 class BoardImpl;
-
-void test();
-
 class Board {
-  public:
-    static void test();
-    Board();
-  private:
-    std::unique_ptr<BoardImpl> impl;
+public:
+  Board();
+  void test();
+private:
+  std::unique_ptr<BoardImpl> impl;
 };
 
 }//end namespace gomoku

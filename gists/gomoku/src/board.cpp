@@ -1,25 +1,15 @@
 #include <iostream>
 
-#include "../include/board.h"
+#include "board.h"
+#include "impl/board.h"
 
 namespace qxf {
 namespace gomoku {
 
-class BoardImpl {
-public:
-private:
-  int x;
-};
-
-void test()
+void Board::test()
 {
   std::string output("Test method invoked.");
   std::cout << output << std::endl;
-}
-
-void Board::test()
-{
-  std::cout << "Board::test invoked" << std::endl;
 }
 
 Board::Board():

@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <cstring>
 
-#include "../include/board.h"
-#include "../include/coordinates-tool.h"
-using qxf::gomoku::test;
+#include "board.h"
+#include "impl/board.h"
+#include "coordinates-tool.h"
 using qxf::gomoku::Board;
 using qxf::gomoku::CoordinatesTool;
 using qxf::gomoku::c_zero;
@@ -40,6 +40,15 @@ bool isValidCoordinates(char x, char y)
   return true;
 }
 
+void clearScreen()
+{
+  #ifdef __linux__
+    system("printf \"\\033c\"");
+  #else
+    system("CLS");
+  #endif
+}
+
 /*
 TODO:
 1. winner judgement
@@ -60,10 +69,9 @@ int main()
   char inputX = c_zero, inputY = c_zero;
   int step = 0;
   while (false == (inputX == c_exit_flag || inputY == c_exit_flag)) {
-    system("CLS");
-    test();
-    Board::test();
-    Board board();
+    clearScreen();
+    Board board;
+    board.test();
     std::cout << physic_board << "Last: " << inputX << inputY << msg << ", put:";
     std::cin >> inputX >> inputY;
     util.parseCoordinates(inputX, inputY);
@@ -83,6 +91,6 @@ int main()
       msg = c_msg_invalid;
     }
   }
-  std::cout << "Bye bye!";
+  std::cout << "Bye bye!" << std::endl;
   return 0;
 }

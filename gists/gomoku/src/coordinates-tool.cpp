@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../include/coordinates-tool.h"
+#include "coordinates-tool.h"
 
 namespace qxf {
 namespace gomoku {
