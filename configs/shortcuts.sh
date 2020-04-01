@@ -6,7 +6,7 @@ list() { ## Used to list all commands available in .bash_profile.
       echo `expr "$name" : '\([a-z0-9_\-]\{1,32\}\)'`
       echo "${line/$name/$sps}"
     fi
-  done < ~/Documents/git-repos/uinp/configs/shortcuts.sh
+  done < /d/git-repos/uinp/configs/shortcuts.sh
 }
 
 svn_mkdir() { ## Make directory on gsegment svn trunk.
@@ -92,7 +92,7 @@ git_up() { ## Used to update the git remote url.
 }
 
 setup_git() { ## Used to set my email and name for git.
-  git config --global user.email "qixiaofeng@gsegment.com"
+  git config --global user.email "qi_xiaofeng@foxmail.com"
   git config --global user.name "XiaofengQi"
 }
 
