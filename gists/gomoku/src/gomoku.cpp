@@ -71,6 +71,8 @@ int main()
     clearScreen();
     Board board;
     board.play(inputX, inputY);
+    std::cout << "\033[2A=======" << std::endl;
+    std::cout << "Above line is covered." << std::endl;
     std::cout << physic_board << "Last: " << inputX << inputY << msg << ", put:";
     std::cin >> inputX >> inputY;
     util.parseCoordinates(inputX, inputY);
