@@ -103,7 +103,6 @@ Windows 下可创建快捷方式并添加参数
 * Windows 重启 LxssManager 服务可重启 Linux 子系统
 * Accessing Linux (WSL) files from Windows using \\wsl$
 * ffplay 播放字幕 ffplay path/to/video -vf subtitles=path/to/text
-* gpg 检查文件签名 sha256sum/md5sum the-file-to-check 与网站列出的 sha256/md5 签名进行比对
 * Java 执行指定 jar 包中的指定 class 和 library path 的命令行：
 `java -Djava.library.path=dir/path -cp xxx.jar xxx.xxx.ClassName`
 * eclipse 中配置 ${user} 变量的方法：在 eclipse.ini 中的 -vmargs 之后一行添加 -Duser.name=XXX
@@ -114,6 +113,8 @@ Windows 下可创建快捷方式并添加参数
 * SVN 解决树冲突，需先 svn resolve --accept=working，accept 的参数值随需要而定
 * git-bash 出现 There are no available terminals (-1) 的错误时，用 cmd 输入 tasklist 找到 ssh 或者 ssh-agent 之类的进程，然后 taskkill /F /IM xxx.exe 干掉，通常能解决问题
 * linux 下查看系统中已经安装的 python 模块：pydoc modules
+* 检查文件签名 sha256sum/md5sum the-file-to-check 与网站列出的 sha256/md5 签名进行比对
+* gpg 检查文件签名，`gpg --verify sig/file/path` or `gpg -d sig/file/path`，gpg 将自动检测同目录下无后缀同名文件，如果报出 No public key 的问题，可查看输出中的 RSA id，调 `gpg --search-keys the_rsa_id` 按命令行提示操作可导入 public key，`gpg --list-keys` 可列出所有已导入的 public key，`gpg --edit-key the_rsa_id` 可对相应的 public key 进行编辑
 
 wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
 ```
