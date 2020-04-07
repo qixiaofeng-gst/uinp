@@ -6,7 +6,7 @@ list() { ## Used to list all commands available in .bash_profile.
       echo `expr "$name" : '\([a-z0-9_\-]\{1,32\}\)'`
       echo "${line/$name/$sps}"
     fi
-  done < /d/git-repos/uinp/configs/shortcuts.sh
+  done < ~/Documents/git-repos/uinp/configs/shortcuts.sh
 }
 
 svn_mkdir() { ## Make directory on gsegment svn trunk.
