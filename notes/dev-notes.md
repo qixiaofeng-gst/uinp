@@ -116,6 +116,9 @@ Windows 下可创建快捷方式并添加参数
 * 检查文件签名 sha256sum/md5sum the-file-to-check 与网站列出的 sha256/md5 签名进行比对
 * gpg 检查文件签名，`gpg --verify sig/file/path` or `gpg -d sig/file/path`，gpg 将自动检测同目录下无后缀同名文件，如果报出 No public key 的问题，可查看输出中的 RSA id，调 `gpg --search-keys the_rsa_id` 按命令行提示操作可导入 public key，`gpg --list-keys` 可列出所有已导入的 public key，`gpg --edit-key the_rsa_id` 可对相应的 public key 进行编辑
 * linux 下检查网络 ifconfig, hostname, netstat
+* linux 下 /etc/default/grub 包含了系统启停界面的配置
+* qmake 可以通过传参 -qt=qt5 正确运行
+* 解压 `tar zxvf file-name.tar.gz`
 
 wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
 ```
