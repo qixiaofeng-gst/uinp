@@ -4,7 +4,7 @@
 #include <chrono>
 
 int main() {
-  const int count = 4e8;
+  const int count = 4e5;
   std::cout << "Do " << count << " times multiplication." << '\n';
   std::default_random_engine generator;
   std::uniform_int_distribution<int> distribution(1,6);
