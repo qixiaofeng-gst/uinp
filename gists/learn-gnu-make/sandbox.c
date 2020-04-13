@@ -1,5 +1,6 @@
 #include <wchar.h>
 #include <locale.h>
+#include <stdbool.h>
 
 int main(int argc, char const *argv[]) {
     wprintf(L"%s\n", setlocale(LC_ALL, ""));
@@ -57,7 +58,14 @@ int main(int argc, char const *argv[]) {
         }
     }
 
-    wprintf(L"Hello World!\n");
     wprintf(table);
+    system("stty raw");
+    const wchar_t exit_flag = L'x';
+    wchar_t input = 0;
+    while(false == (exit_flag == input)) {
+        input = getwchar();
+        wprintf(L"====>>> %X\n", input);
+    }
+    system("stty cooked");
     return 0;
 }
