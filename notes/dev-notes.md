@@ -55,6 +55,7 @@ git remote add origin git@blablabla:url
 git push -u origin master
 ```
 * 查看远程分支 `git branch -r` or `git branch -a`
+* 保存用户密码 `git config --global credential.helper store`
 
 # 常用指令
 * 软链接 link-node -s target_to_link link_name
