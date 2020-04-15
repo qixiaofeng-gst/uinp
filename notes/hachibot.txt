@@ -7,6 +7,10 @@ https://github.com/leggedrobotics/towr
 https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
 \\wsl$\Ubuntu-18.04\home\qixiaofeng\git-repos
 
+Q:
+1. who manage switching controller ? (controller itself ? or a controller manager ?)
+2. where is controller manager ? (in CPP ? or in python code ?)
+
 1. AI 和传统算法联调
 2. 整体联调
 
