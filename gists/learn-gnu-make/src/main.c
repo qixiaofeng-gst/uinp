@@ -11,8 +11,8 @@ int
 main(int argc, char const *argv[])
 {
     struct termios termInfo, termInfoBak;
-    tcgetattr(0, &termInfo);
     tcgetattr(0, &termInfoBak);
+    tcgetattr(0, &termInfo);
     termInfo.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(0, TCSAFLUSH, &termInfo);
 
@@ -37,7 +37,6 @@ main(int argc, char const *argv[])
         input = getwchar();
         switch (input) {
         case L'i':
-        //case L'':
             if (upOffset < offsetLimit) {
                 wprintf(L"\033[2A");
                 upOffset++;
@@ -61,8 +60,10 @@ main(int argc, char const *argv[])
                 leftOffset--;
             }
             break;
+        case L'm':
+            wprintf(L"o\033[D");
+            break;
         default:
-            wprintf(L"%lc", input);
             break;
         }
     }
