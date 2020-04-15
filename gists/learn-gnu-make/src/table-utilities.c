@@ -1,5 +1,23 @@
 #include <wchar.h>
 #include <stdio.h>
+#include <stdbool.h>
+
+#include "table-utilities.h"
+
+const char *tableFileName = "table.dat";
+const int table_string_length = 992;
+const int table_logic_size = 15;
+
+void
+loadTableFromFile(wchar_t *tableInMemory)
+{
+    FILE *tableFile = fopen(tableFileName, "r");
+    if (NULL == tableFile) {
+        return;
+    }
+    fread(tableInMemory, sizeof(wchar_t), table_string_length, tableFile);
+    fclose(tableFile);
+}
 
 void
 showUnicodeTable()
@@ -12,6 +30,17 @@ showUnicodeTable()
             wprintf(L"\n");
         }
     }
+}
+
+bool
+isTableFileExist()
+{
+    FILE *tableFile = fopen(tableFileName, "r");
+    if (NULL == tableFile) {
+        return false;
+    }
+    fclose(tableFile);
+    return true;
 }
 
 void
@@ -63,8 +92,7 @@ generateTableFile()
         V S v S v S v S v S v S v S v S v S v S v S v S v S v S v S V N
         M h x h x h x h x h x h x h x h x h x h x h x h x h x h x h m N
         V S v S v S v S v S v S v S v S v S v S v S v S v S v S v S V N
-        l H c H c H c H c H c H c H c H c H c H c H c H c H c H c H r N
-        L'\0',
+        l H c H c H c H c H c H c H c H c H c H c H c H c H c H c H r L'\0'
     };
     #undef N
     #undef x
@@ -83,9 +111,11 @@ generateTableFile()
     #undef O
     #undef o
     #undef S
+    if (isTableFileExist()) {
+        return;
+    }
 
-    FILE *outputFile = fopen("table.wchars", "w");
-    fwprintf(outputFile, table);
+    FILE *outputFile = fopen(tableFileName, "w");
+    fwrite(table, sizeof(wchar_t), wcslen(table) + 1, outputFile);
     fclose(outputFile);
-    wprintf(table);
 }
