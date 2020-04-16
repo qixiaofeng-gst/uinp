@@ -7,9 +7,50 @@
 
 #include "table-utilities.h"
 
+#define M_initializer_first_hand L'O'
+
+const wchar_t first_hand = M_initializer_first_hand;
+const wchar_t second_hand = L'X';
+
+int board[M_table_logic_size][M_table_logic_size];
+
+void
+clearBoard()
+{
+    memset(board, 0, sizeof(int) * M_table_logic_size * M_table_logic_size);
+}
+
+wchar_t
+passHand()
+{
+    static wchar_t currentHand = M_initializer_first_hand;
+    #undef M_initializer_first_hand
+
+    wchar_t returnHand = currentHand;
+    if (first_hand == currentHand) {
+        currentHand = second_hand;
+    } else {
+        currentHand = first_hand;
+    }
+    return returnHand;
+}
+
+void
+touchTerminal(bool isRestore)
+{
+    static struct termios backup;
+    if (isRestore) {
+        // ==================
+    } else {
+
+    }
+}
+
 int
 main(int argc, char const *argv[])
 {
+    clearBoard();
+
     struct termios termInfo, termInfoBak;
     tcgetattr(0, &termInfoBak);
     tcgetattr(0, &termInfo);
@@ -21,11 +62,11 @@ main(int argc, char const *argv[])
     generateTableFile();
     wchar_t tableInMemory[table_string_length];
     loadTableFromFile(tableInMemory);
-    wprintf(L"Length to read: %d, logic size: %d\n", table_string_length, table_logic_size);
+    wprintf(L"Length to read: %d, logic size: %d\n", table_string_length, M_table_logic_size);
     wprintf(L"%ls", tableInMemory);
 
     system("stty raw");
-    const int offsetLimit = table_logic_size - 1;
+    const int offsetLimit = M_table_logic_size - 1;
     const wchar_t exit_flag = L'x';
     wchar_t input = 0;
     int upOffset = 0;
@@ -61,7 +102,7 @@ main(int argc, char const *argv[])
             }
             break;
         case L'm':
-            wprintf(L"o\033[D");
+            wprintf(L"%lc\033[D", passHand());
             break;
         default:
             break;

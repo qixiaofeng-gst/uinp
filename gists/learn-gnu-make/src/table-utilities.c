@@ -6,7 +6,6 @@
 
 const char *tableFileName = "table.dat";
 const int table_string_length = 992;
-const int table_logic_size = 15;
 
 void
 loadTableFromFile(wchar_t *tableInMemory)

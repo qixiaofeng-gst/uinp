@@ -18,6 +18,6 @@ void
 loadTableFromFile(wchar_t *tableInMemory);
 
 extern const int table_string_length;
-extern const int table_logic_size;
+#define M_table_logic_size 15
 
 #endif // guard end for TABLE_UTILITIES_H
