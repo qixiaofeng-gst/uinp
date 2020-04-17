@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "macro-constants.h"
 #include "table-utilities.h"
 
 const char *tableFileName = "table.dat";
-const int table_string_length = 992;
 
 void
 loadTableFromFile(wchar_t *tableInMemory)
@@ -14,7 +14,7 @@ loadTableFromFile(wchar_t *tableInMemory)
     if (NULL == tableFile) {
         return;
     }
-    fread(tableInMemory, sizeof(wchar_t), table_string_length, tableFile);
+    fread(tableInMemory, sizeof(wchar_t), M_table_string_length, tableFile);
     fclose(tableFile);
 }
 

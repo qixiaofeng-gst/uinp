@@ -8,3 +8,5 @@
 1. Source file name uses lowercase words combined with dash `-`.
 1. Source file directory name uses same rule as file name.
 1. Fake namespace implemented with uppercase namespace plus underscore `_` as prefix.
+1. Function declaration could be written in single line.
+2. Function definition have to be written in multi-line format.
