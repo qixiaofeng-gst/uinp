@@ -8,7 +8,7 @@ int board[M_table_logic_size][M_table_logic_size];
 void
 clearBoard()
 {
-    memset(board, 0, sizeof(int) * M_table_logic_size * M_table_logic_size);
+    memset(board, M_empty_slot, sizeof(int) * M_table_logic_size * M_table_logic_size);
 }
 
 bool
@@ -21,4 +21,11 @@ void
 putPieceAt(int x, int y, int pieceFlag)
 {
     board[x][y] = pieceFlag;
+
+    /*
+    Quadrants:
+       4 | 1
+    -----------
+       3 | 2
+    */
 }

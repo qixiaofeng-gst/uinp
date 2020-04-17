@@ -42,6 +42,7 @@ main(int argc, char const *argv[])
     loadTableFromFile(tableInMemory);
     wprintf(L"Length to read: %d, logic size: %d\n", M_table_string_length, M_table_logic_size);
     wprintf(L"%ls", tableInMemory);
+    wprintf(L"\033[s");
 
     int systemResult = system("stty raw");
     const int offsetLimit = M_table_logic_size - 1;
@@ -89,6 +90,9 @@ main(int argc, char const *argv[])
                     putPieceAt(x, y, (first_hand == hand) ? first_piece : second_piece);
                 }
             }
+            break;
+        case L'M':
+            wprintf(L"\033[u\033[s Broke input.");
             break;
         default:
             break;
