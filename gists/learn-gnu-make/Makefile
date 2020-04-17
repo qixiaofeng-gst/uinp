@@ -4,32 +4,24 @@ args_c_standard = -std=c99
 path_src = src
 path_lib = lib
 path_bin = bin
+main_name = main.c
+app_name = test
 
-objects = table-utilities.o terminal-utilities.o
+sources := $(filter-out $(path_src)/$(main_name), $(wildcard $(path_src)/*.c))
+objects := $(sources:.c=.o)
+objects := $(subst $(path_src)/, $(path_lib)/, $(objects))
 
-obj_table_utilities = $(path_lib)/table-utilities.o
-obj_termi_utilities = $(path_lib)/terminal-utilities.o
+src_main = $(path_src)/$(main_name)
+app_path = $(path_bin)/$(app_name)
 
-src_table_utilities = $(path_src)/table-utilities.c
-src_termi_utilities = $(path_src)/terminal-utilities.c
-src_main = $(path_src)/main.c
-
-app_path = $(path_bin)/test
-
-all: $(obj_table_utilities) $(obj_termi_utilities)
-	$(CC) $(args_c_standard) $(args_includes) $(obj_table_utilities) $(obj_termi_utilities) $(src_main) -o $(app_path)
-	@echo '======= Make Done ======='
+all: $(objects)
+	@$(CC) $(args_c_standard) $(args_includes) \
+	 	$(objects) $(src_main) -o $(app_path)
+	@echo '====>>> Make Done.'
 .PHONY: all
 
-$(obj_table_utilities): $(src_table_utilities)
-	$(CC) $(args_c_standard) $(args_includes) \
-	 	-c $(src_table_utilities) \
-		-o $(obj_table_utilities)
-
-$(obj_termi_utilities): $(src_termi_utilities)
-	$(CC) $(args_c_standard) $(args_includes) \
-	 	-c $(src_termi_utilities) \
-		-o $(obj_termi_utilities)
+$(objects): $(path_lib)/%.o: $(path_src)/%.c
+	$(CC) $(args_c_standard) $(args_includes) -c $< -o $@
 
 cpp:
 	$(CXX) -std=c++11 sandbox.cpp -o test

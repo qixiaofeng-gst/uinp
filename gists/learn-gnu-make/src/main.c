@@ -12,14 +12,26 @@
 
 const wchar_t first_hand = M_initializer_first_hand;
 const wchar_t second_hand = L'X';
+const int first_piece = 0B0001;
+const int second_piece = 0B1000;
 
 int board[M_table_logic_size][M_table_logic_size];
 
+inline
 void
 clearBoard()
 {
     memset(board, 0, sizeof(int) * M_table_logic_size * M_table_logic_size);
 }
+void clearBoard();
+
+inline
+bool
+isEmptySlot(int x, int y)
+{
+    return 0 == board[x][y];
+}
+bool isEmptySlot();
 
 wchar_t
 passHand()
@@ -55,11 +67,12 @@ main(int argc, char const *argv[])
     const int offsetLimit = M_table_logic_size - 1;
     const wchar_t exit_flag = L'x';
     wchar_t input = 0;
-    int upOffset = 0;
-    int leftOffset = 0;
+    int upOffset = 7;
+    int leftOffset = 7;
 
-    wprintf(L"\033[1A");
-    wprintf(L"\033[2D");
+    wprintf(L"\033[15A");
+    wprintf(L"\033[16D");
+
     while(false == (exit_flag == input)) {
         input = getwchar();
         switch (input) {
@@ -87,8 +100,19 @@ main(int argc, char const *argv[])
                 leftOffset--;
             }
             break;
-        case L'm':
-            wprintf(L"%lc\033[D", passHand());
+        case L'm': {
+                int x = offsetLimit - leftOffset;
+                int y = offsetLimit - upOffset;
+                if (isEmptySlot(x, y)) {
+                    wchar_t hand = passHand();
+                    wprintf(L"%lc\033[D", hand);
+                    if (first_hand == hand) {
+                        board[x][y] = first_piece;
+                    } else {
+                        board[x][y] = second_piece;
+                    }
+                }
+            }
             break;
         default:
             break;
