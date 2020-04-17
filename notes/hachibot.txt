@@ -7,6 +7,15 @@ https://github.com/leggedrobotics/towr
 https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
 \\wsl$\Ubuntu-18.04\home\qixiaofeng\git-repos
 
+DQN: Deep Q Network
+
+Planning VS Policy
+
+GSA:
+  G: goal
+  S: state
+  A: action
+
 Q:
 1. who manage switching controller ? (controller itself ? or a controller manager ?)
 2. where is controller manager ? (in CPP ? or in python code ?)

@@ -29,6 +29,7 @@ more /hd1/forever_logs/gOlQ.log | grep -C 20 '2019-8-31 12:46:5'
 pip search --version tensorflow
 pip install --upgrade tensorflow==1.1.0rc1
 ```
+* 检查 tensorflow 版本 `python3 -c 'import tensorflow as tf; print(tf.__version__)'`
 * WebStorm 编辑器批量处理行尾：选中一目录后，菜单 File -> LineSeparators 选择一个行尾格式即可。
 
 # 版本工具备忘

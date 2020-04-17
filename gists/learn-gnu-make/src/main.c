@@ -1,11 +1,12 @@
 #include <locale.h>
 #include <stdio.h>
 #include <wchar.h>
-#include <stdbool.h>
 #include <stdlib.h>
-#include <termios.h>
+#include <stdbool.h>
+#include <string.h>
 
 #include "table-utilities.h"
+#include "terminal-utilities.h"
 
 #define M_initializer_first_hand L'O'
 
@@ -35,27 +36,12 @@ passHand()
     return returnHand;
 }
 
-void
-touchTerminal(bool isRestore)
-{
-    static struct termios backup;
-    if (isRestore) {
-        // ==================
-    } else {
-
-    }
-}
-
 int
 main(int argc, char const *argv[])
 {
     clearBoard();
-
-    struct termios termInfo, termInfoBak;
-    tcgetattr(0, &termInfoBak);
-    tcgetattr(0, &termInfo);
-    termInfo.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(0, TCSAFLUSH, &termInfo);
+    touchTerminal(false);
+    turnOffEcho();
 
     wprintf(L"%s\n", setlocale(LC_ALL, ""));
     wprintf(L">>>>>>> Belows are sandbox output:\n");
@@ -110,6 +96,7 @@ main(int argc, char const *argv[])
     }
     wprintf(L"\033[999E\n");
     system("stty cooked");
-    tcsetattr(0, TCSAFLUSH, &termInfoBak);
+
+    touchTerminal(true);
     return 0;
 }
