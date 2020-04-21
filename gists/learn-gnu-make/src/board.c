@@ -4,6 +4,7 @@
 #include "macro-constants.h"
 
 int board[M_table_logic_size][M_table_logic_size];
+int const table_last_index = M_table_logic_size - 1;
 
 void
 clearBoard()
@@ -24,10 +25,23 @@ _isSameFlag(int pieceFlag, int x, int y)
     return pieceFlag == board[x][y];
 }
 
+bool
+_checkUpBorder(int coordinate)
+{
+    return coordinate > 0;
+}
+
+bool
+_checkBottomBorder(int coordinate)
+{
+    return coordinate < table_last_index;
+}
+
 int
 _countContinuousSameFlag(int pieceFlag, int x, int y, int incrementX, int incrementY)
 {
     int count = 0;
+
     // for (int i = x; i < M_table_logic_size) {
     //
     // }

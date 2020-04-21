@@ -121,9 +121,10 @@ Windows 下可创建快捷方式并添加参数
 * linux 下 /etc/default/grub 包含了系统启停界面的配置
 * qmake 可以通过传参 -qt=qt5 正确运行
 * 解压 `tar zxvf file-name.tar.gz`
-* Linux 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'`
+* Linux 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
 * Linux 查看 `coredump gdb _PID_`；然后 gdb 中输入 bt
 * Linux 查看消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`
+* Linux 查看 include path：`echo | gcc -E -Wp,-v -`
 
 wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
 ```
