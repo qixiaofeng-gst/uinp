@@ -7,14 +7,42 @@ https://github.com/leggedrobotics/towr
 https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
 \\wsl$\Ubuntu-18.04\home\qixiaofeng\git-repos
 
+dot product VS cross product
+
+Below 'x_' stands for inputs (without suffix means vector),
+      'w_' stands for weight (without suffix means vector),
+      'b' stands for bias(= negative threshold, vector),
+      'a' stands for output (vector) and
+      'y(x)' stands for desired output (vector).
+A core factor: sigma = sum_j(w_j * x_j + b);
+perceptron, a = ( sigma <= 0 ) ? 0 : 1;
+sigmoid, a = 1 / ( 1 + exp(-sigma) );
+quadratic cost/loss/objective function, C(w, b) = sum_x(|| y(x) - a ||)^2 / 2n;
+       n is the total number of training input;
+       ||v|| denotes usual length function for v.
+gradient descent algorithm,
+
+什么是数，什么是量
+量有单位，数没有。数通常是一个物理量的比值。
+
 DQN: Deep Q Network
 
 Planning VS Policy
 
-GSA:
+Markov decision process M = {S, A, T, r}:
+  S - state space, s belongs to S
+  A - action space, a belongs to A
+  T - trainsition operator
+  r - reward function, r: S x A -> R, r(s_t, a_t) - reward
+Partially observed Markov decision process M = {S, A, O, T, epsilon, r}
+  O - observation space, o belongs to O
+  epsilon - emission probability p(o_t|s_t)
+
+GSAO:
   G: goal
   S: state
   A: action
+  O: observation
 
 Q:
 1. who manage switching controller ? (controller itself ? or a controller manager ?)

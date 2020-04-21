@@ -14,7 +14,23 @@ clearBoard()
 bool
 isEmptySlot(int x, int y)
 {
-    return 0 == board[x][y];
+    return M_empty_slot == board[x][y];
+}
+
+inline
+bool
+_isSameFlag(int pieceFlag, int x, int y)
+{
+    return pieceFlag == board[x][y];
+}
+
+int
+_countContinuousSameFlag(int pieceFlag, int x, int y, int incrementX, int incrementY)
+{
+    int count = 0;
+    // for (int i = x; i < M_table_logic_size) {
+    //
+    // }
 }
 
 void
@@ -28,4 +44,9 @@ putPieceAt(int x, int y, int pieceFlag)
     -----------
        3 | 2
     */
+    // Check horizontals
+
+
+    // Scan y--, for 2, 3 and -y axis
+    // Scan y++, for 1, 4 and +y axis
 }

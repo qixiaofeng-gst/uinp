@@ -45,7 +45,7 @@ git add .
 * 新建分支 `git co -b branch-name` + `git push origin branch-name`
 * 下载并合并到本地当前分支 `git pull`，仅下载 `git fetch`
 * 撤销上次提交并保留所有修改 `git reset --soft revision-hash`
-* 回退某个文件到历史版本 `git co revision_hash -- file/path`
+* 回退某个文件到历史版本 `git co revision-hash -- file/path`
 * 查看 head 与前一 commit 的差异 `git diff head~1 head`
 * 关闭自动行尾转换 `git config --global core.autocrlf false`
 * 清理所有已删除分支 `git fetch --prune --all` 或者 `git remote prune origin`
@@ -121,6 +121,9 @@ Windows 下可创建快捷方式并添加参数
 * linux 下 /etc/default/grub 包含了系统启停界面的配置
 * qmake 可以通过传参 -qt=qt5 正确运行
 * 解压 `tar zxvf file-name.tar.gz`
+* Linux 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'`
+* Linux 查看 `coredump gdb _PID_`；然后 gdb 中输入 bt
+* Linux 查看消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`
 
 wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
 ```
