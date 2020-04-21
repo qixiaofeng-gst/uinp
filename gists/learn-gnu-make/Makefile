@@ -6,11 +6,12 @@ args_warnings = -Wall
 args_set = $(args_c_standard) $(args_optimizers) \
  	$(args_includes) $(args_warnings)
 
+msg_make_separator = @echo '====>>>> Make done.'
 path_src = src
 path_lib = lib
 path_bin = bin
 main_name = main.c
-app_name = test
+app_name = main
 
 sources := $(filter-out $(path_src)/$(main_name),$(wildcard $(path_src)/*.c))
 objects := $(sources:.c=.o)
@@ -24,11 +25,21 @@ combined_args = $(args_set) \
 
 all: $(objects)
 	$(CC) $(combined_args)
-	@echo '====>>> Make Done.'
+	$(msg_make_separator)
 .PHONY: all
 
 $(objects): $(path_lib)/%.o: $(path_src)/%.c
 	$(CC) $(args_set) -c $< -o $@
+
+path_test = test
+test_entrance_path = $(path_test)/main.c
+test_bin_path = $(path_bin)/test
+combined_args_for_test = $(CC) $(args_set) -I$(path_src) $(objects) \
+ 	$(test_entrance_path) -o $(test_bin_path)
+test: $(objects)
+	$(combined_args_for_test)
+	$(msg_make_separator)
+.PHONY: test
 
 cpp:
 	$(CXX) -std=c++11 sandbox.cpp -o test

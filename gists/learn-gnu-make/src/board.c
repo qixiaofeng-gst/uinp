@@ -4,7 +4,6 @@
 #include "macro-constants.h"
 
 int board[M_table_logic_size][M_table_logic_size];
-int const table_last_index = M_table_logic_size - 1;
 
 void
 clearBoard()
@@ -34,7 +33,7 @@ _checkUpBorder(int coordinate)
 bool
 _checkBottomBorder(int coordinate)
 {
-    return coordinate < table_last_index;
+    return coordinate < M_table_logic_size;
 }
 
 int
