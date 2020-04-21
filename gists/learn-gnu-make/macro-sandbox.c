@@ -18,5 +18,14 @@ func_##name(__VA_ARGS__)\
     return (returnType) 0; \
 }
 
+#define COUNT_PIECE(target) \
+if (pieceFlag == target) { \
+    ++count; \
+} else { \
+    return count; \
+}
+
 MAIN(CONST, "Hello world")
 NICE(dummy, int, int blas, int laplace)
+
+COUNT_PIECE(board[i][j])

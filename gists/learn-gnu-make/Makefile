@@ -6,7 +6,6 @@ args_warnings = -Wall
 args_set = $(args_c_standard) $(args_optimizers) \
  	$(args_includes) $(args_warnings)
 
-msg_make_separator = @echo '====>>>> Make done.'
 path_src = src
 path_lib = lib
 path_bin = bin
@@ -23,9 +22,10 @@ app_path = $(path_bin)/$(app_name)
 combined_args = $(args_set) \
 	$(objects) $(src_main) -o $(app_path)
 
-all: $(objects)
+all: test
+	@echo 'Make start. [all] <<<===='
 	$(CC) $(combined_args)
-	$(msg_make_separator)
+	@echo '====>>>> [all] Make done.'
 .PHONY: all
 
 $(objects): $(path_lib)/%.o: $(path_src)/%.c
@@ -37,8 +37,10 @@ test_bin_path = $(path_bin)/test
 combined_args_for_test = $(CC) $(args_set) -I$(path_src) $(objects) \
  	$(test_entrance_path) -o $(test_bin_path)
 test: $(objects)
+	@echo 'Make start. [test] <<<===='
 	$(combined_args_for_test)
-	$(msg_make_separator)
+	@echo '====>>>> [test] Make done.'
+	@$(test_bin_path)
 .PHONY: test
 
 cpp:
