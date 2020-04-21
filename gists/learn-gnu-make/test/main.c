@@ -72,6 +72,7 @@ main()
     for (int i = 0; i < 4; ++i) {
         putPieceAt(0, i, flagOne);
     }
+    M_test_int(isGameEnd(0, 3, flagOne), false)
     M_test_int(_countContinuousSameFlag(flagOne, 0, 3, 0, -1), 3)
     M_test_int(_countContinuousSameFlag(flagOne, 0, 1, 0, -1), 1)
     M_test_int(_countContinuousSameFlag(flagOne, 0, 1, 0, 1), 2)
@@ -93,6 +94,7 @@ main()
         }
     }
     putPieceAt(9, 9, flagTwo);
+    M_test_int(isGameEnd(3, 3, flagOne), true)
     M_test_int(_countContinuousSameFlag(flagOne, 1, 1, -1, -1), 1)
     M_test_int(_countContinuousSameFlag(flagOne, 1, 1, 1, 1), 7)
     reportTestSummary();

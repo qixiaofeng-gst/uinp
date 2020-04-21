@@ -12,4 +12,6 @@ void putPieceAt(int x, int y, int pieceFlag);
 
 void clearBoard();
 
+bool isGameEnd(int x, int y, int pieceFlag);
+
 #endif // guard end for BOARD_TEST_H

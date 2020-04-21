@@ -10,6 +10,13 @@ if (pieceFlag == target) { \
     return count; \
 }
 
+#define M_check_game_end(iX1, iY1, iX2, iY2) if (win_count <= ( \
+    _countContinuousSameFlag(pieceFlag, x, y, iX1, iY1) \
+    + _countContinuousSameFlag(pieceFlag, x, y, iX2, iY2)) \
+) {\
+    return true; \
+}
+
 int const win_count = 4;
 
 int board[M_table_logic_size][M_table_logic_size];
@@ -80,19 +87,29 @@ _countContinuousSameFlag(int pieceFlag, int x, int y, int incrementX, int increm
     return count;
 }
 
-void
-putPieceAt(int x, int y, int pieceFlag)
+bool
+isGameEnd(int x, int y, int pieceFlag)
 {
-    board[x][y] = pieceFlag;
-
     /*
     Quadrants:
        4 | 1
     -----------
        3 | 2
     */
-    // Check horizontals
+    // Check horizontal.
+    M_check_game_end(1, 0, -1, 0)
+    // Check vertical.
+    M_check_game_end(0, 1, 0, -1)
+    // Check top-left to bottom-right.
+    M_check_game_end(1, 1, -1, -1)
+    // Check top-right to bottom-left.
+    M_check_game_end(-1, 1, 1, -1)
 
-    // Scan y--, for 2, 3 and -y axis
-    // Scan y++, for 1, 4 and +y axis
+    return false;
+}
+
+void
+putPieceAt(int x, int y, int pieceFlag)
+{
+    board[x][y] = pieceFlag;
 }
