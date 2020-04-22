@@ -42,11 +42,11 @@ _resetCursorLocation()
     wprintf(L"\033[u\033[s");
 }
 
+inline
 void
-_printMessage(char * const message)
+_clearMessage()
 {
-    _resetCursorLocation();
-    wprintf(L"\033[K %s", message);
+    wprintf(L"\033[K");
 }
 
 typedef struct {
@@ -56,14 +56,9 @@ typedef struct {
 } HandDescription;
 
 HandDescription
-ai_playHand(int const referenceX, int const referenceY)
+ai_playHand(HandDescription const referenceHand)
 {
-    HandDescription hand = {
-        .x = 9,
-        .y = 9,
-        .pieceFlag = 9,
-    };
-    return hand;
+    return referenceHand;
 }
 
 int
@@ -74,8 +69,6 @@ main(int argc, char const *argv[])
     turnOffEcho();
 
     wprintf(L"%s\n", setlocale(LC_ALL, ""));
-    HandDescription dummyHand = ai_playHand(0, 0);
-    wprintf(L"dummyHand.pieceFlag: %d\n", dummyHand.pieceFlag);
     wprintf(L">>>>>>> Belows are sandbox output:\n");
     generateTableFile();
     wchar_t tableInMemory[M_table_string_length];
@@ -127,11 +120,24 @@ main(int argc, char const *argv[])
                     wchar_t hand = passHand();
                     wprintf(L"%lc\033[D", hand);
                     putPieceAt(x, y, (first_hand == hand) ? first_piece : second_piece);
+                    HandDescription handDesc = {
+                        .x = 9,
+                        .y = 9,
+                        .pieceFlag = 9,
+                    };
+                    ai_playHand(handDesc);
+                    _resetCursorLocation();
+                    _clearMessage();
+                    wprintf(L"HandDesc.x: %d, HandDesc.y: %d", handDesc.x, handDesc.y);
+                    _resetCursorLocation();
+                    _locateCursor(upOffset, leftOffset);
                 }
             }
             break;
         case L'M':
-            _printMessage("Broke input.");
+            _resetCursorLocation();
+            _clearMessage();
+            wprintf(L"Broke input.");
             _resetCursorLocation();
             _locateCursor(upOffset, leftOffset);
             break;
