@@ -33,15 +33,22 @@ $(objects): $(path_lib)/%.o: $(path_src)/%.c
 
 path_test = test
 test_entrance_path = $(path_test)/main.c
+test_sources := $(filter-out $(test_entrance_path),$(wildcard $(path_test)/*.c))
+test_objects := $(test_sources:.c=.o)
+test_objects := $(subst $(path_test)/,$(path_lib)/,$(test_objects))
 test_bin_path = $(path_bin)/test
-combined_args_for_test = $(CC) $(args_set) -I$(path_src) $(objects) \
+combined_args_for_test = $(CC) $(args_set) -I$(path_src) \
+ 	$(objects) $(test_objects) \
  	$(test_entrance_path) -o $(test_bin_path)
-test: $(objects)
+test: $(objects) $(test_objects)
 	@echo 'Make start. [test] <<<===='
 	$(combined_args_for_test)
 	@echo '====>>>> [test] Make done.'
 	@$(test_bin_path)
 .PHONY: test
+
+$(test_objects): $(path_lib)/%.o: $(path_test)/%.c
+	$(CC) $(args_set) -I$(path_src) -c $< -o $@
 
 cpp:
 	$(CXX) -std=c++11 sandbox.cpp -o test

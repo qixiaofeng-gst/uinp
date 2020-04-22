@@ -90,12 +90,6 @@ _countContinuousSameFlag(int pieceFlag, int x, int y, int incrementX, int increm
 bool
 isGameEnd(int x, int y, int pieceFlag)
 {
-    /*
-    Quadrants:
-       4 | 1
-    -----------
-       3 | 2
-    */
     // Check horizontal.
     M_check_game_end(1, 0, -1, 0)
     // Check vertical.

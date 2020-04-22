@@ -31,6 +31,8 @@ pip install --upgrade tensorflow==1.1.0rc1
 ```
 * 检查 tensorflow 版本 `python3 -c 'import tensorflow as tf; print(tf.__version__)'`
 * WebStorm 编辑器批量处理行尾：选中一目录后，菜单 File -> LineSeparators 选择一个行尾格式即可。
+* C on linux, `struct S a = *b;`, b pointed struct S is copied to a.
+* C on linux, public struct should be put in header file, private one put in .c file.
 
 # 版本工具备忘
 * SVN http://earth.bao.ac.cn/svn/gsegment/trunk/***

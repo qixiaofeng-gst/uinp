@@ -5,6 +5,7 @@
 1. Function uses same rule as variable.
 1. Constant uses underscore `_` to separate words.
 1. Macro is prefixed with `M_` and its rest parts use same rule as constant.
+1. Macro have to be designed as it could be used without ending with semicolon.
 1. Source file name uses lowercase words combined with dash `-`.
 1. Source file directory name uses same rule as file name.
 1. Fake namespace implemented with uppercase namespace plus underscore `_` as prefix.
