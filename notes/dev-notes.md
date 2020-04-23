@@ -1,15 +1,39 @@
-# Quick guide for pjo with gcc:
-1. `cd /mnt/c/Users/qixia/Documents/uinp/gists/pjo`
-2. `gcc solving.c && less input.txt | ./a.out`
-3. `gcc creating.c && ./a.out >> input.txt`
-
-**Keep fit: Jeff Cavaliere 5 minutes**  
-redux/mobox
-
 # 自省三问：
 1. 我的观念中哪些是错误的？
 2. 别人觉得深不可测的事情，我能了解多少？
 3. 大脑中究竟是什么在误导我？
+
+# Linux 系统使用
+* 在 linux 下，两种使命令脱离 shell 执行的方法：
+  1. nohup command_and_paramters &
+  1. command_and_paramters </dev/null &>/dev/null &
+* linux 查已占用端口 sudo lsof -i -P -n | grep LISTEN
+* linux 下查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`
+* linux 下查看总体存储空间 `df`
+* linux 下查看已安装软件包 `dpkg -l`
+* Under ubuntu use `cat /etc/X11/default-display-manager` to check which display manager being used.
+* linux 下检查网络 ifconfig, hostname, netstat
+* linux 下 /etc/default/grub 包含了系统启停界面的配置
+* qmake 可以通过传参 -qt=qt5 正确运行
+* 解压 `tar zxvf file-name.tar.gz`
+* Linux 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
+* Linux 查看程序崩溃后的 coredump 调用栈 `coredump gdb _PID_`；然后 gdb 中输入 bt
+* Linux 查看程序运行时消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`
+* Linux 查看 include path：`echo | gcc -E -Wp,-v -`
+* Linux 查看硬件信息 `lscpu/lshw/hwinfo/lspci/lsscsi/lsusb/lnxi/lsblk/df/fdisk/mount/free/dmidecode/hdparm`，可以在 /proc 目录下找到一些系统硬件和配置信息。
+* Linux 查看 kernel ring buffer：`dmesg`
+* Linux 查找命令相关 `updatedb/mlocate/whereis/find`
+* Linux 检查文件属性指令 `file/wc`
+* Linux 应用图标面板配置位置：~/.local/share/applications/;/usr/share/applications/
+* Linux 应用相关配置指令 `gsettings`。
+  * 查看已有目录 `gsettings get org.gnome.desktop.app-folders folder-children`
+  * 查看已有目录下的应用 `gsettings list-keys org.gnome.desktop.app-folders.folder:/org/gnome/desktop/app-folders/folders/Utilities/`
+  * 添加应用目录 `gsettings set org.gnome.destop.app-folders folder-children "[..., 'Audio']"`
+  * 设置目录名称 `gsettings set org.gnome.desktop.app-folders.folder:/org/gnome/desktop/app-folders/folders/Audio/ name 'Audio'`
+  * 添加应用到目录 `gsettings set org.gnome.desktop.app-folders.folder:/org/gnome/desktop/app-folders/folders/Audio/ apps "['audacious.desktop', 'brasero.desktop']"`
+  * 更详细的解释 https://developer.gnome.org/AppFolders/
+* Linux 文本文件内容相关 `more/less/cat/head/tail/sort/vi/vim/emacs/nano`
+* Linux 日志目录 /var/log/
 
 ```
 db.user.find({ 'mc_member.Mobile': '18621508640' })
@@ -20,6 +44,14 @@ db.admin_gb.find({ _id: ObjectId('5d69fbc6e87c084e92635e3b') })
 db.admin_order.find({ group_id: ObjectId('5d69fbc6e87c084e92635e3b') })
 more /hd1/forever_logs/gOlQ.log | grep -C 20 '2019-8-31 12:46:5'
 ```
+
+# Quick guide for pjo with gcc:
+1. `cd /mnt/c/Users/qixia/Documents/uinp/gists/pjo`
+2. `gcc solving.c && less input.txt | ./a.out`
+3. `gcc creating.c && ./a.out >> input.txt`
+
+**Keep fit: Jeff Cavaliere 5 minutes**  
+redux/mobox
 
 # 开发信息
 * 图解开源协议 https://www.cnblogs.com/KruceCoder/p/7991052.html
@@ -33,6 +65,7 @@ pip install --upgrade tensorflow==1.1.0rc1
 * WebStorm 编辑器批量处理行尾：选中一目录后，菜单 File -> LineSeparators 选择一个行尾格式即可。
 * C on linux, `struct S a = *b;`, b pointed struct S is copied to a.
 * C on linux, public struct should be put in header file, private one put in .c file.
+* 查看系统中已经安装的 python 模块：`pydoc modules`/`pip list/freeze`/`help("modules")`
 
 # 版本工具备忘
 * SVN http://earth.bao.ac.cn/svn/gsegment/trunk/***
@@ -62,13 +95,6 @@ git push -u origin master
 
 # 常用指令
 * 软链接 link-node -s target_to_link link_name
-* 在 linux 下，两种使命令脱离 shell 执行的方法：
-  1. nohup command_and_paramters &
-  1. command_and_paramters </dev/null &>/dev/null &
-* linux 查已占用端口 sudo lsof -i -P -n | grep LISTEN
-* linux 下查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`
-* linux 下查看总体存储空间 `df`
-* Under ubuntu use `cat /etc/X11/default-display-manager` to check which display manager being used.
 * 在 windows 下使命令脱离 cmd 执行的方法（关闭 cmd 后进程将退出，因此大多数情况无效）：
 `start "command_name" /B command_and_paramters > somefile.txt`
 * windows 下环境变量相关命令：
@@ -116,17 +142,8 @@ Windows 下可创建快捷方式并添加参数
 * from 之后可以放多个表（或 select 语句），此时 from 对应的 select 语句中所有列需带表名
 * SVN 解决树冲突，需先 svn resolve --accept=working，accept 的参数值随需要而定
 * git-bash 出现 There are no available terminals (-1) 的错误时，用 cmd 输入 tasklist 找到 ssh 或者 ssh-agent 之类的进程，然后 taskkill /F /IM xxx.exe 干掉，通常能解决问题
-* linux 下查看系统中已经安装的 python 模块：pydoc modules
 * 检查文件签名 sha256sum/md5sum the-file-to-check 与网站列出的 sha256/md5 签名进行比对
 * gpg 检查文件签名，`gpg --verify sig/file/path` or `gpg -d sig/file/path`，gpg 将自动检测同目录下无后缀同名文件，如果报出 No public key 的问题，可查看输出中的 RSA id，调 `gpg --search-keys the_rsa_id` 按命令行提示操作可导入 public key，`gpg --list-keys` 可列出所有已导入的 public key，`gpg --edit-key the_rsa_id` 可对相应的 public key 进行编辑
-* linux 下检查网络 ifconfig, hostname, netstat
-* linux 下 /etc/default/grub 包含了系统启停界面的配置
-* qmake 可以通过传参 -qt=qt5 正确运行
-* 解压 `tar zxvf file-name.tar.gz`
-* Linux 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
-* Linux 查看 `coredump gdb _PID_`；然后 gdb 中输入 bt
-* Linux 查看消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`
-* Linux 查看 include path：`echo | gcc -E -Wp,-v -`
 
 wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
 ```

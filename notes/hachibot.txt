@@ -7,7 +7,7 @@ https://github.com/leggedrobotics/towr
 https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
 \\wsl$\Ubuntu-18.04\home\qixiaofeng\git-repos
 
-dot product VS cross product
+dot product (output number) VS cross product (output vector)
 
 Below 'x_' stands for inputs (without suffix means vector),
       'w_' stands for weight (without suffix means vector),
