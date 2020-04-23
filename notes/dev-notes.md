@@ -5,8 +5,8 @@
 
 # Linux 系统使用
 * 在 linux 下，两种使命令脱离 shell 执行的方法：
-  1. nohup command_and_paramters &
-  1. command_and_paramters </dev/null &>/dev/null &
+  1. `nohup command_and_paramters &`
+  1. `command_and_paramters </dev/null &>/dev/null &`
 * linux 查已占用端口 sudo lsof -i -P -n | grep LISTEN
 * linux 下查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`
 * linux 下查看总体存储空间 `df`
