@@ -11,13 +11,7 @@ def printPublicMembers(target, onlyCount=True):
             printMember(key)
     print('{} has {} public members.'.format(target.__name__, methodCount))
 
-if __name__ == '__main__':
-
-    import os
-    currentFileName = os.path.basename(__file__)
-    print(currentFileName, '<<<<<<<', currentFileName[:currentFileName.rindex('.')])
-    print(os.path.exists(__file__))
-
+def playWithPrimitiveArray():
     arrayA = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     print(arrayA[1:2], arrayA[::2], arrayA[1:8:3])
     print(arrayA[0:-2], arrayA[0:-5])
@@ -25,6 +19,7 @@ if __name__ == '__main__':
     print(arrayA[3:], arrayA[3:1])
     print(arrayA[-1:], arrayA[-1:0])
 
+def playWithTensorflow():
     import numpy as np
     help(np.ndarray)
 
@@ -60,3 +55,8 @@ if __name__ == '__main__':
     #print(tf.keras.layers.Flatten.__doc__)
     #print(tf.keras.layers.Dropout.__doc__)
     #help("modules")
+
+
+if __name__ == '__main__':
+    import pybullet as bt
+    help(bt)

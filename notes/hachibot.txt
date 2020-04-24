@@ -9,6 +9,39 @@ https://github.com/mit-biomimetics/Cheetah-Software - target hardware relevant
 
 dot product (output number) VS cross product (output vector)
 
+_______ _______
+DQN: Deep Q Network
+Policy gradient methods attempt to learn funcitons with directly map an observation to an action.
+Q-Learning attempts to learn the value of being in a given state and taking a specific action here.
+
+Supervised learning has a target label for each training example.
+Unsupervised learning has no labels at all.
+Reinforcement learning has sparse and time-delayed labels – the rewards.
+
+Credit assignment problem – Which of the preceding actions were responsible for getting the reward and to what extent.
+Explore-exploit dilemma – Should you exploit the known working strategy or explore other, possibly better strategies.
+
+Markov decision process M = {S, A, T, r}:
+  S - state space, s belongs to S
+  A - action space, a belongs to A
+  T - trainsition operator
+  r - reward function, r: S x A -> R, r(s_t, a_t) - reward
+Partially observed Markov decision process M = {S, A, O, T, epsilon, r}
+  O - observation space, o belongs to O
+  epsilon - emission probability p(o_t|s_t)
+Step described by <s, a, r, s'>, s' is defined by T(s, a), r is given by R(s, a)
+<s, a, r, s'> = <state, action, reward, next state>
+
+Online learning, use data once then drop.
+Offline learning, use data repeatly.
+
+On-policy, one policy involved.
+Off-policy, at least two policy involed, one learn from another one in each step.
+
+Prediction problem, estimate the value of certain state or <state, action>.
+Control problem, environment is given, find the best policy.
+
+_______ _______
 Below 'x_' stands for inputs (without suffix means vector),
       'w_' stands for weight (without suffix means vector),
       'b' stands for bias(= negative threshold, vector),
@@ -20,36 +53,20 @@ sigmoid, a = 1 / ( 1 + exp(-sigma) );
 quadratic cost/loss/objective function, C(w, b) = sum_x(|| y(x) - a ||)^2 / 2n;
        n is the total number of training input;
        ||v|| denotes usual length function for v.
-gradient descent algorithm,
+gradient descent algorithm
 
+_______ _______
 什么是数，什么是量
 量有单位，数没有。数通常是一个物理量的比值。
 
-DQN: Deep Q Network
-
+_______ _______
 Planning VS Policy
-
-Markov decision process M = {S, A, T, r}:
-  S - state space, s belongs to S
-  A - action space, a belongs to A
-  T - trainsition operator
-  r - reward function, r: S x A -> R, r(s_t, a_t) - reward
-Partially observed Markov decision process M = {S, A, O, T, epsilon, r}
-  O - observation space, o belongs to O
-  epsilon - emission probability p(o_t|s_t)
 
 GSAO:
   G: goal
   S: state
   A: action
   O: observation
-
-Q:
-1. who manage switching controller ? (controller itself ? or a controller manager ?)
-2. where is controller manager ? (in CPP ? or in python code ?)
-
-1. AI 和传统算法联调
-2. 整体联调
 
 1
 配置文件切换模式，硬件时遥控器切换模式。

@@ -6,30 +6,9 @@ Situation is suite for utilizing GPU:
 Estimate largest batch size:
 Max batch size = available GPU memory bytes / 4 / (size of tensors + trainable parameters)
 """
-def gen_getWeightFileName(fullSourceFilePath):
-    def _function():
-        import os
-        dot = '.'
-        currentFileName = os.path.basename(__file__)
-        return currentFileName[:currentFileName.rindex(dot)] + dot + 'h5'
-    return _function
 
-getWeightFileName = gen_getWeightFileName(__file__)
-
-def saveWeights(model):
-    model.save_weights(getWeightFileName())
-
-def loadWeights(model):
-    model.load_weights(getWeightFileName())
-
-def hasWeights():
-    import os
-    return os.path.exists(getWeightFileName())
-
-if __name__ == '__main__':
-    from datetime import datetime
+def playMnist():
     import tensorflow as tf
-    startTimestamp = datetime.now().timestamp()
     print('Using tensorflow', tf.__version__, '====>>> below personal code starts.')
 
     #with tf.device("/gpu:0"): # Use /cpu:0 or /gpu:0.
@@ -51,13 +30,18 @@ if __name__ == '__main__':
     loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
 
-    if hasWeights():
+    from tools.weights_loader import WeightsLoader
+    weightsLoader = WeightsLoader(__file__)
+    if weightsLoader.hasWeights():
         print('====>>> Loading weights.')
-        loadWeights(model)
+        weightsLoader.loadWeights(model)
         print('====>>> Loaded weights.')
     else:
         model.fit(x_train, y_train, batch_size=256, epochs=5)
     model.evaluate(x_test, y_test, verbose=1)
     model.evaluate(x_train, y_train, verbose=1)
-    saveWeights(model)
-    print('Cost time: {:.6f}s'.format(datetime.now().timestamp() - startTimestamp))
+    weightsLoader.saveWeights(model)
+
+if __name__ == '__main__':
+    from tools.profiler import executeWithTimestamp
+    executeWithTimestamp(playMnist)
