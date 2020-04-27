@@ -3,41 +3,6 @@
 2. 别人觉得深不可测的事情，我能了解多少？
 3. 大脑中究竟是什么在误导我？
 
-# Linux 系统使用
-* 两种使命令脱离 shell 执行的方法：
-  1. `nohup command_and_paramters &`
-  1. `command_and_paramters </dev/null &>/dev/null &`
-* 查已占用端口 sudo lsof -i -P -n | grep LISTEN
-* 查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`
-* 查看总体存储空间 `df`
-* 查看已安装软件包 `dpkg -l`
-* 检查网络 ifconfig, hostname, netstat
-* /etc/default/grub 包含了系统启停界面的配置
-* qmake 可以通过传参 -qt=qt5 正确运行
-* 解压 `tar zxvf file-name.tar.gz`
-* 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
-* 查看程序崩溃后的 coredump 调用栈 `coredump gdb _PID_`；然后 gdb 中输入 bt
-* 查看程序运行时消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`
-* 查看 include path：`echo | gcc -E -Wp,-v -`
-* 查看硬件信息 `lscpu/lshw/hwinfo/lspci/lsscsi/lsusb/lnxi/lsblk/df/fdisk/mount/free/dmidecode/hdparm`，可以在 /proc 目录下找到一些系统硬件和配置信息。
-* 查看 kernel ring buffer：`dmesg`
-* 查找命令相关 `updatedb/mlocate/whereis/find`
-* 检查文件属性指令 `file/wc`
-* 应用图标面板配置位置：~/.local/share/applications/;/usr/share/applications/
-* 应用相关配置指令 `gsettings`。
-  * 查看已有目录 `gsettings get org.gnome.desktop.app-folders folder-children`
-  * 查看已有目录下的应用 `gsettings list-keys org.gnome.desktop.app-folders.folder:/org/gnome/desktop/app-folders/folders/Utilities/`
-  * 添加应用目录 `gsettings set org.gnome.destop.app-folders folder-children "[..., 'Audio']"`
-  * 设置目录名称 `gsettings set org.gnome.desktop.app-folders.folder:/org/gnome/desktop/app-folders/folders/Audio/ name 'Audio'`
-  * 添加应用到目录 `gsettings set org.gnome.desktop.app-folders.folder:/org/gnome/desktop/app-folders/folders/Audio/
-  apps "['audacious.desktop', 'brasero.desktop']"`
-  * 更详细的解释 https://developer.gnome.org/AppFolders/
-* 文本文件内容相关 `more/less/cat/head/tail/sort/vi/vim/emacs/nano`
-* 日志目录 /var/log/
-* 如果某些不想删除的包出现在了 apt autoremove 的列表中，使用 apt install 这些包，可以将其从列表中移除
-* Under ubuntu use `cat /etc/X11/default-display-manager` to check which display manager being used.
-* Under ubuntu use `nautilus /path/to/folder` to open folder with GUI file manager
-
 # Quick guide for pjo with gcc:
 1. `cd /mnt/c/Users/qixia/Documents/uinp/gists/pjo`
 2. `gcc solving.c && less input.txt | ./a.out`
@@ -61,6 +26,7 @@ redux/mobox
 * C on linux, public struct should be put in header file, private one put in .c file.
 * 查看系统中已经安装的 python 模块：`pydoc modules`/`pip list/freeze`/`help("modules")`
 * Duck-typing 其实是无类型，执行任何运算时只看对象是否拥有所需的操作符或方法。
+* C/C++ 当中，程序抛出异常退出前的打印，如果是 printf，要加 '\n'，不加则可能没有输出。
 
 # 版本工具备忘
 * SVN http://earth.bao.ac.cn/svn/gsegment/trunk/***
