@@ -1,5 +1,6 @@
 1. 数值可视化监控的工具，主要针对狗狗的状态（关节位置、扭矩等）数值。
 
+last-week:
 a. AI Controller 对接模拟器排除 bug。
 b. tensorflow 2.1.0 升级尝试。需要移植 PPO，目前 stable_baselines 不支持。
 c. 读了一些 RL 入门的在线书籍，我们需不需要 wiki 里加一个缩略语表。
