@@ -1,4 +1,5 @@
 # First makefile for learning gnu-make.
+# Use `make -f notes.makefile` to use this file.
 
 .PHONY : all
 all:
