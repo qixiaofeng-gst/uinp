@@ -1,3 +1,11 @@
+2020-4-28 会：
+1. 电机驱动器的问题，芯片：温度传感器、位置传感器、电流回馈，有损去噪，是用 raw 数据作为 RL 输入还是用去噪过的？
+   张钰：不用，没有差异，刘博士赞同
+2. 八字腿是 reward 设计的问题。
+3. 输入维度增加可能有用，但目前用处未知。
+
+
+------- -------
 CoreDump info
 @dacong02:~/hachidog/build# coredumpctl gdb 2542
            PID: 2542 (mit_ctrl)
@@ -43,7 +51,8 @@ CoreDump info
                 #21 0x00000000004130e9 _start (mit_ctrl)
 https://bugzilla.redhat.com/show_bug.cgi?id=239344
 
-
+连接 mini-cheetah，接网线，PC 关 wifi，手动配置 IP 为 10.0.0.2，子网：255.255.255.0，DNS：10.0.0.1。
+然后 ssh user@10.0.0.36，密码 i-b。`cd hachidog/build` 然后 `/bin/bash ./run_mc.sh ./mit_ctrl`。
 
 1. 刘博士提议：数值可视化监控的工具，主要针对狗狗的状态（关节位置、扭矩等）数值。
 

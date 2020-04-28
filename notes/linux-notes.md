@@ -53,7 +53,7 @@
 * 查看程序运行时消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`
 * 查看 include path：`echo | gcc -E -Wp,-v -`
 * 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`
-* 查看 so 版本 `ldconfig -v`
+* 查看 so 版本 `ldconfig -v`，`ldconfig` 指令本身可以更新操作系统的 so 数据库。
 ### Pyton
 * 多版本依赖共存时，需要虚拟环境 venv：`python -m venv --help`
 * `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`
