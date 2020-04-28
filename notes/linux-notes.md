@@ -43,8 +43,13 @@
 
 ## 开发
 * 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
-* 查看程序崩溃后的 coredump 调用栈 `coredumpctl gdb _PID_`；然后 gdb 中输入 bt
+* 查看程序崩溃后的 coredump 调用栈 `coredumpctl gdb _PID_`：
   * coredumpctl 使用 `apt install systemd-coredump` 安装。
+  * gdb 中输入 `bt` 查看完整 backtrace。
+  * gdb 中输入 `frame <number>` 查看 backtrace 中对应行的 stack frame。
+  * gdb 中输入 `list` 可查看改方法附近的代码。
+  * gdb 中输入 `info locals` 可查看局部变量。
+  * gdb 中输入 `print <variable-name>` 查看变量值。
 * 查看程序运行时消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`
 * 查看 include path：`echo | gcc -E -Wp,-v -`
 * 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`

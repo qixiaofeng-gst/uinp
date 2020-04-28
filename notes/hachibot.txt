@@ -1,4 +1,51 @@
-1. 数值可视化监控的工具，主要针对狗狗的状态（关节位置、扭矩等）数值。
+CoreDump info
+@dacong02:~/hachidog/build# coredumpctl gdb 2542
+           PID: 2542 (mit_ctrl)
+           UID: 0 (root)
+           GID: 0 (root)
+        Signal: 6 (ABRT)
+     Timestamp: 二 2020-04-28 10:47:53 CST (1min 42s ago)
+  Command Line: ./mit_ctrl m r f
+    Executable: /home/user/hachidog/build/mit_ctrl
+ Control Group: /user.slice/user-1000.slice/session-1.scope
+          Unit: session-1.scope
+         Slice: user-1000.slice
+       Session: 1
+     Owner UID: 1000 (user)
+       Boot ID: 0c77f1d1fe8a42119333f23e907c8acd
+    Machine ID: 4a4b634d57307743796465444652752f
+      Hostname: dacong02
+      Coredump: /var/lib/systemd/coredump/core.mit_ctrl.0.0c77f1d1fe8a42119333f23e907c8acd.2542.1588042073000000000000.xz
+       Message: Process 2542 (mit_ctrl) of user 0 dumped core.
+
+                Stack trace of thread 2542:
+                #0  0x00007f0c85405428 __GI_raise (libc.so.6)
+                #1  0x00007f0c8540702a __GI_abort (libc.so.6)
+                #2  0x00007f0c854477ea __libc_message (libc.so.6)
+                #3  0x00007f0c8545213e malloc_printerr (libc.so.6)
+                #4  0x00007f0c85454184 __GI___libc_malloc (libc.so.6)
+                #5  0x00007f0c85402d6a _nl_normalize_codeset (libc.so.6)
+                #6  0x00007f0c853fc70c _nl_load_locale_from_archive (libc.so.6)
+                #7  0x00007f0c853fbafa _nl_find_locale (libc.so.6)
+                #8  0x00007f0c853fafb4 __GI_setlocale (libc.so.6)
+                #9  0x00007f0c87841ed4 _Py_InitializeEx_Private (libpython3.6m.so.1.0)
+                #10 0x000000000053ff6b _ZN8pybind1122initialize_interpreterEb (mit_ctrl)
+                #11 0x00000000005240ed _ZN5hachi28PyWrapperingMotionControllerC2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_j (mit_ctrl)
+                #12 0x0000000000424cd3 _ZN18FSM_State_AIMotionIfEC2EP14ControlFSMDataIfE (mit_ctrl)
+                #13 0x000000000042b39c _ZN10ControlFSMIfEC2EP9QuadrupedIfEP23StateEstimatorContainerIfEP13LegControllerIfEP13GaitSchedulerIfEP19DesiredStateCommandIfEP22RobotControlParametersP17VisualizationDataP18MIT_UserParameters (mit_ctrl)
+                #14 0x00000000004141e4 _ZN14MIT_Controller20initializeControllerEv (mit_ctrl)
+                #15 0x00007f0c87f0b396 _ZN11RobotRunner4initEv (/home/user/hachidog/build/librobot.so)
+                #16 0x00007f0c8689be69 _ZN12PeriodicTask5startEv (/home/user/hachidog/build/libbiomimetics.so)
+                #17 0x00007f0c87f182c0 _ZN25MiniCheetahHardwareBridge3runEv (/home/user/hachidog/build/librobot.so)
+                #18 0x00007f0c87f224e5 _Z11main_helperiPPcP15RobotController (/home/user/hachidog/build/librobot.so)
+                #19 0x000000000041234e main (mit_ctrl)
+                #20 0x00007f0c853f0830 __libc_start_main (libc.so.6)
+                #21 0x00000000004130e9 _start (mit_ctrl)
+https://bugzilla.redhat.com/show_bug.cgi?id=239344
+
+
+
+1. 刘博士提议：数值可视化监控的工具，主要针对狗狗的状态（关节位置、扭矩等）数值。
 
 last-week:
 a. AI Controller 对接模拟器排除 bug。
