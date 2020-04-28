@@ -14,7 +14,8 @@ loadTableFromFile(wchar_t *tableInMemory)
     if (NULL == tableFile) {
         return;
     }
-    fread(tableInMemory, sizeof(wchar_t), M_table_string_length, tableFile);
+    int readedLength = fread(tableInMemory, sizeof(wchar_t), M_table_string_length, tableFile);
+    printf("The readed length: %d\n", readedLength);
     fclose(tableFile);
 }
 

@@ -1,6 +1,8 @@
 #ifndef TESTOOL_H
 #define TESTOOL_H
 
+#include <stdio.h>
+
 #define M_test_int(value, expected) reportIntegerTest( \
     #value, \
     value, \
