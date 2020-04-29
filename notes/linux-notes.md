@@ -54,6 +54,9 @@
 * 查看 include path：`echo | gcc -E -Wp,-v -`
 * 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`
 * 查看 so 版本 `ldconfig -v`，`ldconfig` 指令本身可以更新操作系统的 so 数据库。
+* `#include<errno.h>` 然后 `printf("ERROR: %s\n", strerror(errno));` 可查看如 `fopen` 之类的调用出错的信息。
+* `nm --demangle path/to/{*.a,*.so}` 可查看符号表。
+* `ps huH p <PID_OF_U_PROCESS> | wc -l` 打印线程数目。
 ### Pyton
 * 多版本依赖共存时，需要虚拟环境 venv：`python -m venv --help`
 * `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`

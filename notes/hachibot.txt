@@ -4,6 +4,11 @@
 2. 八字腿是 reward 设计的问题。
 3. 输入维度增加可能有用，但目前用处未知。
 
+warning: ‘hachi::PyWrapperingMotionController’
+ declared with greater visibility than the type of its field
+  ‘hachi::PyWrapperingMotionController::controllerInPy’
+see: https://pybind11.readthedocs.io/en/stable/faq.html
+
 
 ------- -------
 CoreDump info
