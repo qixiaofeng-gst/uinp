@@ -57,7 +57,7 @@
 * `#include<errno.h>` 然后 `printf("ERROR: %s\n", strerror(errno));` 可查看如 `fopen` 之类的调用出错的信息。
 * `nm --demangle path/to/{*.a,*.so}` 可查看符号表。
 * `ps huH p <PID_OF_U_PROCESS> | wc -l` 打印线程数目。
-### Pyton
+### Python
 * 多版本依赖共存时，需要虚拟环境 venv：`python -m venv --help`
 * `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`
 
@@ -77,7 +77,8 @@
 * 查找命令相关 `updatedb/mlocate/whereis/find`
 * 录制屏幕 `ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+99,88 output.mp4`
 * Under ubuntu use `cat /etc/X11/default-display-manager` to check which display manager being used.
-* Under ubuntu use `nautilus /path/to/folder` to open folder with GUI file manager
+* Under ubuntu use `nautilus /path/to/folder` to open folder with GUI file manager.
+* Under ubuntu use `eog <picture-path>` to view picture. Alternatives: `feh/xdg-open/display`.
 * 解决 docker 权限问题：
   1. sudo groupadd docker
   1. sudo usermod -aG docker $USER
