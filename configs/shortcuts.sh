@@ -5,6 +5,8 @@ list() { ## Used to list all commands available in .bash_profile.
       local name=`expr "$line" : '\([a-z0-9_\-]\{1,32\}()[[:blank:]]{[[:blank:]]##\)'`
       echo `expr "$name" : '\([a-z0-9_\-]\{1,32\}\)'`
       echo "${line/$name/$sps}"
+    elif [[ $line =~ ^'##' ]] ; then
+      echo "${line/'##'/$sps}"
     fi
   done < ~/Documents/git-repos/uinp/configs/shortcuts.sh
 }
@@ -103,4 +105,17 @@ enhance_git() { ## Used to set several convenient alias for git.
   git config --global alias.co "checkout"
   git config --global alias.plom "pull origin master"
   git config --global alias.psom "push origin master"
+}
+
+breakpoint() { ## Used to prompt work progress.
+## 1. Record
+##    # Collect meta information:
+##      * category
+##      * trait
+##      * pwd
+##    # Write information to home directory.
+## 2. List
+##    # Read records
+##    # List records
+  echo 'TODO: Implement'
 }

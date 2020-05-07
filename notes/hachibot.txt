@@ -1,18 +1,19 @@
-2020-5-6：
-1. [In-progress, 40%]准备与大脑模块对接；
-   - publisher 读视频并 publish 帧图像。
-   - subscriber 接收帧图像并分析。
-   - 从 ros 图片流取数据进行分析。
-2. [Done]调研数据监控/分析的方案。
-   - https://prometheus.io/
-   - https://graphiteapp.org/
-   - https://www.influxdata.com/ + https://grafana.com/docs/grafana/latest/features/datasources/influxdb/
-   - http://opentsdb.net/ + https://bosun.org/
-3. [Done]Tiny updates:
-   - motion-runner 启动脚本添加启用子网 LCM 的环境变量。
+2020-5-7： [In-progress, 90%]准备与大脑模块对接；
+   - run_net.py 从 ros 图片流取数据进行分析。
+   - 删掉无用代码和配置，剪裁掉代码中的无用分支。
+   - 目前我本机开发环境已经跑起来了，但 jetson 板子上由于 python + ros + opencv 版本不兼容，导致目前仍无法成功运行。
+   - run_net.py 运行时依赖： python3，opencv3，在 jetson 上 ros 的 python 依赖是默认安装到 python2.7 的，而且上面安装的是 opencv4。
+   - 已经尝试的解决方案（目前全都失败）：
+     - apt 安装 cv-bridge，安装到了 python2.7 中；
+     - 使用 installROS 脚本安装 cv-bridge，也安装到了 python2.7 中；
+     - 从源码编译 cv-bridge，由于依赖 opencv3 导致 cmake 过程就失败，将 cmake 配置文件中的 opencv 版本号从 3 修改为 4 会导致编译报错。
+   - 目前思钡准备在 jetson 上编译 opencv3，我这边等他编译完再尝试编译 cv-bridge。
+
+TODO:
+- hachy 项目，tensorboard 目录需要留下。
 
 quick-memo:
-- vp-init -> vp-rsync
+- TODO remove vp-init -> vp-rsync
 - to-har -> har-rsync
 
 2020-4-28 会：
