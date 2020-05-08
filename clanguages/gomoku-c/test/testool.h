@@ -3,10 +3,16 @@
 
 #include <stdio.h>
 
-#define M_test_int(value, expected) reportIntegerTest( \
+#include "configuration.h"
+
+#define M_test_int(value, expected) _reportIntegerTest( \
     #value, \
+    __FUNCTION__, \
+    __FILE__, \
+    __LINE__, \
     value, \
-    expected \
+    expected, \
+    M_is_test_verbose \
 );
 
 #define M_run_test_suite(__testSuite) \
@@ -15,7 +21,15 @@
     __testSuite(); \
     reportTestSuite();
 
-void reportIntegerTest(char * const testedName, int const value, int const expected);
+void _reportIntegerTest(
+    char const * const testedName,
+    char const * const invokerName,
+    char const * const fileName,
+    int const lineNumber,
+    int const value,
+    int const expected,
+    bool const isVerbose
+);
 
 void setupTestSuite();
 

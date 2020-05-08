@@ -1,24 +1,39 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-char * const trueFlag = "\033[32mpassed\033[0m";
-char * const falseFlag = "\033[31mfailed\033[0m";
+char const * const trueFlag = "\033[32mpassed\033[0m";
+char const * const falseFlag = "\033[31mfailed\033[0m";
 
 int totalTestCount = 0;
 int passedTestCount = 0;
 int failedTestCount = 0;
 
 void
-reportIntegerTest(char * const testedName, int const value, int const expected)
-{
+_reportIntegerTest(
+    char const * const testedName,
+    char const * const invokerName,
+    char const * const fileName,
+    int const lineNumber,
+    int const value,
+    int const expected,
+    bool const isVerbose
+) {
     bool isPassed = (value == expected);
     printf(
-        "Test [%s], testing value[%s], value: %d, expected: %d\n",
+        "Test [%s], testing value[%s] = %d, expected: %d\n",
         isPassed ? trueFlag : falseFlag,
         testedName,
         value,
         expected
     );
+    if (isVerbose) {
+        printf(
+            "    Invoked at %s (%d) (%s)\n",
+            fileName,
+            lineNumber,
+            invokerName
+        );
+    }
     ++totalTestCount;
     if (isPassed) {
         ++passedTestCount;

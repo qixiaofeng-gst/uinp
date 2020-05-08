@@ -9,20 +9,18 @@ args_set = $(args_c_standard) $(args_optimizers) \
 path_src = src
 path_lib = lib
 path_bin = bin
-main_name = main.c
-app_name = main
 
-sources := $(filter-out $(path_src)/$(main_name),$(wildcard $(path_src)/*.c))
+src_main = $(path_src)/main.c
+app_path = $(path_bin)/main
+
+sources := $(filter-out $(src_main),$(wildcard $(path_src)/*.c))
 objects := $(sources:.c=.o)
 objects := $(subst $(path_src)/,$(path_lib)/,$(objects))
-
-src_main = $(path_src)/$(main_name)
-app_path = $(path_bin)/$(app_name)
 
 combined_args = $(args_set) \
 	$(objects) $(src_main) -o $(app_path)
 
-all: clean test
+all: test
 	@echo 'Make start. [all] <<<===='
 	$(CC) $(combined_args)
 	@echo '====>>>> [all] Make done.'
@@ -51,13 +49,6 @@ $(test_objects): $(path_lib)/%.o: $(path_test)/%.c
 	$(CC) $(args_set) -I$(path_src) -c $< -o $@
 
 clean:
-	@rm lib/*.o
+	@rm lib/*
+	@rm bin/*
 .PHONY:clean
-
-cpp:
-	$(CXX) -std=c++11 sandbox.cpp -o test
-.PHONY: cpp
-
-try:
-	$(CC) quick-try.c -o bin/quick-try && bin/quick-try
-.PHONY: try
