@@ -3,6 +3,7 @@
 
 char const * const trueFlag = "\033[32mpassed\033[0m";
 char const * const falseFlag = "\033[31mfailed\033[0m";
+char const * const darkColorPrefix = "\033[38;2;128;128;128m";
 
 int totalTestCount = 0;
 int passedTestCount = 0;
@@ -20,15 +21,16 @@ _reportIntegerTest(
 ) {
     bool isPassed = (value == expected);
     printf(
-        "Test [%s], testing value[%s] = %d, expected: %d\n",
+        "Test [%s], testing value[%s]: %d, expected: %d\n",
         isPassed ? trueFlag : falseFlag,
         testedName,
         value,
         expected
     );
-    if (isVerbose) {
+    if (isVerbose || (false == isPassed)) {
         printf(
-            "    Invoked at %s (%d) (%s)\n",
+            "%s    Invoked at %s (%d) (%s)\033[0m\n",
+            darkColorPrefix,
             fileName,
             lineNumber,
             invokerName
