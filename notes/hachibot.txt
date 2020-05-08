@@ -1,19 +1,17 @@
-2020-5-7： [In-progress, 90%]准备与大脑模块对接；
-   - run_net.py 从 ros 图片流取数据进行分析。
-   - 删掉无用代码和配置，剪裁掉代码中的无用分支。
-   - 目前我本机开发环境已经跑起来了，但 jetson 板子上由于 python + ros + opencv 版本不兼容，导致目前仍无法成功运行。
-   - run_net.py 运行时依赖： python3，opencv3，在 jetson 上 ros 的 python 依赖是默认安装到 python2.7 的，而且上面安装的是 opencv4。
-   - 已经尝试的解决方案（目前全都失败）：
-     - apt 安装 cv-bridge，安装到了 python2.7 中；
-     - 使用 installROS 脚本安装 cv-bridge，也安装到了 python2.7 中；
-     - 从源码编译 cv-bridge，由于依赖 opencv3 导致 cmake 过程就失败，将 cmake 配置文件中的 opencv 版本号从 3 修改为 4 会导致编译报错。
-   - 目前思钡准备在 jetson 上编译 opencv3，我这边等他编译完再尝试编译 cv-bridge。
+2020-5-8：
+  1. [Done] 行为识别模块代码优化：
+    - 可读性提升，太短或者有歧义的命名修改。
+    - 方法抽取，有 10-20 个方法可以在合适的粒度（平均每个方法 20 行左右）被抽取。
+    - 调整采样频率（目前我本机 rtx2060 的 gpu + i7 cpu 视频流 1 秒 25 帧处理时间约 2.4 秒，jetson agx 上第一波处理时间 18 秒左右，其后 10 秒左右），提升处理速率。
+  2. [Done] 行为识别模块准备与大脑模块对接；
+   - 检查 opencv3 是否已编译，尝试编译 cv-bridge。
+   - 更合理的日志打印，输出到 console 的频率降低（每秒 5 条以内）。
 
 TODO:
+- docs for har
 - hachy 项目，tensorboard 目录需要留下。
 
 quick-memo:
-- TODO remove vp-init -> vp-rsync
 - to-har -> har-rsync
 
 2020-4-28 会：
@@ -32,173 +30,13 @@ see: https://pybind11.readthedocs.io/en/stable/faq.html
 
 1. 刘博士提议：数值可视化监控的工具，主要针对狗狗的状态（关节位置、扭矩等）数值。
 
-last-week:
-a. AI Controller 对接模拟器排除 bug。
-b. tensorflow 2.1.0 升级尝试。需要移植 PPO，目前 stable_baselines 不支持。
-c. 读了一些 RL 入门的在线书籍，我们需不需要 wiki 里加一个缩略语表。
-
 _______ _______
-Deep learning:
-  Function: fit, approximate
-  Components: nerual network
-  Applications: DNN, CNN, RNN, LSTM, GRU
-Reinforcement learning:
-  Function: solves sequential decision making problems
-  Components: function approximator(
-    shallow ones: linear function, decision trees, tile coding.
-    deep ones: nerual network
-  )
-  Applications: Q-Learning, DQN，PPO
-
-Deep reinforcement learning (DRL) methods use
-  deep neural networks to
-    approximate any of the following component of reinforcement learning:
-      value function, V(s; θ) or Q(s, a; θ),
-      policy π(a|s; θ) and
-      model (state transition and reward).
-Here, the parameters θ are the weights in deep neural networks.
-
-RL parlances:
-  Online learning, use data once then drop.
-  Offline learning, use data repeatly.
-
-  On-policy, one policy involved.
-  Off-policy, at least two policy involed, one learn from another one in each step.
-
-  Prediction problem, estimate the value of certain state or <state, action>.
-  Control problem, environment is given, find the best policy.
-
-
-DQN: Deep Q Network
-Policy gradient methods attempt to learn funcitons with directly map an observation to an action.
-Q-Learning attempts to learn the value of being in a given state and taking a specific action here.
-
-Supervised learning has a target label for each training example.
-Unsupervised learning has no labels at all.
-Reinforcement learning has sparse and time-delayed labels – the rewards.
-
-Credit assignment problem – Which of the preceding actions were responsible for getting the reward and to what extent.
-Explore-exploit dilemma – Should you exploit the known working strategy or explore other, possibly better strategies.
-
-In machine learning, the perceptron is an algorithm for supervised learning of binary classifiers.
-
-Markov decision process M = {S, A, T, r}:
-  S - state space, s belongs to S
-  A - action space, a belongs to A
-  T - trainsition operator
-  r - reward function, r: S x A -> R, r(s_t, a_t) - reward
-Partially observed Markov decision process M = {S, A, O, T, epsilon, r}
-  O - observation space, o belongs to O
-  epsilon - emission probability p(o_t|s_t)
-Step described by <s, a, r, s'>, s' is defined by T(s, a), r is given by R(s, a)
-<s, a, r, s'> = <state, action, reward, next state>
-Policy \pi(a_t|s_t) is:
-  Agent behavior.
-  A mapping from s_t to a_t
-    receives r_t and
-    transitions to s_{t+1} according to
-      environment dynamics(or model),
-      reward function R(s, a) and
-      state transition probability P(s_{t+1}|s_t, a_t)
-Value function is a prediction of the expected accumulative discounted future reward.
-Value function measures how good is each state, or state-action pair.
-
-_______ _______
-CNN introduction:
-Four steps in a training iteration: forward pass, loss function, backward pass, weight update
-Convolution layer extract specific characteristics, which is expressed by filters, out of before layer
-Padding (zeros around before layer) helps to reserve the size of the layer after applied filter
-Choosing hyperparameter(filter size, stride, padding) largely depend on the type of data that you have
-Nonlinear layers introduces nonlinearity, e.g. f(x) = max(0, x) which is ReLU (rectified linear units), tanh, sigmoid
-Pooling layers(or downsampling layer), mainly three types: max pooling, average pooling and L2-norm pooling
-# composite with a filter with stride that is same as its size, and a function, which is max/average/L2-norm implied, for generating output
-# reduced afterward computation complexity
-# control overfitting, which might lead to 100% fitting on training set but 50% or less on test/validation set
-Dropout layers drops out a random activations set by setting them to zero
-* also introduced to alleviate overfitting problem
-* only used during training, not in test/validation
-Network in Network Layers refers to conv layer with 1x1xN filters
-Objects for networks: classification, localization, detection and segmentation
-Transfer learning is the process of taking a pre-trained model (
-    the weights and parameters of a network that
-    has been trained on a large dataset by somebody else
-  ) and “fine-tuning” the model with your own dataset.
-  The idea is that this pre-trained model will act as a feature extractor.
-  You will remove the last layer of the network and replace it with your own classifier (
-    depending on what your problem space is
-  ).
-Data augmentation techniques are a way to artificially expand your dataset.
-  Some popular augmentations are grayscales, horizontal flips, vertical flips,
-  random crops, color jitters, translations, rotations, and much more.
-
-_______ _______
-DL introduction:
-Below 'x_' stands for inputs (without suffix means vector),
-      'w_' stands for weight (without suffix means vector),
-      'b' stands for bias(= negative threshold, vector),
-      'a' stands for output (vector) and
-      'y(x)' stands for desired output (vector).
-A core factor: sigma = sum_j(w_j * x_j + b);
-perceptron, a = ( sigma <= 0 ) ? 0 : 1;
-sigmoid, a = 1 / ( 1 + exp(-sigma) );
-quadratic cost/loss/objective function, C(w, b) = sum_x(|| y(x) - a ||)^2 / 2n;
-       n is the total number of training input;
-       ||v|| denotes usual length function for v.
-gradient descent algorithm
-
-_______ _______
-什么是数，什么是量
-量有单位，数没有。数通常是一个物理量的比值。
-
-_______ _______
-Planning VS Policy
-
-GSAO:
-  G: goal
-  S: state
-  A: action
-  O: observation
-
 1 配置文件切换模式，硬件时遥控器切换模式。
   AI 这边的可执行内容在 so 文件里。
 2 调试时用 rosbag 录制的所有消息。
   CMake 都保证存在冲突的库依赖放到相互独立的地方。
 
-dot product (output number) VS cross product (output vector)
 PD(proportional-derivative) controller: TeX[[ f = k_p (x_{ref}-x) + k_d (v_{ref}-v), k_p = \omega_n^2, k_d = 2 \xi \omega_n ]]
-
-_______ _______
-As of 2016, AlphaGo's algorithm uses a combination of machine learning and tree search techniques,
-  combined with extensive training, both from human and computer play.
-  It uses Monte Carlo tree search, guided by a "value network" and a "policy network," both implemented using deep neural network technology.
-The application of Monte Carlo tree search in games is based on many playouts also called roll-outs.
-  In each playout, the game is played out to the very end by selecting moves at random.
-  The final game result of each playout is then used to weight the nodes in the game tree
-  so that better nodes are more likely to be chosen in future playouts.
-Each round of Monte Carlo tree search consists of four steps:
-  Selection: start from root R and select successive child nodes until a leaf node L is reached.
-    The root is the current game state and a leaf is any node from which no simulation (playout) has yet been initiated.
-    The section below says more about a way of biasing choice of child nodes that
-    lets the game tree expand towards the most promising moves,
-    which is the essence of Monte Carlo tree search.
-  Expansion: unless L ends the game decisively (e.g. win/loss/draw) for either player,
-    create one (or more) child nodes and choose node C from one of them.
-    Child nodes are any valid moves from the game position defined by L.
-  Simulation: complete one random playout from node C.
-    This step is sometimes also called playout or rollout.
-    A playout may be as simple as choosing uniform random moves until
-    the game is decided (for example in chess, the game is won, lost, or drawn).
-  Backpropagation: use the result of the playout to update information in the nodes on the path from C to R.
-
-_______ _______
-Turing machine M = <A, S, R, I, F, b, s0>.
-  A is alphabet symbols.
-  S is states set.
-  R is rules table.
-  I is input symbols, subset of A.
-  F is final states, subset of S.
-  b is the blank symbol.
-  s0 is the initial state.
 
 Useful information:
 1. pybind11 is the bridge between c++ and python
