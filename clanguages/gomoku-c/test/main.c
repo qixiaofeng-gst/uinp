@@ -5,7 +5,12 @@
 #include <stdio.h>
 #include <time.h>
 
-// TODO
+/*
+TODO
+Design a dynamic indexer.
+Design a expanding tree.
+Implement Monte-Carlo tree search.
+*/
 
 void
 tryRandomNumber()
