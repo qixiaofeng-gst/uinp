@@ -9,6 +9,9 @@
   5. Unmount 将所有分区挂载为只读模式；
   6. reBoot 重启。
   *  助记：busier 倒过来。
+* 卡在 boot 界面进不去图形界面，可尝试更换 greeter，从默认 gdm3 换到 lightdm:
+  * `apt install slick-greeter`。
+  * 用 `dpkg-reconfigure lightdm/gdm3` 可以切换。
 
 ## 网络
 * 代理 https://github.com/Qv2ray/Qv2ray。
@@ -41,6 +44,7 @@
 * 列出用户组 `cat /etc/group`，格式：groupname:password:GID:users。
 * 管理应用的名称/版本 `update-alternatives /path/to/symbolic-name /path/to/real/executable`。
 * 系统级环境变量设置在 `/etc/profile.d/*.sh` 或 `/etc/environment`，推荐前者。
+* 文件系统的挂载配置在 /etc/fstab 中。
 
 ## 开发
 * 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
@@ -58,6 +62,7 @@
 * `#include<errno.h>` 然后 `printf("ERROR: %s\n", strerror(errno));` 可查看如 `fopen` 之类的调用出错的信息。
 * `nm --demangle path/to/{*.a,*.so}` 可查看符号表。
 * `ps huH p <PID_OF_U_PROCESS> | wc -l` 打印线程数目。
+* 监控 GPU 状态 `watch -n 3 nvidia-smi`。
 ### Python
 * 多版本依赖共存时，需要虚拟环境 venv：`python -m venv --help`。
 * `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`。

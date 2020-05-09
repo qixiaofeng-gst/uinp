@@ -1,15 +1,6 @@
-2020-5-8：
-  1. [Done] 行为识别模块代码优化：
-    - 可读性提升，太短或者有歧义的命名修改。
-    - 方法抽取，有 10-20 个方法可以在合适的粒度（平均每个方法 20 行左右）被抽取。
-    - 调整采样频率（目前我本机 rtx2060 的 gpu + i7 cpu 视频流 1 秒 25 帧处理时间约 2.4 秒，jetson agx 上第一波处理时间 18 秒左右，其后 10 秒左右），提升处理速率。
-  2. [Done] 行为识别模块准备与大脑模块对接；
-   - 检查 opencv3 是否已编译，尝试编译 cv-bridge。
-   - 更合理的日志打印，输出到 console 的频率降低（每秒 5 条以内）。
-
-TODO:
-- docs for har
-- hachy 项目，tensorboard 目录需要留下。
+2020-5-9：
+1. [Done] hachy 留下 tensorboard 日志目录。
+2. 为 human-activity-recognizer 项目添加文档。
 
 quick-memo:
 - to-har -> har-rsync
