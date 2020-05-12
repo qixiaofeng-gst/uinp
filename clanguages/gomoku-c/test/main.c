@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "testool.h"
+
 /*
 TODO
 Design a dynamic indexer.
@@ -41,15 +43,83 @@ struct _Tree {
     int nodeCount;
 };
 
+/*
+TODO
+Design a index provider.
+*/
+#define M_table_index_count 225
+typedef struct _IndexProvider {
+    int count;
+    int indexes[M_table_index_count];
+} IndexProvider;
+
 void
-tryRandomNumber()
+initIndexProvider(IndexProvider * const provider)
 {
-    srand(time(NULL));
+    provider->count = M_table_index_count;
+    for (int i = 0; i < M_table_index_count; ++i) {
+        provider->indexes[i] = i;
+    }
+}
+
+bool
+hasMoreIndex(IndexProvider const * const provider)
+{
+    return provider->count > 0;
+}
+
+int
+provideIndex(IndexProvider * const provider)
+{
+    return 0;
+}
+
+void
+_doRemoveIndex(IndexProvider * const provider, int const targetIndex)
+{
+    int lastIndex = provider->count - 1;
+    provider->indexes[targetIndex] = provider->indexes[lastIndex];
+    provider->count = lastIndex;
+}
+
+bool
+removeIndex(IndexProvider * const provider, int const targetIndex)
+{
+    if (
+        (targetIndex >= M_table_index_count) ||
+        (targetIndex < 0)
+    ) {
+        return false;
+    }
+    printf("=== targetIndex: %d, provider->indexes[targetIndex]: %d.\n", targetIndex, provider->indexes[targetIndex]);
+    if (
+        (targetIndex == provider->indexes[targetIndex]) &&
+        (targetIndex < provider->count)
+    ) {
+        if (1 == provider->count) {
+            provider->count = 0;
+        } else {
+            _doRemoveIndex(provider, targetIndex);
+        }
+        return true;
+    }
+    for (int i = 0; i < provider->count; ++i) {
+        if (targetIndex == provider->indexes[i]) {
+            _doRemoveIndex(provider, i);
+            return true;
+        }
+    }
+    return false;
+}
+
+void
+tryRandomNumber(void)
+{
     printf("Random numner: [%d].\n", rand() % 100);
 }
 
 void
-tryBuildTree()
+tryBuildTree(void)
 {
     Tree tree = {
         .rootRef = malloc(sizeof(Node)),
@@ -77,13 +147,26 @@ leafsIndex.initialSection[9]: %p.\n",
 // ======= Temporary block end.
 
 int
-main()
+main(void)
 {
+    srand(time(NULL)); // time(NULL) returns time in seconds.
+
     testBoardCheckers();
 
     // ======= Temporary block for quick prototype.
     tryRandomNumber();
     tryBuildTree();
+
+    IndexProvider * const indexProvider = malloc(sizeof(IndexProvider));
+    initIndexProvider(indexProvider);
+    M_test_int(hasMoreIndex(indexProvider), true)
+    M_test_int(removeIndex(indexProvider, 224), true)
+    M_test_int(removeIndex(indexProvider, M_table_index_count), false)
+    M_test_int(removeIndex(indexProvider, 250), false)
+    M_test_int(removeIndex(indexProvider, -1), false)
+    M_test_int(removeIndex(indexProvider, 0), true)
+    M_test_int(indexProvider->count, 223)
+    M_test_int(provideIndex(indexProvider) < 224, true)
     // ======= Temporary block end.
 
     return 0;
