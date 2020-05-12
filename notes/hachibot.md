@@ -1,6 +1,7 @@
-2020-5-9：
-1. [Done] hachy 留下 tensorboard 日志目录。
-2. 为 human-activity-recognizer 项目添加文档。
+2020-5-11：与大脑联调 AI 动作识别。
+1. 对接相关。RGB 和 depth 信息需要在 AI 动作识别模块做一下同步，并且:
+   - 携带 RGB/depth 的 header 信息。
+   - 计算出一个合理的 depth 值作为输出，供大脑模块后续使用。
 
 quick-memo:
 - to-har -> har-rsync
