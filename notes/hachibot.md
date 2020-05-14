@@ -1,16 +1,50 @@
-2020-5-12：与大脑联调 AI 动作识别。
-1. [Done] 对接相关。RGB 和 depth 信息需要在 AI 动作识别模块做一下同步，并且:
-   - 携带 RGB/depth 的 header 信息。
-   - 计算出一个合理的 depth 值作为输出，供大脑模块后续使用。
-   - 减少处理耗时：每秒只取连续的两帧做动作识别，detectron 用最后的帧，slowfast 用两帧。
-   - 排错：偶尔数组越界导致识别进程崩溃。原因是用 a[c_1, c_2] 形式访问数组时，c_1 应该是纵坐标，c_2 应该是横坐标，原本用反了。
-2. [Planned for future] 识别模块的未来的改进点（未来可能采用给熟悉的人建立多纬度多角度档案的方式改进）记录：
-   - 关于保存的图：文本容易缺失，调整一下文本输出位置；有结果的存，没有结果的不存。
-   - 光线稍暗就识别不出人脸了。
-   - 目前几乎只能识别完整的正脸，稍侧、稍缺即无法识别。
-   - face-data 目录里永远只有 front 目录有数据，侧脸正脸都在里面。
-3. [Done] 添加了 video_recorder.py 用于录制来自 ROS 摄像头的视频。
+2020-5-14：
+- [Done] 配合从识别到决策到执行策略的联调。（小车已经可以跟着人跑了。）
+- [Done] 配合刘超处理时间同步的问题。
+  - 传输、识别的延时导致小车目标位置不准确。
+  - 第一个解决方案是由动作识别模块将时间随着处理结果发出，但由于 ROS tf 模块与 python3 版本不兼容的问题导致该方案流产。
+  - 第二个解决方案是由路径规划模块提供一个 ROS service，在动作识别模块每次识别开始时调用该 service 同步时间到路径规划模块，成功解决问题。
+- 使 motion_imitation 项目使用 minicheetah 的 URDF 进行训练和测试。
+  1. [Done] 简单整理 motion_imitation 项目，放到 gitlab。
+  2. 用 minicheetah 替换 laikago。
+     - [Done] 替换掉了 URDF、代码中的关节相关信息。
+     - [In-progress] 初始化时，狗身朝向不对。
+- 记一些奇奇怪怪的问题（吐槽之魂无法压抑，但因代码太多暂不准备改进任何问题）：
+  - 安装 pybullet 时有些附带 pybullet_data/pybullet_envs 诸如此类，感觉只是作为演示目的加入的，却被依赖了（比如 motion_imitation 就依赖 pybullet_data 里面的 URDF）。
+  - motion_imitation 的机器人基类居然是 minitaur，laikago 继承了 minitaur，这就很奇幻了……
 
+```
+motion-imitation run.py （共 189 行）调用链：
+env = envs.env_builder.build_imitation_env --[use]-> motion_file
+model = learning.ppo_imitation.PPOImitation --[use]-> model_file, env, learning.imitation_policies
+1. train --[use]-> model.learn
+2. test --[use]-> model.predict, env.step
+
+envs/env_builder.py build_imitation_env （共 77 行）调用链：
+sensors = envs.sensors.sensor_wrappers.HistoricSensorWrapper
+task = envs.env_wrappers.imitation_task.ImitationTask
+env = envs.locomotion_gym_env.LocomotionGymEnv --[use]-> robot_class = laikago.Laikago, sensors, task
+env = envs.env_wrappers.observation_dictionary_to_array_wrapper
+env = envs.env_wrappers.trajectory_generator_wrapper_env
+env = envs.env_wrappers.imitation_wrapper_env
+
+envs/env_wrappers/imitation_task.py （共 1238 行）关键方法：
+reset, update, done, reward --[call by]-> \__call__
+
+envs/locomotion_gym_env.py （共 460 行）关键方法：
+reset, step, render, \_terminate
+
+envs/env_wrappers/observation_dictionary_to_array_wrapper.py （共 74 行）关键方法：
+reset, step, render
+
+envs/env_wrappers/trajectory_generator_wrapper_env.py （共 92 行）关键方法：
+reset, step
+
+envs/env_wrappers/imitation_wrapper_env （共 153 行）关键方法：
+step, reset
+```
+
+_______ _______
 quick-memo:
 - to-har -> har-rsync
 
