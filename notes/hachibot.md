@@ -1,47 +1,43 @@
-2020-5-14：
-- [Done] 配合从识别到决策到执行策略的联调。（小车已经可以跟着人跑了。）
-- [Done] 配合刘超处理时间同步的问题。
-  - 传输、识别的延时导致小车目标位置不准确。
-  - 第一个解决方案是由动作识别模块将时间随着处理结果发出，但由于 ROS tf 模块与 python3 版本不兼容的问题导致该方案流产。
-  - 第二个解决方案是由路径规划模块提供一个 ROS service，在动作识别模块每次识别开始时调用该 service 同步时间到路径规划模块，成功解决问题。
-- 使 motion_imitation 项目使用 minicheetah 的 URDF 进行训练和测试。
-  1. [Done] 简单整理 motion_imitation 项目，放到 gitlab。
-  2. 用 minicheetah 替换 laikago。
-     - [Done] 替换掉了 URDF、代码中的关节相关信息。
-     - [In-progress] 初始化时，狗身朝向不对。
-- 记一些奇奇怪怪的问题（吐槽之魂无法压抑，但因代码太多暂不准备改进任何问题）：
-  - 安装 pybullet 时有些附带 pybullet_data/pybullet_envs 诸如此类，感觉只是作为演示目的加入的，却被依赖了（比如 motion_imitation 就依赖 pybullet_data 里面的 URDF）。
-  - motion_imitation 的机器人基类居然是 minitaur，laikago 继承了 minitaur，这就很奇幻了……
+2020-5-15：
+- 当前目标：让 minicheetah 可以在这个 motion-imitation 工程中被训练、测试。步骤细化：
+  - 找到 env.reset 方法里面，设置被训练的 robot 和参考的 robot 的状态设置的逻辑。
+- 接着吐槽：
+  - 配置、参数、常量、变量这些影响运行时行为的东西，被用的太随便了，这居然还是 google 的代码。
+  - 依赖结构也没有什么设计，经过设计的东西，必然能感受到一致性、可维护性、可扩展性的体现，我目前能感受到的很少。
+  - 运行时依赖、结构性依赖（继承依赖、包含依赖等）没有怎么区分，可以想象这些代码产生时，原则是怎么可行、怎么快就怎么来（我们目前的状态与之类似）。
+  - 模块（目录）、类、方法的拆分也有一些槽点，不过能感觉到，作者们还是有许多好的习惯的，至少在前面列出的缺憾中，还能把工程做出来，就说明好习惯的力量了。
+    - 好习惯的点：关键方法都有文档，说明至少这些方法是精心考虑过的。
+    - 另一点：目录划分的粒度是合理的，里面的内容也都尽力按类别聚集的，保证了至少读者（作者自己也是读者的）理解这一层的障碍不那么多。
+    - 还有：虽然设计（比如 env 的继承关系和使用关系）没能保持一致或者选用更合适的，但是至少能看出是投入了一些力气尝试解构和拆分，降低了一些维护成本和理解成本。
+  - 对于一篇论文来说，这些代码可能就够了，对于我们来说，这些代码其实是不合适的，在这种思路上开发的成本有点高（至少在这个基础上迭代的成本还是有点高的）。
+  - 当然，选取和设计一套原则也是有成本的，可以理解这个工程的状态，也可以理解我们现在的状态。不过我感觉想整体走得更稳更远更快不应该止步于此。
+- 仿真环境选型的一点考虑：
+  - 目前实际接触了 raisimLib、pybullet、webots（webots 我这里是没有深入看的，不过 gibbon 应该有发言权），还有 dacong。
+  - 我们现在的状态是没有做一个选择，可能也尚不明确怎么做这个选择。我尝试看看能不能明确点。
+  - 我们做选择的最重要的依据应该是一个核心要素：时间成本。要快，而且要长期的快（很多短期快的决定，其实长期并不快，当然这个权衡也要考虑我们想走多长）。
+  - 我因为视野一直局限在开发这个领域，所以只说开发的方面。我们现在大概四个方面：写代码、本地调试、联合调试、真机部署。
+  - 仿真环境主要影响前三个方面，它的易用性影响写代码的效率，仿真的准确性、实时性影响两个调试阶段。
+  - 对比起来比较难的是，这三个特性都是不好量化的，尤其是后两者，需要非常专业的知识才能测出来，因此目前只能用易用性做不太精确的对比。
+  - 目前看来 raisimLib 易用性是最差的，文档不完备，稳定性差。dacong 做得比 raisimLib 没好多少，它有个优势是它能比较平滑地支持真机部署方面。
+  - pybullet 和 webots 在我目前看来易用性方面应该是半斤八两，webots 有收费选项，这个略有减分，因为可能只有给钱才能得到技术支持，这会让它的生态圈比更开放的质量相当的项目小很多。
+  - pybullet 比较活跃，品质也应该是有保障的，它应该作为一个候选者；dacong 在我看来是另一个候选者，主要考虑的是它对第四方面的支持。
+  - 更长远的看一看，我们将来要自己攒狗的话，dacong 可能到时候需要我们自己迭代了，这基本抵消了它支持平滑的真机部署的优势。
+  - 在我的角度，pybullet 是眼前比较合适的仿真环境的选项。它除了易用性之外，目前很多比较活跃的机器人项目都和它或多或少有交集。
+  - 对 AI 小组来说，pybullet 是特别合适的，语言上、生态上都有优势。对于用 C++ 的其他小组来说，pybullet 的内核其实就是 C++ 的，阻碍也很少。
+- 自动化的（还是开发方面）一点考虑：
+  - 我们现在可能没有考虑测试用例的设计和持续集成，或者是考虑过但是觉得这个时间点没有可行性，又或是成本顾虑，这个状态我理解它是由于有一些基本的条件没有达成而在这个状态。但是我感觉早一点考虑它们，对长远的效率是好的。
+  - 本地调试、联合调试和真机部署方面，都应该各自有一组测试用例（特指自动化的，用代码支持的测试）被设计、实现出来，形成我们的基准线（随项目整体进展变动的基准线）。
+  - 同时测试用例的设计还会反向驱动产品逻辑的完善和细化，产品逻辑的发展又会正向驱动开发进程，我感觉应该能形成一个良性循环。
+  - 有了测试用例，就可以考虑自动持续集成了，各小组的代码有提交的时候，自动的编译、安装、测试、集成测试，甚至到最后部署真机跑用例。
+  - 这样的话一是能反向约束大家把代码质量提到一个水平线上，降低继续迭代的成本。
+  - 第二是随着测试用例的演变，大家能更清楚地看到我们项目的进展、我们产品的状态。
+  - 最后，从写代码到收到反馈的这个周期被缩短，对各位软件工程师的开发效率也是有帮助的（各个层次，编译、运行、集成、部署这些层次的错误都能被更快捕捉到）。
+
+各位头脑，我对两点注意到的东西做了一些简单的分析，你们可以瞅瞅在当下有没有价值。写在 wiki 里：http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=9667565 ，5-15 号的工作简报的最后两个列表，有关仿真环境和自动化集成。我写东西喜欢用列表，感觉看起来不会太费眼，但是可能形式上不甚合理，大家包涵哈。
 
 ```
-motion-imitation run.py （共 189 行）调用链：
-env = envs.env_builder.build_imitation_env --[use]-> motion_file
-model = learning.ppo_imitation.PPOImitation --[use]-> model_file, env, learning.imitation_policies
-1. train --[use]-> model.learn
-2. test --[use]-> model.predict, env.step
-
-envs/env_builder.py build_imitation_env （共 77 行）调用链：
-sensors = envs.sensors.sensor_wrappers.HistoricSensorWrapper
-task = envs.env_wrappers.imitation_task.ImitationTask
-env = envs.locomotion_gym_env.LocomotionGymEnv --[use]-> robot_class = laikago.Laikago, sensors, task
-env = envs.env_wrappers.observation_dictionary_to_array_wrapper
-env = envs.env_wrappers.trajectory_generator_wrapper_env
-env = envs.env_wrappers.imitation_wrapper_env
-
-envs/env_wrappers/imitation_task.py （共 1238 行）关键方法：
-reset, update, done, reward --[call by]-> \__call__
-
-envs/locomotion_gym_env.py （共 460 行）关键方法：
-reset, step, render, \_terminate
-
-envs/env_wrappers/observation_dictionary_to_array_wrapper.py （共 74 行）关键方法：
-reset, step, render
-
-envs/env_wrappers/trajectory_generator_wrapper_env.py （共 92 行）关键方法：
-reset, step
-
-envs/env_wrappers/imitation_wrapper_env （共 153 行）关键方法：
-step, reset
+world（目前只有地面）、robot 在 envs/locomotion_gym_env.py reset 方法里被创建（在 200 行左右）。
+ref_model 在 envs/env_wrappers/imitation_task.py 里被创建、更新、渲染。
 ```
 
 _______ _______
