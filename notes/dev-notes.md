@@ -29,6 +29,12 @@ redux/mobox
 * Duck-typing 其实是无类型，执行任何运算时只看对象是否拥有所需的操作符或方法。
 * C/C++ 当中，程序抛出异常退出前的打印，如果是 printf，要加 '\n'，不加则可能没有输出。
 
+# 编辑器
+## Atom
+* 格式插件：atom-latex/latex, markdown-preview
+* 效率插件：cursor-history
+* https://www.sitepoint.com/10-essential-atom-add-ons/
+
 # 版本工具备忘
 * SVN http://earth.bao.ac.cn/svn/gsegment/trunk/***
 * GIT git@github.com:qixiaofeng/***

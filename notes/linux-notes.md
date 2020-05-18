@@ -46,6 +46,9 @@
 * 系统级环境变量设置在 `/etc/profile.d/*.sh` 或 `/etc/environment`，推荐前者。
 * 文件系统的挂载配置在 /etc/fstab 中。
 
+## 应用程序
+* 截屏工具 shutter。
+
 ## 开发
 * 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
 * 查看程序崩溃后的 coredump 调用栈 `coredumpctl gdb _PID_`：
@@ -63,6 +66,7 @@
 * `nm --demangle path/to/{*.a,*.so}` 可查看符号表。
 * `ps huH p <PID_OF_U_PROCESS> | wc -l` 打印线程数目。
 * 监控 GPU 状态 `watch -n 3 nvidia-smi`。
+* 查 GPU 核数 `nvidia-settings -q CUDACores -t`。
 ### Python
 * 多版本依赖共存时，需要虚拟环境 venv：`python -m venv --help`。
 * `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`。
