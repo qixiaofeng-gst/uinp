@@ -35,6 +35,10 @@ redux/mobox
 * 效率插件：cursor-history
 * https://www.sitepoint.com/10-essential-atom-add-ons/
 
+# 常用正则
+* 分节删除：` \r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n `。
+* 等号空格：` (\w)=(\w) ` 替换 ` $1 = $2 `。
+
 # 版本工具备忘
 * SVN http://earth.bao.ac.cn/svn/gsegment/trunk/***
 * GIT git@github.com:qixiaofeng/***
@@ -89,9 +93,6 @@ redux/mobox
 * 启动：net start MongoDB
 * Windows 10 中在管理员权限下的 PowerShell 中（c:/windows/system32/windowspowershell 目录下找 powershell）关闭防火墙：
 Set-NetFirewallProfile -Profile Domain, Public,Private -Enabled false
-
-# 常用正则
-* 分节删除：`\r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n`
 
 # Web 前端开发跨域 Chrome 设置
 "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --disable-web-security --user-data-dir="D:/TempDocs/chrome_data/"
