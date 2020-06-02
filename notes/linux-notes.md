@@ -17,6 +17,7 @@
 * 代理 https://github.com/Qv2ray/Qv2ray。
 * 检查网络 ifconfig, hostname, netstat。
 * 查已占用端口 sudo lsof -i -P -n | grep LISTEN。
+* 查看域名解析情况 `ping domain.name` 或者 `nslookup domain.name`。
 
 ## 系统管理
 * 查看系统版本信息 `lsb_release -a`。
@@ -47,7 +48,9 @@
 * 文件系统的挂载配置在 /etc/fstab 中。
 
 ## 应用程序
+* 通过 deb 文件安装 `sudo dpkg -i /path/to/deb/file && sudo apt install -f`。
 * 截屏工具 shutter。
+* 音频录制和播放 `arecord/aplay`。
 
 ## 开发
 * 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`

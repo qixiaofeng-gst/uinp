@@ -1,38 +1,9 @@
-2020-5-21：
-1. [In progress] 改进模拟学习工程（[MR3](http://gitlab.corp.hachibot.com/ai/motion-imitation/-/merge_requests/3), [MR4](http://gitlab.corp.hachibot.com/ai/motion-imitation/-/merge_requests/4)）：
-   - [Done] 参数不从命令行读，所有运行时参数从配置文件读取。
-   - [Done] 梳理甄别参数类型到三类：
-     - 脚本参数。输入输出路径、频率和调试开关等影响脚本行为的参数。
-     - 引擎参数。决定 pybullet 引擎行为的参数，比如控制是否启用 GUI 模式、是否绘制辅助线条等选项。
-     - 模型参数。影响神经网络模型结构和行为的参数。
-   - [Done] 移除 minituar 类以及相关工具类。
-   - [Done] 给训练和测试赋予正确的初始化数值（用参考动作数据中的数值对训练对象和参考对象同时进行初始化）。
-   - 尝试迁移模型到 tensorflow 2.x。
-   - 尝试加速训练过程。
-     - 提升 pybullet 对 GPU 的利用效率。
-     - 提升网络训练对 GPU 的利用效率。
-   - “FK -> IK -> 输出参考动作数据”的过程做成一个功能完整的脚本。
-2. [In progress] 配合 SLAM 和大脑联调。
-
-关键调用栈记录[IK 相关]：
-- kinematics.py, `def joint_angles_from_link_position(`
-  - [2.1.2] `pybullet.getEulerFromQuaternion`
-  - [2.1.1.1.1.1.1] `def ReceiveObservation(`
-  - [2.1.1.1.1.1] `_observation_history` appendLeft in `def _GetDelayedObservation(`
-  - [2.1.1.1.1] `def _GetDelayedObservation(`
-  - [2.1.1.1] `def _GetControlObservation(`
-  - [2.1.1] `_control_observation` assigned in `def ReceiveObservation(`
-  - [2.1] `def GetBaseRollPitchYaw(`
-  - [2] minitaur.py, `def GetBaseOrientation(`
-  - [1] minitaur.py, `def GetBasePosition(`
-- minitaur.py, `def ReceiveObservation(`
-  - [5] `def GetTrueObservation(`
-  - [4] `pybullet.multiplyTransforms`
-  - [3] `pybullet.getBasePositionAndOrientation`
-  - [2] `pybullet.getJointStates`
-  - [1] `_motor_id_list` initialized in `def _BuildMotorIdList(`
-- minitaur.py, `def ComputeMotorAnglesFromFootLocalPosition(`
-  - [1] `_foot_link_ids` append in `def _BuildUrdfIds(`
+2020-6-3：
+- [In-progress] 把识别功能做成 ROS 节点。
+  - 实现识别节点。
+  - 实现测试数据发送节点。
+  - 实现接收识别结果的测试节点。
+  - 对接 odas_ros。
 
 _______ _______
 quick-memo:
