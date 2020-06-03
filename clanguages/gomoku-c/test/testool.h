@@ -35,4 +35,8 @@ void setupTestSuite();
 
 void reportTestSuite();
 
+/* ======= Belows are utilities for debugging. ======= */
+#define M_debug_line() printf("\033[38;2;255;255;0mDebug line ====>>>\033[0m %s %s %d\n", \
+__FILE__, __FUNCTION__, __LINE__);
+
 #endif // guard end for TESTOOL_H

@@ -21,7 +21,7 @@ _reportIntegerTest(
 ) {
     bool isPassed = (value == expected);
     printf(
-        "Test [%s], testing value[%s]: %d, expected: %d\n",
+        "Test [%s], testing value[ %s ]: %d, expected: %d\n",
         isPassed ? trueFlag : falseFlag,
         testedName,
         value,

@@ -45,6 +45,9 @@ struct _Tree {
 
 /*
 TODO
+Make the testtools with M_ style macro function have to be ended with semicolon.
+Provide a non-pass-print M_test_int_npp macro function.
+
 Design a index provider.
 */
 #define M_table_index_count 225
@@ -68,12 +71,6 @@ hasMoreIndex(IndexProvider const * const provider)
     return provider->count > 0;
 }
 
-int
-provideIndex(IndexProvider * const provider)
-{
-    return 0;
-}
-
 void
 _doRemoveIndex(IndexProvider * const provider, int const targetIndex)
 {
@@ -91,7 +88,8 @@ removeIndex(IndexProvider * const provider, int const targetIndex)
     ) {
         return false;
     }
-    printf("=== targetIndex: %d, provider->indexes[targetIndex]: %d.\n", targetIndex, provider->indexes[targetIndex]);
+    //Debug:
+    printf("Odd here ====>>> targetIndex: %d, provider->indexes[targetIndex]: %d.\n", targetIndex, provider->indexes[targetIndex]);
     if (
         (targetIndex == provider->indexes[targetIndex]) &&
         (targetIndex < provider->count)
@@ -109,7 +107,31 @@ removeIndex(IndexProvider * const provider, int const targetIndex)
             return true;
         }
     }
+    M_debug_line()
     return false;
+}
+
+/**
+Have to check with hasMoreIndex(provider) before use provideIndex(provider).
+May cause undefined behavior without checking.
+*/
+int
+provideIndex(IndexProvider * const provider)
+{
+    // Generate random number, and convert to index.
+    int targetIndex = rand() % provider->count;
+    // Get the index.
+    int resultIndex = provider->indexes[targetIndex];
+    // Remove the index.
+    if (false == removeIndex(provider, resultIndex)) {
+        printf("[\033[31mError\033[0m] Failed to remove \
+targetIndex( %d ) for \
+IndexProvider( %p )\n",
+            targetIndex,
+            provider
+        );
+    }
+    return resultIndex;
 }
 
 void
@@ -135,9 +157,9 @@ tryBuildTree(void)
         .nodeCount = 0,
     };
     printf("\
-Hello tree! height: %d, nodeCount: %d, \
-leafsIndex.sectionCount: %d, rootRef: %p, \
-leafsIndex.initialSection[0]: %p, \
+Hello tree! height: %d, nodeCount: %d,\n\
+leafsIndex.sectionCount: %d, rootRef: %p,\n\
+leafsIndex.initialSection[0]: %p,\n\
 leafsIndex.initialSection[9]: %p.\n",
         tree.height, tree.nodeCount, tree.leafsIndex.sectionCount,
         tree.rootRef, tree.leafsIndex.initialSection.refs[0],
@@ -167,6 +189,10 @@ main(void)
     M_test_int(removeIndex(indexProvider, 0), true)
     M_test_int(indexProvider->count, 223)
     M_test_int(provideIndex(indexProvider) < 224, true)
+    for (int i = 0; i < 222; ++i) {
+        M_test_int(provideIndex(indexProvider) < 224, true)
+        M_test_int(indexProvider->count, 221 - i)
+    }
     // ======= Temporary block end.
 
     return 0;
