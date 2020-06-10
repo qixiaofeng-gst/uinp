@@ -3,6 +3,9 @@
 2. 别人觉得深不可测的事情，我能了解多少？
 3. 大脑中究竟是什么在误导我？
 
+# 当世所知皆基础，未知一切皆进阶。
+What we know is elementary. What we do not know is advanced.
+
 # Quick guide for pjo with gcc:
 1. `cd /mnt/c/Users/qixia/Documents/uinp/gists/pjo`
 2. `gcc solving.c && less input.txt | ./a.out`
@@ -34,6 +37,8 @@ redux/mobox
 * 格式插件：atom-latex/latex, markdown-preview
 * 效率插件：cursor-history
 * https://www.sitepoint.com/10-essential-atom-add-ons/
+## IntelliJ
+* Path 添加: `settings -> project structure -> add content root`.
 
 # 常用正则
 * 分节删除：` \r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n `。
