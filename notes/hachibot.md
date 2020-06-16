@@ -1,5 +1,59 @@
-2020-6-10：
-- [Planned] 标准化声纹识别过程，固定声音样本的采样频率、时长、格式。
+2020-6-16：
+- [Note] 学习下 deep-speaker 和 ODAS 论文。记一些或许有用的链接：
+  - https://github.com/Akella17/speaker-embedding
+  - https://github.com/taylorlu/Speaker-Diarization
+  - https://github.com/WeidiXie/VGG-Speaker-Recognition
+  - https://github.com/ina-foss/inaSpeechSegmenter
+  - https://www.openslr.org/38/
+  - https://github.com/JRMeyer/open-speech-corpora
+- [Done] 载入 wav 方式更新后，本地测试实时识别的结果与更新前并无太大分别。
+  - 时常有 1.6 秒的声音数据只有 0.3～0.6 秒有实际声音的与某人相似度高达 0.6~0.7。
+  - 时常有两人同时发声的被以 0.6~0.7 相似度识别为其中之一。
+  - 笑声经常识别得错得离谱，比如我的笑声经常被识别为其他人。
+- [Done] 检查从 wav 载入进来的值。
+  - 目前 deep-speaker 中载入音频的手段有两种，一种是 librosa.load，一种是 scipy.io.wavfile.read。
+  - librosa.load 载入进来的数据默认是 float32 的，scipy.io.wavfile.read 载入的数据默认是文件本身格式相关的。
+  - 从前一直没有检查这两个东西载入进来的数据有什么差异，直到今天……
+  - 直接打印数值，同一个文件 librosa: 0.29040527 0.24014282 0.28622437 ...; scipy: 9516 7869 9379 ...
+  - 从 ODAS socket 接收过来的数据，是 int16 的，存储到本地的 wav 数据也是 int16 的。
+  - 用 librosa 载入的本地 wav 数据采用了未知的一种方式将数据转换成了 float32，导致数值上与 scipy 方式不一样。
+  - 为了排除 librosa 数据转换后的数据对识别网络的性能造成影响，后面准备载入数据的环节都用 scipy。
+  - 由于 librosa 方式有一些数据类型、数值的检查工作，在使用 scipy 重构时会在必要的环节实现这些检查。
+- [Done] 本地测试实时识别的效果。
+  - Kinect 放置在桌面，距离我的头 50 ～ 60 厘米，我正常音调重复说“大葱过来”“大葱你好”。
+  - 当相似度阀值设置在 0.6 的时候，识别结果包含大量的噪声、无声结果。
+  - 阈值 0.7 时，识别结果多数包含语音，但存在两个问题：
+    1. 出结果的频率较低，平均两秒出一次相似度大于 0.7 的结果。
+    1. 命中率较低（0.19），全部是我的语音，多数被误判成了炫煜。还有部分噪声也被误判成了炫煜。
+- [Done] 上狗子测试昨天采集的对照数据。
+  - NUC 风扇开启时，噪声直接淹没人声，spleeter 无法分离出人声。
+  - 关闭 NUC 风扇，狗子步行时，思钡的话音全部识别成我的，或者说，不管有没有人发声，识别结果全是我，且相似度在 0.5~0.6 附近波动。
+    - 把录制下来的思钡的话音（带步行噪声的）放到测试脚本中测试命中率，结果为命中率为 0。
+    - 用 spleeter 把思钡的话音与步行噪声分离放到测试脚本中测试，命中率为 0.09，命中为思钡时，相似度在 0.3~0.4 之间。
+
+corpus：语料库
+triplet loss：三重损失
+acoustic：声学
+utterrance：发声
+phoneme：音素
+Mandarin：普通话
+End-to-end describes a process that takes a system or service from beginning to end
+  and delivers a complete functional solution,
+  usually without needing to obtain anything from a third party.
+Speaker diarisation is the process of partitioning an input audio stream
+  into homogeneous segments according to the speaker identity.
+
+Context-free (General) Acronyms   
+PCM, Pulse-Code Modulation, is a method used to digitally represent sampled analog signals.
+
+Context-dependent Acronyms   
+? AP, Audio Positive, is a positive audio.
+
+Jargons   
+d-vector, DNN-based i-vector.
+
+_______ _______
+new nuc: hachi@192.168.100.201, normal
 
 _______ _______
 quick-memo:

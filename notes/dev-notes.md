@@ -16,6 +16,7 @@ redux/mobox
 
 # 开发信息
 * 清华开源 https://mirror.tuna.tsinghua.edu.cn/help/ubuntu/
+  * 设置 pip 镜像：`pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`
 * 图解开源协议 https://www.cnblogs.com/KruceCoder/p/7991052.html
 * 安装 tensorflow 成功的前提是安装 python3.5.2，然后
   `pip install --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.0.0-cp35-cp35m-win_amd64.whl`
@@ -137,6 +138,7 @@ Windows 下可创建快捷方式并添加参数
   -np = --no-parent
   -U <agent-string> = --user-agent=<agent-string>
   ```
+* axel multithread download: `axel -a -n 12 http://url.to.download`, `-a` shows a progress bar.
 
 # Legacy for GST JoyCity project
 ```
