@@ -1,2 +1,2 @@
-pybullet~=2.7.3
-tensorflow>=2.1.0
+pybullet~=2.8.1
+tensorflow>=2.2.0
