@@ -7,41 +7,44 @@ Estimate largest batch size:
 Max batch size = available GPU memory bytes / 4 / (size of tensors + trainable parameters)
 """
 
-def playMnist():
+
+def play_mnist():
     import tensorflow as tf
     print('Using tensorflow', tf.__version__, '====>>> below personal code starts.')
 
-    #with tf.device("/gpu:0"): # Use /cpu:0 or /gpu:0.
+    # with tf.device("/gpu:0"): # Use /cpu:0 or /gpu:0.
     mnist = tf.keras.datasets.mnist
 
-    (x_train, y_train), (x_test, y_test) = mnist.load_data(path="mnist.npz")
+    (x_train, y_train), (x_test, y_test) = mnist.load_data(path = "mnist.npz")
     x_train, x_test = x_train / 255.0, x_test / 255.0
 
     model = tf.keras.models.Sequential([
-      tf.keras.layers.Flatten(input_shape=(28, 28), dtype='float64'),
-      tf.keras.layers.Dense(256, activation='relu', dtype='float64'),
-      #tf.keras.layers.Dropout(0.2, dtype='float64'),
-      tf.keras.layers.Dense(10, dtype='float64')
+        tf.keras.layers.Flatten(input_shape = (28, 28), dtype = 'float64'),
+        tf.keras.layers.Dense(256, activation = 'relu', dtype = 'float64'),
+        # tf.keras.layers.Dropout(0.2, dtype='float64'),
+        tf.keras.layers.Dense(10, dtype = 'float64')
     ])
 
-    #predictions = model(x_train[:1]).numpy()
-    #tf.nn.softmax(predictions).numpy()
+    # predictions = model(x_train[:1]).numpy()
+    # tf.nn.softmax(predictions).numpy()
 
-    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    model.compile(optimizer='adam', loss=loss_fn, metrics=['accuracy'])
+    loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
+    model.compile(optimizer = 'adam', loss = loss_fn, metrics = ['accuracy'])
 
     from tools.weights_loader import WeightsLoader
-    weightsLoader = WeightsLoader(__file__)
-    if weightsLoader.hasWeights():
+    weights_loader = WeightsLoader(__file__)
+    if weights_loader.hasWeights():
         print('====>>> Loading weights.')
-        weightsLoader.loadWeights(model)
+        weights_loader.loadWeights(model)
         print('====>>> Loaded weights.')
     else:
-        model.fit(x_train, y_train, batch_size=256, epochs=5)
-    model.evaluate(x_test, y_test, verbose=1)
-    model.evaluate(x_train, y_train, verbose=1)
-    weightsLoader.saveWeights(model)
+        model.fit(x_train, y_train, batch_size = 256, epochs = 5)
+    model.evaluate(x_test, y_test, verbose = 1)
+    model.evaluate(x_train, y_train, verbose = 1)
+    weights_loader.saveWeights(model)
+
 
 if __name__ == '__main__':
     from tools.profiler import executeWithTimestamp
-    executeWithTimestamp(playMnist)
+
+    executeWithTimestamp(play_mnist)

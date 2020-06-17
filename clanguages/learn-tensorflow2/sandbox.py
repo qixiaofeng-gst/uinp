@@ -1,31 +1,35 @@
-def printPublicMembers(target, onlyCount=True):
-    def _empty(key):
+def print_public_members(target, only_count = True):
+    def _empty(_):
         pass
-    def _print(key):
-        print(key)
-    printMember = _empty if onlyCount else _print
-    methodCount = 0
+
+    def _print(field_name):
+        print(field_name)
+
+    print_member = _empty if only_count else _print
+    method_count = 0
     for key in dir(target):
         if not key.startswith('_'):
-            methodCount += 1
-            printMember(key)
-    print('{} has {} public members.'.format(target.__name__, methodCount))
+            method_count += 1
+            print_member(key)
+    print('{} has {} public members.'.format(target.__name__, method_count))
 
-def playWithPrimitiveArray():
-    arrayA = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    print(arrayA[1:2], arrayA[::2], arrayA[1:8:3])
-    print(arrayA[0:-2], arrayA[0:-5])
-    print(arrayA[0:3], arrayA[:3])
-    print(arrayA[3:], arrayA[3:1])
-    print(arrayA[-1:], arrayA[-1:0])
 
-def playWithTensorflow():
+def play_with_primitive_array():
+    array_a = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    print(array_a[1:2], array_a[::2], array_a[1:8:3])
+    print(array_a[0:-2], array_a[0:-5])
+    print(array_a[0:3], array_a[:3])
+    print(array_a[3:], array_a[3:1])
+    print(array_a[-1:], array_a[-1:0])
+
+
+def play_with_tensorflow():
     import numpy as np
     help(np.ndarray)
 
     print('Belows are tensorflow relevant. ====>>>')
     import tensorflow as tf
-    data = tf.keras.datasets.mnist.load_data(path="mnist.npz")
+    data = tf.keras.datasets.mnist.load_data(path = "mnist.npz")
     print(type(data), len(data))
     train, test = data
     print(type(train), len(train), type(test), len(test))
@@ -46,17 +50,18 @@ def playWithTensorflow():
 
     from tensorflow.keras import Model
     print(tf.keras.layers.__file__)
-    printPublicMembers(Model)
-    #print(Model.compile.__doc__)
-    #printPublicMembers(tf.keras.layers, False)
-    #print(tf.keras.layers.Layer.__doc__)
-    #print(tf.keras.models.Sequential.__doc__)
-    #print(tf.keras.layers.Dense.__doc__)
-    #print(tf.keras.layers.Flatten.__doc__)
-    #print(tf.keras.layers.Dropout.__doc__)
-    #help("modules")
+    print_public_members(Model)
+    # print(Model.compile.__doc__)
+    # printPublicMembers(tf.keras.layers, False)
+    # print(tf.keras.layers.Layer.__doc__)
+    # print(tf.keras.models.Sequential.__doc__)
+    # print(tf.keras.layers.Dense.__doc__)
+    # print(tf.keras.layers.Flatten.__doc__)
+    # print(tf.keras.layers.Dropout.__doc__)
+    # help("modules")
 
 
 if __name__ == '__main__':
     import pybullet as bt
+
     help(bt)
