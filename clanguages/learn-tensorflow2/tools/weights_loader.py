@@ -2,19 +2,20 @@
 @author: xiaofeng.qi
 """
 
+
 class WeightsLoader:
-    def __init__(self, referenceFullPath):
+    def __init__(self, reference_full_path):
         import os
         dot = '.'
-        refName = os.path.basename(referenceFullPath)
-        self._fileName = refName[:refName.rindex(dot)] + dot + 'h5'
+        ref_name = os.path.basename(reference_full_path)
+        self._fileName = ref_name[:ref_name.rindex(dot)] + dot + 'h5'
 
-    def saveWeights(self, model):
+    def save_weights(self, model):
         model.save_weights(self._fileName)
 
-    def loadWeights(self, model):
+    def load_weights(self, model):
         model.load_weights(self._fileName)
 
-    def hasWeights(self):
+    def has_weights(self):
         import os
         return os.path.exists(self._fileName)

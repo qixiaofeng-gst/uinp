@@ -95,6 +95,6 @@ def train_with_network():
 
 
 if __name__ == '__main__':
-    from tools.profiler import executeWithTimestamp
+    from tools.profiler import execute_with_timestamp
 
-    executeWithTimestamp(train_with_table)
+    execute_with_timestamp(train_with_table)

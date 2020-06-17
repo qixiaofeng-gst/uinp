@@ -33,18 +33,18 @@ def play_mnist():
 
     from tools.weights_loader import WeightsLoader
     weights_loader = WeightsLoader(__file__)
-    if weights_loader.hasWeights():
+    if weights_loader.has_weights():
         print('====>>> Loading weights.')
-        weights_loader.loadWeights(model)
+        weights_loader.load_weights(model)
         print('====>>> Loaded weights.')
     else:
         model.fit(x_train, y_train, batch_size = 256, epochs = 5)
     model.evaluate(x_test, y_test, verbose = 1)
     model.evaluate(x_train, y_train, verbose = 1)
-    weights_loader.saveWeights(model)
+    weights_loader.save_weights(model)
 
 
 if __name__ == '__main__':
-    from tools.profiler import executeWithTimestamp
+    from tools.profiler import execute_with_timestamp
 
-    executeWithTimestamp(play_mnist)
+    execute_with_timestamp(play_mnist)
