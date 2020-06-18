@@ -32,12 +32,18 @@ class Network:
 
         default_rng = np.random.default_rng()
         self._biases = [
-            default_rng.standard_normal(size = (neuron_quantity, 1))
+            default_rng.standard_normal(
+                size = (neuron_quantity, 1),
+                dtype = np.float32,
+            )
             for neuron_quantity in
             layer_sizes[1:]
         ]
         self._weights = [
-            default_rng.standard_normal(size = (output_quantity, input_quantity))
+            default_rng.standard_normal(
+                size = (output_quantity, input_quantity),
+                dtype = np.float32,
+            )
             for input_quantity, output_quantity in
             zip(layer_sizes[:-1], layer_sizes[1:])
         ]
@@ -141,97 +147,30 @@ class Network:
             for (x, y) in
             test_data
         ]
-        return sum(int(x == y) for (x, y) in test_results)
+        # print('>>>>>>>', test_results)
+        return sum(int(np.isclose(x, y, atol = 1e-2)) for (x, y) in test_results)
 
 
-class Neuron:
-    def __init__(self, input_quantity: int):
-        self._weights = np.zeros(input_quantity, dtype = np.int8)
-        self._bias = 0
-
-    def __setitem__(self, key, value):
-        self._weights[key] = value
-
-    @property
-    def b(self):
-        return self._bias
-
-    @b.setter
-    def b(self, value):
-        self._bias = value
-
-    def calculate_z_for(self, input_values):
-        if len(input_values) == len(self._weights):
-            return np.sum(self._weights * input_values) + self._bias
-        else:
-            raise RuntimeError('Invalid input shape {}, expecting {}.'.format(
-                len(input_values),
-                len(self._weights),
-            ))
-
-    def calculate_for(self, input_values):
-        raise NotImplementedError
+limit = 10
 
 
-class Perceptron(Neuron):
-    """
-    A perceptrons formed network is hard-to-control.
-    Any weight change of a single perceptron may cause a big behavior change of the rest of the network.
-    """
-
-    def __init__(self, input_quantity: int):
-        super(Perceptron, self).__init__(input_quantity)
-
-    def calculate_for(self, input_values):
-        return 1 if self.calculate_z_for(input_values) > 0 else 0
-
-
-class SigmoidNeuron(Neuron):
-    def __init__(self, input_quantity):
-        super(SigmoidNeuron, self).__init__(input_quantity)
-
-    def calculate_for(self, input_values):
-        return 1 / (1 + np.exp(self.calculate_z_for(input_values)))
-
-
-def lets_go():
-    print('Yeah, let\'s go!')
-    # Below perceptron is a presentation for NAND gate.
-    p = Perceptron(2)
-    p[0] = -2
-    p[1] = -2
-    p.b = 3
-    print(
-        '>>>>>>> [1, 1] -> {} '
-        '&& [1, 0] -> {} '
-        '&& [0, 1] -> {} '
-        '&& [0, 0] -> {}'.format(
-            p.calculate_for([1, 1]),
-            p.calculate_for([1, 0]),
-            p.calculate_for([0, 1]),
-            p.calculate_for([0, 0]),
-        )
-    )
+def create_data(quantity):
+    training_data = []
+    for _ in range(quantity):
+        xa, xb = float(random.randint(0, limit)), float(random.randint(0, limit))
+        y = xa * xb / (limit * limit)
+        training_data.append((np.array([[xa], [xb]]), np.array([[y]])))
+    return training_data
 
 
 def learn_dnn():
-    training_data = [
-        (np.array([[.2], [.1]]), np.array([[.02]])),
-        (np.array([[.3], [.1]]), np.array([[.03]])),
-        (np.array([[.4], [.5]]), np.array([[.20]])),
-        (np.array([[.7], [.5]]), np.array([[.35]])),
-    ]
-    test_data = [
-        (np.array([[.3], [.4]]), np.array([[.12]])),
-        (np.array([[.5], [.6]]), np.array([[.30]])),
-    ]
-    net = Network([2, 2, 1])
-    net.train_with_sgd(training_data, 10, 2, 1, test_data)
-    print('>>>>>>>', net.feed_forward([[.1], [.2]]))
+    training_data = create_data(5000)
+    test_data = create_data(1000)
+    net = Network([2, 8, 1])
+    net.train_with_sgd(training_data, 30, 10, .851, test_data)
 
 
 if __name__ == '__main__':
     from tools.profiler import execute_with_timestamp
 
-    execute_with_timestamp(lets_go)
     execute_with_timestamp(learn_dnn)

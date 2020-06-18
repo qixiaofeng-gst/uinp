@@ -7,8 +7,8 @@ fig = plt.figure()
 ax = fig.gca(projection = '3d')
 
 # Make data.
-X = np.arange(-5, 5, 0.25)
-Y = np.arange(-5, 5, 0.25)
+X = np.arange(-2, 2, 0.2)
+Y = np.arange(-2, 2, 0.2)
 X, Y = np.meshgrid(X, Y)
 # R = np.sqrt(X ** 2 + Y ** 2)
 # Z = np.sin(R)
@@ -28,4 +28,5 @@ ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 # Add a color bar which maps values to colors.
 fig.colorbar(surf, shrink = 0.5, aspect = 5)
 
+# Use `sudo apt install python3-tk` to let below plt.show() work.
 plt.show()
