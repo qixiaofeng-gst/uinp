@@ -137,7 +137,7 @@ class Network:
 
     def evaluate(self, test_data):
         test_results = [
-            (np.argmax(self.feed_forward(x)), y)
+            (self.feed_forward(x)[0, 0], y[0, 0])
             for (x, y) in
             test_data
         ]
@@ -201,15 +201,33 @@ def lets_go():
     p[0] = -2
     p[1] = -2
     p.b = 3
-    print('>>>>>>>', p.calculate_for([1, 1]))
-    print('>>>>>>>', p.calculate_for([0, 1]))
-    print('>>>>>>>', p.calculate_for([1, 0]))
-    print('>>>>>>>', p.calculate_for([0, 0]))
+    print(
+        '>>>>>>> [1, 1] -> {} '
+        '&& [1, 0] -> {} '
+        '&& [0, 1] -> {} '
+        '&& [0, 0] -> {}'.format(
+            p.calculate_for([1, 1]),
+            p.calculate_for([1, 0]),
+            p.calculate_for([0, 1]),
+            p.calculate_for([0, 0]),
+        )
+    )
 
 
 def learn_dnn():
-    net = Network([3, 2, 1])
-    print(net, net.feed_forward([1, 2, 3]), np.argmax(net.feed_forward([1, 2, 3])))
+    training_data = [
+        (np.array([[.2], [.1]]), np.array([[.02]])),
+        (np.array([[.3], [.1]]), np.array([[.03]])),
+        (np.array([[.4], [.5]]), np.array([[.20]])),
+        (np.array([[.7], [.5]]), np.array([[.35]])),
+    ]
+    test_data = [
+        (np.array([[.3], [.4]]), np.array([[.12]])),
+        (np.array([[.5], [.6]]), np.array([[.30]])),
+    ]
+    net = Network([2, 2, 1])
+    net.train_with_sgd(training_data, 10, 2, 1, test_data)
+    print('>>>>>>>', net.feed_forward([[.1], [.2]]))
 
 
 if __name__ == '__main__':

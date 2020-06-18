@@ -1,77 +1,5 @@
 2020-6-16：
-- [In-progress] 学习 deep-speaker 和 ODAS 论文（读完会写 Wiki）。
-  - https://github.com/TAMU-VITA/AutoSpeech
-  - https://github.com/CorentinJ/Real-Time-Voice-Cloning
-  - https://github.com/WeidiXie/VGG-Speaker-Recognition
-  - https://github.com/iiscleap/NeuralPlda
-  - https://github.com/joaoantoniocn/AM-MobileNet1D
-- [Note] 基础知识链接：
-  - https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Audio_concepts
-    - sample size, bits used for storing a single sample.
-    - sample rate, sample quantity of one second.
-    - frame, data record contains samples from all channels.
-    - frame size, sample size multiplies channels count.
-  - https://developers.google.com/machine-learning/crash-course/embeddings/video-lecture
-    - embedding, a relatively low-dimensional space accept translated high-dimensional vectors.
 - [Done] 预备 motion-runner 和真机联调。
-
-Deep-Speaker system
-
-Three stages framework of traditional approach
-1. Collect sufficient statistics   
-   Computed from MFCC optimized GMM-UBM
-2. Extract speaker embeddings (i-vector)
-3. Classify (PLDA)
-
-DNN-based approach has a classification layer combining stage 1 and 2.   
-Two major issues of DNN-based approach:
-1. Stage 1 and 2 are not directly optimized with respect to speaker recognition.
-2. There is a mismatch between training and test.   
-   Give training labels at the frame-level.
-   Made Utterance-level predictions in testing.
-
-End-to-end neural speaker verification system combined all three stages.   
-Deep-Speaker extends the end-to-end speaker embedding system.
-1. A DNN is used to extract frame-level features from utterances.
-2. Pooling and length normalization layers generate utterance-level speaker embeddings.
-3. Training the model with triplet loss.
-   Triplet loss minimizes the distance between embedding pairs from the same speaker   
-   and maximizes the distance between pairs from different speakers.
-4. Pre-training uses a softmax layer and cross-entropy over a fixed list of speakers.   
-   Pre-training improves model performance. 
-
-Context-free (General) Acronyms
-
-| Acronym | Full Words | Description |
-| ------- | -------    | -------     |
-| DNN | Deep Neural Network | - |
-| CNN | Convolutional Neural Network | - |
-| RNN | Recurrent Neural Network | - |
-| PCM | Pulse-Code Modulation | is a method used to digitally represent sampled analog signals. |
-| EER | Equal Error Rate | the value of FAR and FRR meet each other, lower is better. |
-| FAR | False Acceptance Rate | rate of the wrongly accepted situations. |
-| FRR | False Rejection Rate | rate of the wrongly rejected situations. |
-| ACC | ACCuracy | a metraic only for classification, gives the percentage of correctly classified instances. |
-| PLDA | Probabilistic Linear Discriminant Analysis | https://ieeexplore.ieee.org/document/6639150 |
-| GMM | Gaussian Mixture Model | |
-| UBM | Universal Background Model | |
-| MFCC | Mel-Frequency Cepstral Coefficients | |
-| LSTM | Long-Short Term Memory | |
-| NIN | Network-In-Network | |
-| GRU | Gated Recurrent Unit | |
-
-Context-dependent Acronyms [[Of Paper](https://arxiv.org/pdf/1705.02304.pdf)]
-
-| Acronym | Full Words | Description |
-| ------- | -------    | -------     |   
-| ? AP | Audio Positive | It is a positive audio. |
-
-| Jargon  | Explanation |
-| ------- | -------     |
-| d-vector | DNN-based i-vector. |
-| i-vector | https://www.crim.ca/perso/patrick.kenny/Najim_TASLP2009.pdf |
-| ResCNN | Residual CNN | - |
-| ResNets | Residual Networks | - |
 
 corpus：语料库
 triplet loss：三重损失
@@ -84,6 +12,16 @@ End-to-end describes a process that takes a system or service from beginning to 
   usually without needing to obtain anything from a third party.
 Speaker diarisation is the process of partitioning an input audio stream
   into homogeneous segments according to the speaker identity.
+et al.：means 'and others'.
+affine：仿射
+
+
+epoch, batch, iteration, episode:
+
+epoch: pass of entire training dataset.
+batch: sliced training dataset.
+iteration: pass of batch.
+episode: one game. episodes are completely independent of one another.
 
 _______ _______
 new nuc: hachi@192.168.100.201, normal
