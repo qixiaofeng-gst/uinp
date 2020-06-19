@@ -63,7 +63,6 @@
   * gdb 中输入 `print <variable-name>` 查看变量值。
 * 查看程序运行时消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`。
 * 查看 include path：`echo | gcc -E -Wp,-v -`。
-* 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`。
 * 查看 so 版本 `ldconfig -v`，`ldconfig` 指令本身可以更新操作系统的 so 数据库。
 * `#include<errno.h>` 然后 `printf("ERROR: %s\n", strerror(errno));` 可查看如 `fopen` 之类的调用出错的信息。
 * `nm --demangle path/to/{*.a,*.so}` 可查看符号表。
@@ -89,6 +88,7 @@
 * qmake 可以通过传参 -qt=qt5 正确运行。
 * 解压 `tar zxvf file-name.tar.gz`。
 * 查找命令相关 `updatedb/mlocate/whereis/find`。
+* 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`。
 * 录制屏幕 `ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+99,88 output.mp4`。
 * Under ubuntu use `cat /etc/X11/default-display-manager` to check which display manager being used.
 * Under ubuntu use `nautilus /path/to/folder` to open folder with GUI file manager.
