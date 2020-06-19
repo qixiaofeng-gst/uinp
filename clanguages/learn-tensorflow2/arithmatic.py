@@ -1,3 +1,15 @@
+"""
+Properties of whole model:
+    Optimizer: SGD, Momentum, Adam, Adadelta, Adabound. (See https://keras.io/api/optimizers/)
+    Metrics: Accuracy, MeanSquaredError. (See https://keras.io/api/metrics/)
+    Cost(Loss) function: BinaryCrossentropy, ConsineSimilarity, MeanSquaredError. (See https://keras.io/api/losses/)
+
+Properties of a single layer:
+    Activation function: sigmoid, tanh, relu. (See https://keras.io/api/layers/)
+
+Hadamard Product(Element-size multiplication) could be done by np.multiply().
+"""
+
 import numpy as np
 import random
 
@@ -60,6 +72,7 @@ class Network:
         """
         test_length = len(test_data) if test_data else 0
         length = len(training_data)
+        max_hit_count = 0
         for epoch_sn in range(epoch_quantity):
             random.shuffle(training_data)
             minibatches = [
@@ -70,13 +83,17 @@ class Network:
             for minibatch in minibatches:
                 self.update_minibatch(minibatch, eta)
             if test_length > 0:
+                hit_count = self.evaluate(test_data)
+                if hit_count > max_hit_count:
+                    max_hit_count = hit_count
                 print('Epoch {}: {} / {}'.format(
                     epoch_sn,
-                    self.evaluate(test_data),
+                    hit_count,
                     test_length,
                 ))
             else:
                 print('Epoch {} complete'.format(epoch_sn))
+        return max_hit_count
 
     def update_minibatch(self, minibatch, eta):
         """
@@ -89,7 +106,7 @@ class Network:
         nabla_bias = [np.zeros(b.shape) for b in self._biases]
         nabla_weight = [np.zeros(w.shape) for w in self._weights]
         for x, y in minibatch:
-            delta_nabla_bias, delta_nabla_weight = self.backprop(x, y)
+            delta_nabla_bias, delta_nabla_weight = self.back_propagation(x, y)
             nabla_bias = [nb + dnb for nb, dnb in zip(nabla_bias, delta_nabla_bias)]
             nabla_weight = [nw + dnw for nw, dnw in zip(nabla_weight, delta_nabla_weight)]
         self._weights = [
@@ -103,7 +120,7 @@ class Network:
             zip(self._biases, nabla_bias)
         ]
 
-    def backprop(self, x, y):
+    def back_propagation(self, x, y):
         """
         Calculate the gradient for the cost function C_x.
         :param x: input
@@ -151,7 +168,7 @@ class Network:
         return sum(int(np.isclose(x, y, atol = 1e-2)) for (x, y) in test_results)
 
 
-limit = 10
+limit = 35
 
 
 def create_data(quantity):
@@ -164,10 +181,15 @@ def create_data(quantity):
 
 
 def learn_dnn():
-    training_data = create_data(5000)
-    test_data = create_data(1000)
-    net = Network([2, 8, 1])
-    net.train_with_sgd(training_data, 30, 10, .851, test_data)
+    max_hit_count = 0
+    for _ in range(10):
+        training_data = create_data(1000)
+        test_data = create_data(100)
+        net = Network([2, 128, 64, 1])
+        mhc = net.train_with_sgd(training_data, 5, 100, 1, test_data)
+        if mhc > max_hit_count:
+            max_hit_count = mhc
+    print('Max hit count:', max_hit_count)
 
 
 if __name__ == '__main__':
