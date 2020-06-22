@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Properties of whole model:
     Optimizer: SGD, Momentum, Adam, Adadelta, Adabound. (See https://keras.io/api/optimizers/)

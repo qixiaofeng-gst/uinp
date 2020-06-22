@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Situation is suite for utilizing GPU:
 1. Big network;
@@ -21,12 +22,8 @@ def play_mnist():
     model = tf.keras.models.Sequential([
         tf.keras.layers.Flatten(input_shape = (28, 28), dtype = 'float64'),
         tf.keras.layers.Dense(256, activation = 'relu', dtype = 'float64'),
-        # tf.keras.layers.Dropout(0.2, dtype='float64'),
-        tf.keras.layers.Dense(10, dtype = 'float64')
+        tf.keras.layers.Dense(10, dtype = 'float64'),
     ])
-
-    # predictions = model(x_train[:1]).numpy()
-    # tf.nn.softmax(predictions).numpy()
 
     loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
     model.compile(optimizer = 'adam', loss = loss_fn, metrics = ['accuracy'])
