@@ -39,7 +39,8 @@ redux/mobox
 * 效率插件：cursor-history
 * https://www.sitepoint.com/10-essential-atom-add-ons/
 ## IntelliJ
-* Path 添加: `settings -> project structure -> add content root`.
+* Add Path for Python Project: `Settings(ctl+alt+s) -> Project Structure -> Add Content Root`.
+* Add Launcher：`Tools(menu) -> Create Desktop Entry`。
 
 # 常用正则
 * 分节删除：` \r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n `。
