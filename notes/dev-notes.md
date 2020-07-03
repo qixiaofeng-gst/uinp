@@ -11,7 +11,6 @@ What we know is elementary. What we do not know is advanced.
 2. `gcc solving.c && less input.txt | ./a.out`
 3. `gcc creating.c && ./a.out >> input.txt`
 
-**Keep fit: Jeff Cavaliere 5 minutes**  
 redux/mobox
 
 # 开发信息
@@ -73,6 +72,7 @@ redux/mobox
 * 保存用户密码 `git config --global credential.helper store`
 
 # 常用指令
+* 使用命令行进行文本查找：`grep 'target-pattern' ./* -R`。
 * 软链接 link-node -s target_to_link link_name
 * 在 windows 下使命令脱离 cmd 执行的方法（关闭 cmd 后进程将退出，因此大多数情况无效）：
   `start "command_name" /B command_and_paramters > somefile.txt`

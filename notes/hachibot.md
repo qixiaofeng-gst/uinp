@@ -1,9 +1,11 @@
 2020-6-22：
-- [In-progress] 抽取、优化目前 raisim 中的 minicheetah/Environment 的代码结构。
-  - [In-progress] 尝试去掉安装步骤（python setup.py install）。
+- [Pending] 抽取、优化目前 raisim 中的 minicheetah/Environment 的代码结构。
+  - [Pending] 尝试去掉安装步骤（python setup.py install）。
 - [Cursing] 从被删掉 ～ 目录的打击下爬起来。
   - 虽然 rm 是无辜的，但是我恨它。
   - 以后对我来说 curl = curse。
+
+gpu1-vnc: 123.206.60.196:12301
 
 corpus：语料库
 triplet loss：三重损失
