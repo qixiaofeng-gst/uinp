@@ -1,14 +1,9 @@
 2020-6-22：
-- [Done] 给 motion-runner 添加监控。目前能想到的主要是：
-  - 监控数据接收的延时。
-  - 监控每一步计算的耗时。
-  - 使用 [RTMS](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=18121199) 系统进行可视化。
-  - 将调试信息写入日志文件。
-  - [Note] 目前少量日志（>= INFO）会打印到 console 中，所有日志（>= DEBUG）都会写到文件中。
-- [Done] 自动调整 motion-runner 的 step 间隔，将频率维持在 100Hz 附近。
-  - 一直以来都观察到 motion-runner 的指令发送频率没有稳定在 100Hz。
-  - 添加自动通过前 100 个指令的发送时间调整 step 时间间隔的功能。
-- [Done] 分析监控的需求。
+- [In-progress] 抽取、优化目前 raisim 中的 minicheetah/Environment 的代码结构。
+  - [In-progress] 尝试去掉安装步骤（python setup.py install）。
+- [Cursing] 从被删掉 ～ 目录的打击下爬起来。
+  - 虽然 rm 是无辜的，但是我恨它。
+  - 以后对我来说 curl = curse。
 
 corpus：语料库
 triplet loss：三重损失
@@ -23,7 +18,6 @@ Speaker diarisation is the process of partitioning an input audio stream
   into homogeneous segments according to the speaker identity.
 et al.：means 'and others'.
 affine：仿射
-
 
 epoch, batch, iteration, episode:
 

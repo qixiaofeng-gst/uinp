@@ -1,5 +1,47 @@
 # Linux 系统使用
 
+## 系统安装并启动之后
+
+### 配置命令行
+* 实用的 ll 命令。在 ~/.bashrc 添加：`alias ll='ls -alh'`。
+
+### 配置开发工具
+* 为 git 设置 ssh 密钥。
+  * 查找已有密钥：`ll ~/.ssh`。
+  * 创建新密钥：`ssh-keygen -t rsa -b 4096 -C '<user-email>'`。
+  * 启动 ssh-agent：`eval "$(ssh-agent -s)"`。
+  * 添加已有密钥：`ssh-add ~/.ssh/id_rsa`。
+  * 显示公钥：`cat ~/.ssh/id_rsa.pub`。
+  * 修改 pass phrase：`ssh-keygen -p`。
+* IntelliJ 套餐。
+  * https://download.jetbrains.com/webstorm/WebStorm-2020.1.2.tar.gz
+  * https://download.jetbrains.com/cpp/CLion-2020.1.2.tar.gz
+  * https://download.jetbrains.com/python/pycharm-professional-2020.1.2.tar.gz
+
+## 网络
+* 代理。
+  * https://github.com/Qv2ray/Qv2ray download AppImage from it.
+  * https://github.com/v2ray/v2ray-core download the pre-built binary zip file.
+* 检查网络 ifconfig, hostname, netstat。
+* 查已占用端口 sudo lsof -i -P -n | grep LISTEN。
+* 查看域名解析情况 `ping domain.name` 或者 `nslookup domain.name`。
+* wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
+```
+wget --recursive --level=inf --page-requisites --convert-links --adjust-extension --span-hosts --domains=domainA,domainB domainA
+The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
+-r = --recursive
+-l <depth> = --level=<depth>
+-E = --adjust-extension
+-p = --page-requisites
+-K = --backup-converted
+-k = --convert-links
+-D <domain-list> = --domain-list=<domain-list>
+-H = --span-hosts
+-np = --no-parent
+-U <agent-string> = --user-agent=<agent-string>
+```
+* axel multithread download: `axel -a -n 12 http://url.to.download`, `-a` shows a progress bar.
+
 ## 启停
 * 卡死重启：按下 `Sys Rq` 键，通常该健与 `Prtscn` 共键，因此 `Alt + Prtscn` 即可，按住 `Sys Rq` 的时候输入 `reisub`：
   1. unRaw 从 X Server 取回键盘控制权；
@@ -12,12 +54,6 @@
 * 卡在 boot 界面进不去图形界面，可尝试更换 greeter，从默认 gdm3 换到 lightdm:
   * `apt install slick-greeter`。
   * 用 `dpkg-reconfigure lightdm/gdm3` 可以切换。
-
-## 网络
-* 代理 https://github.com/Qv2ray/Qv2ray。
-* 检查网络 ifconfig, hostname, netstat。
-* 查已占用端口 sudo lsof -i -P -n | grep LISTEN。
-* 查看域名解析情况 `ping domain.name` 或者 `nslookup domain.name`。
 
 ## 系统管理
 * 查看系统版本信息 `lsb_release -a`。
@@ -86,7 +122,7 @@
 * 查看总体存储空间 `df`。
 * /etc/default/grub 包含了系统启停界面的配置。
 * qmake 可以通过传参 -qt=qt5 正确运行。
-* 解压 `tar zxvf file-name.tar.gz`。
+* 解压 `tar xvf file-name.tar.gz`。
 * 查找命令相关 `updatedb/mlocate/whereis/find`。
 * 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`。
 * 录制屏幕 `ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+99,88 output.mp4`。
@@ -97,3 +133,6 @@
   1. `sudo groupadd docker`。
   1. `sudo usermod -aG docker $USER`。
   1. `newgrp docker`。
+
+## 应急恢复
+* 恢复被 rm 删除的文件。使用 extundelete 工具。入口命令：`extundelete <disk-path.e.g./dev/sd0> --inode <node-id:number>`。

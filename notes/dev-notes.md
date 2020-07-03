@@ -123,22 +123,6 @@ Windows 下可创建快捷方式并添加参数
   gpg 将自动检测同目录下无后缀同名文件，如果报出 No public key 的问题，可查看输出中的 RSA id，
   调 `gpg --search-keys the_rsa_id` 按命令行提示操作可导入 public key，`gpg --list-keys` 可列出所有已导入的 public key，
   `gpg --edit-key the_rsa_id` 可对相应的 public key 进行编辑。
-* wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
-  ```
-  wget --recursive --level=inf --page-requisites --convert-links --adjust-extension --span-hosts --domains=domainA,domainB domainA
-  The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
-  -r = --recursive
-  -l <depth> = --level=<depth>
-  -E = --adjust-extension
-  -p = --page-requisites
-  -K = --backup-converted
-  -k = --convert-links
-  -D <domain-list> = --domain-list=<domain-list>
-  -H = --span-hosts
-  -np = --no-parent
-  -U <agent-string> = --user-agent=<agent-string>
-  ```
-* axel multithread download: `axel -a -n 12 http://url.to.download`, `-a` shows a progress bar.
 
 # Legacy for GST JoyCity project
 ```
