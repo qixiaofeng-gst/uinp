@@ -1,9 +1,14 @@
-2020-6-22：
-- [Pending] 抽取、优化目前 raisim 中的 minicheetah/Environment 的代码结构。
-  - [Pending] 尝试去掉安装步骤（python setup.py install）。
+2020-7-3：
+- [In-progress] 抽取、优化目前 raisim 中的 minicheetah/Environment 的代码结构。
+  - [Done] 尝试去掉安装步骤（python setup.py install）。
+  - [Done] 清理了所有重复、无用的 c++ 代码。
+  - [Done] 简化了目录结构、python 代码规范化。
+  - [In-progress] 将代码拆分到 hpp/cpp 的结构。 
 - [Cursing] 从被删掉 ～ 目录的打击下爬起来。
   - 虽然 rm 是无辜的，但是我恨它。
   - 以后对我来说 curl = curse。
+- [Done] 帮毕萧测试命令。
+- [Done] 帮梦婷调试代码。
 
 gpu1-vnc: 123.206.60.196:12301
 
