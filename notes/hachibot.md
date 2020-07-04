@@ -1,14 +1,10 @@
-2020-7-3：
-- [In-progress] 抽取、优化目前 raisim 中的 minicheetah/Environment 的代码结构。
-  - [Done] 尝试去掉安装步骤（python setup.py install）。
-  - [Done] 清理了所有重复、无用的 c++ 代码。
-  - [Done] 简化了目录结构、python 代码规范化。
-  - [In-progress] 将代码拆分到 hpp/cpp 的结构。 
-- [Cursing] 从被删掉 ～ 目录的打击下爬起来。
-  - 虽然 rm 是无辜的，但是我恨它。
-  - 以后对我来说 curl = curse。
-- [Done] 帮毕萧测试命令。
-- [Done] 帮梦婷调试代码。
+2020-7-4：
+- [Done] 抽取、优化目前 raisim 中的 minicheetah/Environment 的代码结构。 
+  - [Done] 目录结构重构完毕。
+  - [Done] 将代码拆分到 hpp/cpp 的结构。
+- [Done] 完善 hachy 项目的 train 和 test 模块。
+  - [Note, 待 hachy 工作流优化提上日程时讨论] 原本注入到 .bashrc 当中的 hc-test/train 等快捷命令应当可以干掉了。
+  - [Done] 实现扭矩控制模式的 raisim_env 之后，训练了一下狗子。见 [实验报告](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21790761) 。
 
 gpu1-vnc: 123.206.60.196:12301
 
