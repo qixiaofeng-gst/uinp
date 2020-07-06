@@ -1,4 +1,4 @@
-2020-7-4：
+2020-7-6：
 - [Done] 将扭矩控制模式下的 RaisimEnv 中的训练结果迁移到 dacong 仿真器。
   - 使用与训练环境一致的 mean/std。
   - 在 dacong 仿真器中的效果不行，见[wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21790761)。
@@ -12,7 +12,7 @@
   - 起点是 AI4Animation 的方案。
   - 起点是路径规划的方案。
 
-今天下午，淼神、唐彬、梦婷、陈晨和我一起交流了一下对 RaisimEnv 中 action/obs 的 mean/std 的理解。
+2020-7-6 下午，淼神、唐彬、梦婷、陈晨和我一起交流了一下对 RaisimEnv 中 action/obs 的 mean/std 的理解。
 先解释一下下面会用到的符号：
 - o：observation，是 policy net 的输入，env 的输出。
 - r：reward，是 policy net *训练时的* 输入，env 的输出。
