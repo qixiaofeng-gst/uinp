@@ -1,10 +1,5 @@
 2020-7-4：
-- [Done] 抽取、优化目前 raisim 中的 minicheetah/Environment 的代码结构。 
-  - [Done] 目录结构重构完毕。
-  - [Done] 将代码拆分到 hpp/cpp 的结构。
-- [Done] 完善 hachy 项目的 train 和 test 模块。
-  - [Note, 待 hachy 工作流优化提上日程时讨论] 原本注入到 .bashrc 当中的 hc-test/train 等快捷命令应当可以干掉了。
-  - [Done] 实现扭矩控制模式的 raisim_env 之后，训练了一下狗子。见 [实验报告](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21790761) 。
+- [Planned] 将扭矩控制模式下的 RaisimEnv 中的训练结果迁移到 dacong 仿真器。
 
 gpu1-vnc: 123.206.60.196:12301
 
