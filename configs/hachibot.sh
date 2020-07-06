@@ -238,3 +238,6 @@ dc-ctrl() {
   to-dc
   gnome-terminal -- user/MIT_Controller/mit_ctrl m s
 }
+dc-video-record() {
+  ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+$1,$2 output.mp4
+}
