@@ -16,13 +16,13 @@ source /opt/ros/melodic/setup.bash
 
 # ======= ======= ======= ======= ======= ======= =======
 to-hc(){
-  cd ~/Documents/hachy-workspace/hachy
+  cd ~/Documents/hachy-repos/hachy
 }
 to-ros(){
   cd ~/Documents/local-sandbox/ros-learning-ws
 }
 to-mr(){
-  cd ~/Documents/hachy-workspace/motion-runner
+  cd ~/Documents/hachy-repos/motion-runner
 }
 
 # Below lines 'sw' is the abbreviation of 'switch'.
@@ -92,7 +92,7 @@ lock-1h(){
   echo End $(lock) lock-1h.
 }
 hcr-ctrl(){
-  ~/Documents/hachy-workspace/dacong/build/user/MIT_Controller/mit_ctrl m s
+  ~/Documents/hachy-repos/dacong/build/user/MIT_Controller/mit_ctrl m s
 }
 count(){
   wc -l `ls` | sort -n -
@@ -134,7 +134,7 @@ mc-kill() {
   kill -9 `jobs -p`
 }
 mc-cd() {
-  cd ~/Documents/hachy-workspace/motion-imitation
+  cd ~/Documents/hachy-repos/motion-imitation
 }
 alias to-mc=mc-cd
 
@@ -194,7 +194,7 @@ alias to-ds=ds-cd
 #======= ======= =======
 # Shortcut for sound processing projects.
 sp-cd(){
-  cd ~/Documents/hachy-workspace/1_sound_processing
+  cd ~/Documents/hachy-repos/1_sound_processing
 }
 alias to-sp=sp-cd
 run-spleeter() {
@@ -221,7 +221,7 @@ py-tf2(){
 #======= ======= =======
 # Belows for dacong simulation.
 to-dc(){
-  cd ~/Documents/hachy-workspace/dacong/build
+  cd ~/Documents/hachy-repos/dacong/build
 }
 dc-activate() {
   source /var/local/venv-py3.6-for-raisim/bin/activate

@@ -11,6 +11,12 @@ What we know is elementary. What we do not know is advanced.
 2. `gcc solving.c && less input.txt | ./a.out`
 3. `gcc creating.c && ./a.out >> input.txt`
 
+# 护眼色
+绿豆沙色能有效的减轻长时间用电脑的用眼疲劳。
+色调(Hue)：85，饱和度(Sat)：123，亮度(Lum)：205；
+RGB颜色红：199，绿：237，蓝：204；
+十六进制颜色：#C7EDCC 或用 #CCE8CF。
+
 redux/mobox
 
 # 开发信息
