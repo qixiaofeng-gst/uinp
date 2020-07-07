@@ -1,11 +1,4 @@
 2020-7-6：
-- [Done] 将扭矩控制模式下的 RaisimEnv 中的训练结果迁移到 dacong 仿真器。
-  - 使用与训练环境一致的 mean/std。
-  - 在 dacong 仿真器中的效果不行，见[wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21790761)。
-- [Done] 在 dacong 和 raisim 两边实现了简单的蹲起运动作为对照。
-  - 蹲起运动的姿态是一致的。
-  - 导致 PPO2 在两边表现不一致的原因可能是 observation 不一致。
-- [Done] 讨论并记录[对 raisim 的 action/obs 的 mean/std 的理解](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=6914287)。
 - [Planned] 比对 dacong 和 raisim 两边的 observation。
 - [Planned] 去除对 raisim 自定义的 PPO2 的依赖，转而依赖 stable_baselines 中原始的 PPO2。
 - [Planned] 绘制完整的基于模仿学习的动作控制的流程图，并发起讨论。
