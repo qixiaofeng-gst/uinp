@@ -1,45 +1,22 @@
 2020-7-6：
-- [Planned] 比对 dacong 和 raisim 两边的 observation。
-- [Planned] 去除对 raisim 自定义的 PPO2 的依赖，转而依赖 stable_baselines 中原始的 PPO2。
+- [In-progress] 比对 dacong 和 raisim 两边的 observation。
+  - 我这边的结果记录到了 [wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21790761)。
+  - 唐彬会帮助对仿真过程的细节进行检查。
+  - 淼神建议可以在 raisim 把 action 录制一下，然后在 dacong 里面播放，对比下效果。
+  - 第一帧的高度有问题，身体的速度有问题（应该是 0，但是实际有值），第一帧网络输出 abad 值都有问题。
+    - 身体速度的问题已经解决。数据的接收线程启动后仿真延迟了 1 秒启动，这样保证一定接收了 observation 数据。
+    - 有关 abad 值不对的问题，待修改数值后重新训练，再在两边做对比。
+  - 训练的初始值（mean value）有问题（0，-0.5, 1.0），站得太高，不是一个合理的 mean value。
+  - 訓練之前的修改：
+    - 機身高度 0.29。
+    - mean value。
+    - 仿真频率改成 500 Hz。
+- [Done] 去除对 raisim 自定义的 PPO2 的依赖，转而依赖 stable_baselines 中原始的 PPO2。
+  - 原本 raisimGym 中的 ppo2.py 和 policies.py 都干掉了。
+  - 失去了训练时弹出图形界面显示狗子运动表现的能力，因为可以直接使用 launcher.test 模块播放最近保存的 pkl，因此没有该能力影响不大。 
 - [Planned] 绘制完整的基于模仿学习的动作控制的流程图，并发起讨论。
   - 起点是 AI4Animation 的方案。
   - 起点是路径规划的方案。
-
-2020-7-6 下午，淼神、唐彬、梦婷、陈晨和我一起交流了一下对 RaisimEnv 中 action/obs 的 mean/std 的理解。
-先解释一下下面会用到的符号：
-- o：observation，是 policy net 的输入，env 的输出。
-- r：reward，是 policy net *训练时的* 输入，env 的输出。
-- a：action，是 policy net 的输出，env 的输入。
-- o_m：observation mean，在下面提及时都指常量。
-- o_s：observation std，常量。
-- a_m：action mean，常量。
-- a_s：action std，常量。
-
-在 RaisimEnv 中有两个行为：
-- 输出 o 之前，会执行（公式一） o = (o - o_m) / o_s。
-- 输入 a 之后，会执行（公式二） a = a * a_s + a_m。
-
-两个角度来理解 RaisimEnv 的这两个行为：
-- 从限制搜索空间的角度。（梦婷和陈晨提供）
-  - 公式一使用 o_m 和 o_s 将 o 限制在了一个类似正态分布的分布上。   
-  梦婷和陈晨皆言及这个做法他们以前没有见过，感觉并不是必要的过程。
-  - 同理公式二将 a 限制在了一个分布上。
-  - 这样可以将学习的搜索空间限制在一个相对有限的范围，大大提升学习效率。
-- 从添加偏移的角度。（唐彬提供）
-  - policy net 的输出是归一化的，所以并不能直接用于控制，需要使用公式二将 a 映射到真实的关节角。
-  - 公式二则将原始的（直接观测到的数据） o 归一化了。
-
-我的菜鸟视角：
-- env 是使用先验知识建立的模型，主要包含：
-  - o = n(p(m(a))) = f(a)，实质上就是映射 + 仿真引擎（物理引擎）。
-  - r = g(a, o) = g(a, f(a)) = h(a)，实质上是靠设计者的经验 + 直觉设定的计算逻辑。
-  - 上面提及的 p、m、n、f、g、h 都是广义的函数。p 对应物理引擎，m 对应公式二，n 对应公式一。
-- policy net 要学习（拟合）的是部分 h，即 p 和 g（物理引擎和 reward 函数）。
-- 所以对 h（f 和 g）的设计本质上是在设计 policy net 的学习目标，让 policy net 模仿 f 和 g 的行为。
-- 传统的 h 的实现需要专家知识，开发成本相对较高（并不绝对）。
-- policy net 的结构基本是领域内通用的，而设计一个比较符合直觉的 h 相对来说简单一些，
-所以这种学习方法看起来成本低一些，看起来也比较容易扩展和自动化。
-- o_m、o_s、a_m 和 a_s 都是 f 的常量部分（m 和 n），最终 policy net 在不同的 env 之间迁移的时候，m 和 n 要随同一起迁移。
 
 =======
 博士：
