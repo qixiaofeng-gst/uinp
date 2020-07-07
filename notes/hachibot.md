@@ -1,4 +1,4 @@
-2020-7-6：
+2020-7-7：
 - [In-progress] 比对 dacong 和 raisim 两边的 observation。
   - 我这边的结果记录到了 [wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21790761)。
   - 唐彬会帮助对仿真过程的细节进行检查。
@@ -9,7 +9,7 @@
   - 训练的初始值（mean value）有问题（0，-0.5, 1.0），站得太高，不是一个合理的 mean value。
   - 訓練之前的修改：
     - 機身高度 0.29。
-    - mean value。
+    - mean value 修改成为 dacong 中的初始状态。
     - 仿真频率改成 500 Hz。
 - [Done] 去除对 raisim 自定义的 PPO2 的依赖，转而依赖 stable_baselines 中原始的 PPO2。
   - 原本 raisimGym 中的 ppo2.py 和 policies.py 都干掉了。

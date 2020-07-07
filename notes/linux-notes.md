@@ -22,6 +22,7 @@
 * 代理。
   * https://github.com/Qv2ray/Qv2ray download AppImage from it.
   * https://github.com/v2ray/v2ray-core download the pre-built binary zip file.
+  * v2rayL may replace Qv2ray + v2ray-core.
 * 检查网络 ifconfig, hostname, netstat。
 * 查已占用端口 sudo lsof -i -P -n | grep LISTEN。
 * 查看域名解析情况 `ping domain.name` 或者 `nslookup domain.name`。
