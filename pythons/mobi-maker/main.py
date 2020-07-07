@@ -1,8 +1,9 @@
-# 1. [WIP] Test kindlegen executable.
+# 1. [Done] Test kindlegen executable.
 #    - TOC.
 #    - Chapter.
 #    - Line-break.
-#    - /var/local/app-binaries/kindlegen-2.9/kindlegen
+#    - `zip -r TestKindleBook.epub TestKindleBook`.
+#    - `/var/local/app-binaries/kindlegen-2.9/kindlegen TestKindleBook.epub`.
 # 2. Read file line by line.
 # 3. Parse line with regex.
 # 4. Prepare HTML template.
