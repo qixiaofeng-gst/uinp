@@ -1,22 +1,32 @@
 2020-7-7：
-- [In-progress] 比对 dacong 和 raisim 两边的 observation。
-  - 我这边的结果记录到了 [wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21790761)。
-  - 唐彬会帮助对仿真过程的细节进行检查。
-  - 淼神建议可以在 raisim 把 action 录制一下，然后在 dacong 里面播放，对比下效果。
-  - 第一帧的高度有问题，身体的速度有问题（应该是 0，但是实际有值），第一帧网络输出 abad 值都有问题。
-    - 身体速度的问题已经解决。数据的接收线程启动后仿真延迟了 1 秒启动，这样保证一定接收了 observation 数据。
-    - 有关 abad 值不对的问题，待修改数值后重新训练，再在两边做对比。
-  - 训练的初始值（mean value）有问题（0，-0.5, 1.0），站得太高，不是一个合理的 mean value。
-  - 訓練之前的修改：
-    - 機身高度 0.29。
-    - mean value 修改成为 dacong 中的初始状态。
-    - 仿真频率改成 500 Hz。
-- [Done] 去除对 raisim 自定义的 PPO2 的依赖，转而依赖 stable_baselines 中原始的 PPO2。
-  - 原本 raisimGym 中的 ppo2.py 和 policies.py 都干掉了。
-  - 失去了训练时弹出图形界面显示狗子运动表现的能力，因为可以直接使用 launcher.test 模块播放最近保存的 pkl，因此没有该能力影响不大。 
+- [In-progress] 调查 dacong 和 raisim 间的差异的根源。
+  - 第一帧的 action 打印，两边。
+  - 发现了 gait fr/fl/rr/rl 的问题，在 motion-runner 中 fl/rr 的值交换了。
+  - 修复了 fl/rr 的差异之后，两个模拟器中狗子的动作看起来已经相差不大了。
+  - 下面对齐一下更新频率，把 raisim 中的 action 的更新频率限制到 100Hz。
+  - 使用 raisim 仿真（打开渲染）时，step 的执行频率达不到 100Hz，通常在 71-77Hz 间浮动（需要 1.3-1.4 秒执行 100 个 step）。
+  - 通过降低 raisim 的渲染频率，使 env.step 的频率达到了 100Hz。
 - [Planned] 绘制完整的基于模仿学习的动作控制的流程图，并发起讨论。
   - 起点是 AI4Animation 的方案。
   - 起点是路径规划的方案。
+
+Half-weekly Report：   
+把 raisim 扭矩控制模式的训练的结果迁移到了 dacong，排除了大部分故障。   
+目前 raisim 和 dacong 之间，在姿态、动作频率、动作幅度方面肉眼看起来差异非常小了。   
+剩下的一个比较显著的差异是在 raisim 里面狗子的移动距离要远大于 dacong，dacong 里面不管动得多欢，始终像是原地踏步。   
+唐彬猜测和两者之间使用的模型有关系，他会找时间把 dacong 的模型回退到和 raisim 一致。然后我们再继续试验。
+
+TODO：   
+motion-runner 和 hachy 中的代码，有没有同事有修改需要合并的？今天能合并的就今天合并，如果没有今天能合并的，我就要开始下面的工作了：   
+简化 raisim 到 dacong 的迁移过程：
+   - 常量、魔法数字全部抽取到配置文件中，使得 hachy 和 motion-runner 可以共用配置。
+   - 把所有重复代码抽取出来，作成公用模块。
+   - 目标是让训练好的模型只需要指定配置文件和 pkl 文件即完成迁移。
+
+更下一步的计划：
+   - 把模仿学习和 dacong 接起来。
+   - 前提是 张钰/梦婷/陈晨 到时候还没有成功对接。
+   - 如果成功对接了，我会简化对接过程。
 
 =======
 博士：
