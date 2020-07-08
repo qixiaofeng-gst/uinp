@@ -11,39 +11,64 @@
 # 6. Use kindlegen to make mobi file.
 import re
 
-template_start = '<html lang="zh"><head><title>轮回学府</title>' \
-                 '<meta http-equiv="content-type" content="text/html; charset=GB2312"></head><body>'
-template_end = '</body></html>'
+_TEMPLATE_START = (
+    '<html lang="zh">'
+    '<head><title>{}</title>'
+    '<meta http-equiv="content-type" content="text/html; charset=UTF-8">'
+    '</head><body>'
+)
+_TEMPLATE_END = '</body></html>'
 
-chapter_title_patterns = [
+_CHAPTER_TITLE_PATTERNS = [
     r'^\#+(第.+章\s?[^\#]+)\#+\s*$',
+    r'^\s?(第.+章\s?.+)\s*$',
 ]
 
 
-def process_file():
-    with open('lhxf.txt', 'r', encoding = 'GB2312') as file:
+def _search_chapter_name(line):
+    for pattern in _CHAPTER_TITLE_PATTERNS:
+        search_result = re.search(pattern, line)
+        if search_result is not None:
+            return search_result
+    return None
+
+
+def _get_file_names():
+    import argparse
+    parser = argparse.ArgumentParser(description = 'Parse file name.')
+    parser.add_argument(
+        'file_names', metavar = 'file_name', type = str,
+        nargs = '+', help = 'file name',
+    )
+    return parser.parse_args()
+
+
+def _process_file(file_name):
+    with open(file_name, 'r', encoding = 'GB2312') as file:
         lines_limit = 1000000
 
         processed_lines_count = 0
         chapters_count = 0
         words_count = 0
         line = file.readline()
-        toc = [
+        head_and_toc = [
+            _TEMPLATE_START.format(line[:-1]),
             '<h1 id="content">目录</h1>',
         ]
+        line = file.readline()
         text = []
 
         while line and (processed_lines_count < lines_limit):
-            search_result = re.search(chapter_title_patterns[0], line)
             line_len = len(line)
             if 1 == line_len:
                 line = file.readline()
                 continue
+            search_result = _search_chapter_name(line)
             if search_result is not None:
                 chapters_count += 1
                 chapter_name = search_result.group(1)
                 chapter_id = 'c{}'.format(chapters_count)
-                toc.append('<p><a href="#{}">{}</a></p>'.format(chapter_id, chapter_name))
+                head_and_toc.append('<p><a href="#{}">{}</a></p>'.format(chapter_id, chapter_name))
                 text.append('<h1 id="{}">{}</h1>'.format(chapter_id, chapter_name))
                 text.append('<p><a href="#content">回目录</a></p>')
             else:
@@ -52,25 +77,30 @@ def process_file():
             processed_lines_count += 1
             line = file.readline()
         print(
-            'chapters count:', chapters_count,
+            'Processed:', file_name,
+            ', chapters count:', chapters_count,
             ', lines count:', processed_lines_count,
             ', words count:', words_count,
         )
-        return toc, text
+        return head_and_toc, text
 
 
-def save_to_html(toc, text):
-    with open('lhxf.html', 'w+', encoding = 'GB2312') as file:
-        file.writelines([template_start])
-        file.writelines(toc)
+def _save_to_html(file_name, head_and_toc, text):
+    with open(file_name, 'w+', encoding = 'UTF-8') as file:
+        file.writelines(head_and_toc)
         file.writelines(text)
-        file.writelines([template_end])
+        file.writelines([_TEMPLATE_END])
 
 
-def make():
-    toc, text = process_file()
-    save_to_html(toc, text)
+def _make():
+    file_names = _get_file_names().file_names
+    for file_name in file_names:
+        if not file_name.endswith('.txt'):
+            print('Invalid file type. Expected "*.txt" files.')
+            continue
+        toc, text = _process_file(file_name)
+        _save_to_html('{}.html'.format(file_name[:-4]), toc, text)
 
 
 if __name__ == '__main__':
-    make()
+    _make()
