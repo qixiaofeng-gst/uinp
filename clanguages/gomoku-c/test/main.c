@@ -20,9 +20,9 @@ typedef struct _NodeIndex NodeIndex;
 typedef struct _NodeIndexSection NodeIndexSection;
 
 struct _NodeIndexSection {
-    Node * refs[10];
-    NodeIndexSection * prevRef;
-    NodeIndexSection * nextRef;
+    Node *refs[10];
+    NodeIndexSection *prevRef;
+    NodeIndexSection *nextRef;
 };
 
 struct _NodeIndex {
@@ -37,7 +37,7 @@ struct _Node {
 };
 
 struct _Tree {
-    Node * rootRef;
+    Node *rootRef;
     NodeIndex const leafsIndex;
     int height;
     int nodeCount;
@@ -57,8 +57,7 @@ typedef struct _IndexProvider {
 } IndexProvider;
 
 void
-initIndexProvider(IndexProvider * const provider)
-{
+initIndexProvider(IndexProvider *const provider) {
     provider->count = M_table_index_count;
     for (int i = 0; i < M_table_index_count; ++i) {
         provider->indexes[i] = i;
@@ -66,34 +65,31 @@ initIndexProvider(IndexProvider * const provider)
 }
 
 bool
-hasMoreIndex(IndexProvider const * const provider)
-{
+hasMoreIndex(IndexProvider const *const provider) {
     return provider->count > 0;
 }
 
 void
-_doRemoveIndex(IndexProvider * const provider, int const targetIndex)
-{
+_doRemoveIndex(IndexProvider *const provider, int const targetIndex) {
     int lastIndex = provider->count - 1;
     provider->indexes[targetIndex] = provider->indexes[lastIndex];
     provider->count = lastIndex;
 }
 
 bool
-removeIndex(IndexProvider * const provider, int const targetIndex)
-{
+removeIndex(IndexProvider *const provider, int const targetIndex) {
     if (
-        (targetIndex >= M_table_index_count) ||
-        (targetIndex < 0)
-    ) {
+            (targetIndex >= M_table_index_count) ||
+            (targetIndex < 0)
+            ) {
         return false;
     }
     //Debug:
-    printf("Odd here ====>>> targetIndex: %d, provider->indexes[targetIndex]: %d.\n", targetIndex, provider->indexes[targetIndex]);
-    if (
-        (targetIndex == provider->indexes[targetIndex]) &&
-        (targetIndex < provider->count)
-    ) {
+    printf(
+            "Odd here ====>>> targetIndex: %d, provider->indexes[targetIndex]: %d.\n",
+            targetIndex, provider->indexes[targetIndex]
+    );
+    if ((targetIndex == provider->indexes[targetIndex]) && (targetIndex < provider->count)) {
         if (1 == provider->count) {
             provider->count = 0;
         } else {
@@ -116,8 +112,7 @@ Have to check with hasMoreIndex(provider) before use provideIndex(provider).
 May cause undefined behavior without checking.
 */
 int
-provideIndex(IndexProvider * const provider)
-{
+provideIndex(IndexProvider *const provider) {
     // Generate random number, and convert to index.
     int targetIndex = rand() % provider->count;
     // Get the index.
@@ -127,50 +122,47 @@ provideIndex(IndexProvider * const provider)
         printf("[\033[31mError\033[0m] Failed to remove \
 targetIndex( %d ) for \
 IndexProvider( %p )\n",
-            targetIndex,
-            provider
+               targetIndex,
+               provider
         );
     }
     return resultIndex;
 }
 
 void
-tryRandomNumber(void)
-{
+tryRandomNumber(void) {
     printf("Random numner: [%d].\n", rand() % 100);
 }
 
 void
-tryBuildTree(void)
-{
+tryBuildTree(void) {
     Tree tree = {
-        .rootRef = malloc(sizeof(Node)),
-        .leafsIndex = {
-            .refCount = 0,
-            .sectionCount = 1,
-            .initialSection = {
-                .prevRef = NULL,
-                .nextRef = NULL,
+            .rootRef = malloc(sizeof(Node)),
+            .leafsIndex = {
+                    .refCount = 0,
+                    .sectionCount = 1,
+                    .initialSection = {
+                            .prevRef = NULL,
+                            .nextRef = NULL,
+                    },
             },
-        },
-        .height = 0,
-        .nodeCount = 0,
+            .height = 0,
+            .nodeCount = 0,
     };
     printf("\
 Hello tree! height: %d, nodeCount: %d,\n\
 leafsIndex.sectionCount: %d, rootRef: %p,\n\
 leafsIndex.initialSection[0]: %p,\n\
 leafsIndex.initialSection[9]: %p.\n",
-        tree.height, tree.nodeCount, tree.leafsIndex.sectionCount,
-        tree.rootRef, tree.leafsIndex.initialSection.refs[0],
-        tree.leafsIndex.initialSection.refs[9]
+           tree.height, tree.nodeCount, tree.leafsIndex.sectionCount,
+           tree.rootRef, tree.leafsIndex.initialSection.refs[0],
+           tree.leafsIndex.initialSection.refs[9]
     );
 }
 // ======= Temporary block end.
 
 int
-main(void)
-{
+main(void) {
     srand(time(NULL)); // time(NULL) returns time in seconds.
 
     testBoardCheckers();
@@ -179,7 +171,7 @@ main(void)
     tryRandomNumber();
     tryBuildTree();
 
-    IndexProvider * const indexProvider = malloc(sizeof(IndexProvider));
+    IndexProvider *const indexProvider = malloc(sizeof(IndexProvider));
     initIndexProvider(indexProvider);
     M_test_int(hasMoreIndex(indexProvider), true)
     M_test_int(removeIndex(indexProvider, 224), true)
