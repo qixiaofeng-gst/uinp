@@ -3,6 +3,10 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${RAISIM_BUILD}/lib
 raisim-cmake() {
   cmake .. -DCMAKE_PREFIX_PATH=$RAISIM_BUILD -DCMAKE_INSTALL_PATH=$RAISIM_BUILD
 }
+raisim-make() {
+  pushd build && make -j4
+  popd
+}
 
 export DACONG_BUILD=/var/local/local-build/for-dacong
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DACONG_BUILD}/lib

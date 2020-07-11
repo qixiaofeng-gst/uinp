@@ -1,25 +1,27 @@
 2020-7-9：
-- [Pending] 调查 dacong 和 raisim 间的差异的根源。
 - [In-progress] 和梦婷/张钰/陈晨一起把模仿学习对接到 dacong，最后对接到真机做验证。
-  - 梦婷今天问的 observation 第一帧的值给的全 0 的问题，我本地把 code 拉下来看了，也尝试运行的，但是运行不起来。 
-- [In-progress] 简化 hachy 到 dacong 的迁移过程。
-  - 常量、魔法数字全部抽取到配置文件中，使得 hachy 和 motion-runner 可以共用配置。
-  - 把所有重复代码抽取出来，作成公用模块。
-  - 目标是让训练好的模型只需要指定配置文件和 pkl 文件即完成迁移。
+- [In-progress] 抽取 reward_function。
+  - [In-progress] 全局系数做成 singleton。
 
 _______
+- 碰头会讨论 Raisim 这边哪些东西要抽取成为常量，因为刘博士那边 actionMean 和 actionStd 不是常量。
+  - TODO list all constant candidates out.
+- 提议：
+  - 每个动作的训练单独做成一个 yaml 配置。（比如博士在 raisim 中实现的模仿学习的配置就可以是独立文件，
+  跑步的动作和走路的动作是不一样的配置文件。）
+  - 博士的代码我看了，我来迁移到新的代码结构中？
+- 工程化：
+  - 目前 reward_function 我做成了可以用配置直接切换的程度。
+  - 下一步希望把更多的环节，比如 environment 初始化，step，observation 更新，
+  都做成可以写好 c++ 代码之后，在 python 和 yaml 中可以动态配置拼接的状态。
+  - 希望达到的理想状态是，c++ 代码可以稳定在一个版本后不用再变更，所有训练都可以通过使用 yaml 和 python 来配置完成。
+  - 大家对此有没有什么更好的想法？或者补充更多需要抽取成可热插拔的环节或模块？
+
 - [Planned] 绘制完整的基于模仿学习的动作控制的流程图，并发起讨论。
   - 起点是 AI4Animation 的方案。
   - 起点是路径规划的方案。
 
 =======
-博士：
-我看到 motion-runner 里面之前你做的三个 Controller 脚本，有几个地方想和你确认下：
-1. action 需不需要乘 -1？（我看你之前做 PPOStand/WalkController 的时候有乘，但到了 PPOMinicheetahController 没有乘）
-2. action mean/std 和 obs mean/std 的值在 motion-runner 中和训练时所用的值有没有哪处不一样？
-3. 在把 raisim 中的训练结果迁移到 motion-runner 中时，还有哪些东西（数值、计算方法）需要调整？
-
-
 gpu1-vnc: 123.206.60.196:12301
 
 corpus：语料库
