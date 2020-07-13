@@ -8,19 +8,19 @@
 const char *tableFileName = "table.dat";
 
 void
-loadTableFromFile(wchar_t *tableInMemory)
+load_table_from_file(wchar_t *tableInMemory)
 {
     FILE *tableFile = fopen(tableFileName, "r");
     if (NULL == tableFile) {
         return;
     }
-    int readedLength = fread(tableInMemory, sizeof(wchar_t), M_table_string_length, tableFile);
+    int readedLength = fread(tableInMemory, sizeof(wchar_t), m_table_string_length, tableFile);
     printf("The readed length: %d\n", readedLength);
     fclose(tableFile);
 }
 
 void
-showUnicodeTable()
+_show_unicode_table()
 {
     int count = 0;
     for (int i = 0x2400; i < 0x2700; ++i) {
@@ -33,7 +33,7 @@ showUnicodeTable()
 }
 
 bool
-isTableFileExist()
+_is_table_file_exist()
 {
     FILE *tableFile = fopen(tableFileName, "r");
     if (NULL == tableFile) {
@@ -44,7 +44,7 @@ isTableFileExist()
 }
 
 void
-generateTableFile()
+generate_table_file()
 {
     #define N L'\n', /* New line. */
     #define x L'\x253C', /* Cross line single-ed. */
@@ -111,7 +111,7 @@ generateTableFile()
     #undef O
     #undef o
     #undef S
-    if (isTableFileExist()) {
+    if (_is_table_file_exist()) {
         return;
     }
 

@@ -57,7 +57,7 @@ typedef struct _IndexProvider {
 } IndexProvider;
 
 void
-initIndexProvider(IndexProvider *const provider) {
+init_index_provider(IndexProvider *const provider) {
     provider->count = M_table_index_count;
     for (int i = 0; i < M_table_index_count; ++i) {
         provider->indexes[i] = i;
@@ -65,41 +65,36 @@ initIndexProvider(IndexProvider *const provider) {
 }
 
 bool
-hasMoreIndex(IndexProvider const *const provider) {
+has_more_index(IndexProvider const *const provider) {
     return provider->count > 0;
 }
 
 void
-_doRemoveIndex(IndexProvider *const provider, int const targetIndex) {
+_do_remove_index(IndexProvider *const provider, int const targetIndex) {
     int lastIndex = provider->count - 1;
     provider->indexes[targetIndex] = provider->indexes[lastIndex];
     provider->count = lastIndex;
 }
 
 bool
-removeIndex(IndexProvider *const provider, int const targetIndex) {
+remove_index(IndexProvider *const provider, int const targetIndex) {
     if (
             (targetIndex >= M_table_index_count) ||
             (targetIndex < 0)
             ) {
         return false;
     }
-    //Debug:
-    printf(
-            "Odd here ====>>> targetIndex: %d, provider->indexes[targetIndex]: %d.\n",
-            targetIndex, provider->indexes[targetIndex]
-    );
     if ((targetIndex == provider->indexes[targetIndex]) && (targetIndex < provider->count)) {
         if (1 == provider->count) {
             provider->count = 0;
         } else {
-            _doRemoveIndex(provider, targetIndex);
+            _do_remove_index(provider, targetIndex);
         }
         return true;
     }
     for (int i = 0; i < provider->count; ++i) {
         if (targetIndex == provider->indexes[i]) {
-            _doRemoveIndex(provider, i);
+            _do_remove_index(provider, i);
             return true;
         }
     }
@@ -108,17 +103,17 @@ removeIndex(IndexProvider *const provider, int const targetIndex) {
 }
 
 /**
-Have to check with hasMoreIndex(provider) before use provideIndex(provider).
+Have to check with has_more_index(provider) before use provide_index(provider).
 May cause undefined behavior without checking.
 */
 int
-provideIndex(IndexProvider *const provider) {
+provide_index(IndexProvider *const provider) {
     // Generate random number, and convert to index.
     int targetIndex = rand() % provider->count;
     // Get the index.
     int resultIndex = provider->indexes[targetIndex];
     // Remove the index.
-    if (false == removeIndex(provider, resultIndex)) {
+    if (false == remove_index(provider, resultIndex)) {
         printf("[\033[31mError\033[0m] Failed to remove \
 targetIndex( %d ) for \
 IndexProvider( %p )\n",
@@ -130,12 +125,12 @@ IndexProvider( %p )\n",
 }
 
 void
-tryRandomNumber(void) {
+try_random_number(void) {
     printf("Random numner: [%d].\n", rand() % 100);
 }
 
 void
-tryBuildTree(void) {
+try_build_tree(void) {
     Tree tree = {
             .rootRef = malloc(sizeof(Node)),
             .leafsIndex = {
@@ -165,24 +160,24 @@ int
 main(void) {
     srand(time(NULL)); // time(NULL) returns time in seconds.
 
-    testBoardCheckers();
+    test_board_checkers();
 
     // ======= Temporary block for quick prototype.
-    tryRandomNumber();
-    tryBuildTree();
+    try_random_number();
+    try_build_tree();
 
     IndexProvider *const indexProvider = malloc(sizeof(IndexProvider));
-    initIndexProvider(indexProvider);
-    M_test_int(hasMoreIndex(indexProvider), true)
-    M_test_int(removeIndex(indexProvider, 224), true)
-    M_test_int(removeIndex(indexProvider, M_table_index_count), false)
-    M_test_int(removeIndex(indexProvider, 250), false)
-    M_test_int(removeIndex(indexProvider, -1), false)
-    M_test_int(removeIndex(indexProvider, 0), true)
+    init_index_provider(indexProvider);
+    M_test_int(has_more_index(indexProvider), true)
+    M_test_int(remove_index(indexProvider, 224), true)
+    M_test_int(remove_index(indexProvider, M_table_index_count), false)
+    M_test_int(remove_index(indexProvider, 250), false)
+    M_test_int(remove_index(indexProvider, -1), false)
+    M_test_int(remove_index(indexProvider, 0), true)
     M_test_int(indexProvider->count, 223)
-    M_test_int(provideIndex(indexProvider) < 224, true)
+    M_test_int(provide_index(indexProvider) < 224, true)
     for (int i = 0; i < 222; ++i) {
-        M_test_int(provideIndex(indexProvider) < 224, true)
+        M_test_int(provide_index(indexProvider) < 224, true)
         M_test_int(indexProvider->count, 221 - i)
     }
     // ======= Temporary block end.

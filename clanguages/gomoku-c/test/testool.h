@@ -5,7 +5,7 @@
 
 #include "configuration.h"
 
-#define M_test_int(value, expected) _reportIntegerTest( \
+#define M_test_int(value, expected) _report_integer_test( \
     #value, \
     __FUNCTION__, \
     __FILE__, \
@@ -16,12 +16,12 @@
 );
 
 #define M_run_test_suite(__testSuite) \
-    setupTestSuite(); \
+    setup_test_suite(); \
     printf("Start test suite [%s]\n", #__testSuite); \
     __testSuite(); \
-    reportTestSuite();
+    report_test_suite();
 
-void _reportIntegerTest(
+void _report_integer_test(
     char const * const testedName,
     char const * const invokerName,
     char const * const fileName,
@@ -31,9 +31,9 @@ void _reportIntegerTest(
     bool const isVerbose
 );
 
-void setupTestSuite();
+void setup_test_suite();
 
-void reportTestSuite();
+void report_test_suite();
 
 /* ======= Belows are utilities for debugging. ======= */
 #define M_debug_line() printf("\033[38;2;255;255;0mDebug line ====>>>\033[0m %s %s %d\n", \

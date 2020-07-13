@@ -1,13 +1,9 @@
-2020-7-11：
+2020-7-13：
 - [In-progress] 和梦婷/张钰/陈晨一起把模仿学习对接到 dacong，最后对接到真机做验证。
-  - 在 motion-runner 中添加了取得狗子运动模式（AI 控制、传统恢复站立的控制）的功能。[MR](http://gitlab.corp.hachibot.com/ai/motion-runner/-/merge_requests/12)
-  - 梦婷现在可以直接在 dacong 中进行自动 finetune 训练了。
-- [Done] raisim 的摩擦系数可以从 0.8 修改成为 0.5 然后再训练试一试。
-  - raisimLib 提供的 raisim::World 类有个 API 是 setDefaultMaterial，定义了 friction，restitution 和 restitution threshold。
-  - 在 envrionment 初始化时，使用 setDefaultMaterial 方法将 friction 设置成了 0.5，另外两个值使用了 raisimLib 中找到的默认值。
-  - 重新训练后，在 dacong 里面跑起来了，不再原地踏步。
-  - 目前在 raisim 中和 dacong 中的区别就是，dacong 中转圈跑的圈子小一些，raisim 里面转的圈大一些。
-  - 唐彬的建议是，最后这点差异，可以通过在训练时添加噪声，让狗子适应不同的速度来解决。
+  - 关注陈晨/梦婷的进度，看看有什么可以帮上忙的。
+- [In-progress] 给 hachy 做一些工具类，提供辅助功能。
+  - 配置项载入。
+    - 
 
 _______
 - 工程化：

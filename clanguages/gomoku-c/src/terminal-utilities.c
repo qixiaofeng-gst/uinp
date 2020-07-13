@@ -3,7 +3,7 @@
 #include <termios.h>
 
 void
-touchTerminal(bool isRestore)
+touch_terminal(bool isRestore)
 {
     static struct termios backup;
     if (isRestore) {
@@ -14,7 +14,7 @@ touchTerminal(bool isRestore)
 }
 
 void
-turnOffEcho()
+turn_off_echo()
 {
     struct termios termInformation;
     tcgetattr(0, &termInformation);

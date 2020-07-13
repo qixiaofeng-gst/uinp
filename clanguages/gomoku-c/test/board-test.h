@@ -4,19 +4,19 @@
 
 // Belows for ../src/board.c.
 
-bool _checkUpBorder(int coordinate);
+bool _check_up_border(int coordinate);
 
-bool _checkBottomBorder(int coordinate);
+bool _check_bottom_border(int coordinate);
 
-int _countContinuousSameFlag(int pieceFlag, int x, int y, int incrementX, int incrementY);
+int _count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int incrementY);
 
-void putPieceAt(int x, int y, int pieceFlag);
+void put_piece_at(int x, int y, int pieceFlag);
 
-void clearBoard();
+void clear_board();
 
-bool isGameEnd(int x, int y, int pieceFlag);
+bool is_game_end(int x, int y, int pieceFlag);
 
 // Belows for board-test.c.
-void testBoardCheckers();
+void test_board_checkers();
 
 #endif // guard end for BOARD_TEST_H

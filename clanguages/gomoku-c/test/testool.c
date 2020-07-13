@@ -10,7 +10,7 @@ int passedTestCount = 0;
 int failedTestCount = 0;
 
 void
-_reportIntegerTest(
+_report_integer_test(
     char const * const testedName,
     char const * const invokerName,
     char const * const fileName,
@@ -45,7 +45,7 @@ _reportIntegerTest(
 }
 
 void
-setupTestSuite()
+setup_test_suite()
 {
     totalTestCount = 0;
     passedTestCount = 0;
@@ -54,7 +54,7 @@ setupTestSuite()
 }
 
 void
-reportTestSuite()
+report_test_suite()
 {
     printf(
         "Total count: %d; passed test count: \033[32m%d\033[0m; \
