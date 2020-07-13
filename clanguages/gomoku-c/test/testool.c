@@ -20,13 +20,15 @@ _report_integer_test(
     bool const isVerbose
 ) {
     bool isPassed = (value == expected);
-    printf(
-        "Test [%s], testing value[ %s ]: %d, expected: %d\n",
-        isPassed ? trueFlag : falseFlag,
-        testedName,
-        value,
-        expected
-    );
+    if(isVerbose) {
+        printf(
+                "Test [%s], testing value[ %s ]: %d, expected: %d\n",
+                isPassed ? trueFlag : falseFlag,
+                testedName,
+                value,
+                expected
+        );
+    }
     if (isVerbose || (false == isPassed)) {
         printf(
             "%s    Invoked at %s (%d) (%s)\033[0m\n",

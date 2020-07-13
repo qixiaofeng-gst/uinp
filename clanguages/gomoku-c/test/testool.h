@@ -12,7 +12,7 @@
     __LINE__, \
     value, \
     expected, \
-    M_is_test_verbose \
+    m_is_test_verbose \
 );
 
 #define M_run_test_suite(__testSuite) \

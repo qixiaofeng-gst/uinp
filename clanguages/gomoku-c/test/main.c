@@ -156,16 +156,7 @@ leafsIndex.initialSection[9]: %p.\n",
 }
 // ======= Temporary block end.
 
-int
-main(void) {
-    srand(time(NULL)); // time(NULL) returns time in seconds.
-
-    test_board_checkers();
-
-    // ======= Temporary block for quick prototype.
-    try_random_number();
-    try_build_tree();
-
+void _test_index_provider() {
     IndexProvider *const indexProvider = malloc(sizeof(IndexProvider));
     init_index_provider(indexProvider);
     M_test_int(has_more_index(indexProvider), true)
@@ -180,6 +171,18 @@ main(void) {
         M_test_int(provide_index(indexProvider) < 224, true)
         M_test_int(indexProvider->count, 221 - i)
     }
+}
+
+int
+main(void) {
+    srand(time(NULL)); // time(NULL) returns time in seconds.
+
+    test_board_checkers();
+    M_run_test_suite(_test_index_provider)
+
+    // ======= Temporary block for quick prototype.
+    try_random_number();
+    try_build_tree();
     // ======= Temporary block end.
 
     return 0;

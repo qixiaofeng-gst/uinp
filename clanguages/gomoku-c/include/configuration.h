@@ -3,6 +3,6 @@
 
 #include <stdbool.h>
 
-#define M_is_test_verbose false
+#define m_is_test_verbose false
 
 #endif // guard end for CONFIGURATION_H
