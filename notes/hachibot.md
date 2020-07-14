@@ -1,7 +1,9 @@
-2020-7-14：
+2020-7-15：
 - [In-progress] 和梦婷/张钰/陈晨一起把模仿学习对接到 dacong，最后对接到真机做验证。
-- [In-progress] 给 hachy 做一些工具类，提供辅助功能。
-  - [In-progress] 提供生成工具简化配置文件的载入。[MR](http://gitlab.corp.hachibot.com/ai/hachy/-/merge_requests/25)
+- [In-progress] 简化 RaisimEnv。
+  - [In-progress] 去掉 AbstractRaisimEnv。
+  - [Planned] 使用 config class 收拢散碎的字段。
+- [Planned] 尝试让 dacong 可以直接用于训练。
 
 _______
 - 工程化：
