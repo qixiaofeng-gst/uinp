@@ -1,18 +1,29 @@
-export RAISIM_BUILD=/var/local/local-build/for-raisim
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${RAISIM_BUILD}/lib
-raisim-cmake() {
-  cmake .. -DCMAKE_PREFIX_PATH=$RAISIM_BUILD -DCMAKE_INSTALL_PATH=$RAISIM_BUILD
+export HACHY_BUILD=/var/local/local-build/for-raisim
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HACHY_BUILD}/lib
+hachy-cmake() {
+  cmake .. -DCMAKE_PREFIX_PATH=$HACHY_BUILD -DCMAKE_INSTALL_PATH=$HACHY_BUILD
 }
-raisim-make() {
+hachy-make() {
   pushd build && make -j4
   popd
 }
+hachy-calibrate() {
+  python -m launcher.calibrator
+}
+hachy-test() {
+  python -m launcher.test
+}
+alias hc-cmake=hachy-cmake
+alias hc-make=hachy-make
+alias hc-calibrate=hachy-calibrate
+alias hc-test=hachy-test
 
 export DACONG_BUILD=/var/local/local-build/for-dacong
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DACONG_BUILD}/lib
 dacong-cmake() {
   cmake .. -DCMAKE_PREFIX_PATH=$DACONG_BUILD -DCMAKE_INSTALL_PATH=$DACONG_BUILD
 }
+alias dc-cmake=dacong-cmake
 
 export ROS_IP=192.168.2.101
 export ROS_HOSTNAME=192.168.2.101

@@ -70,9 +70,10 @@ Examples:
 - E_Month, E_WeekDay
 - `enum {e_signed_integer, e_unsigned_long} E_NumberType;`
 
-## Usefule prefixes
+## Usefule prefixes and suffixes
 1. First character is `_` means private.   
 Things that are only available in current file scope are private.
 1. `cb_` means callback function.
 1. `ptr_` means pointer.
 1. `arr_` means array.
+1. `_t` means type.

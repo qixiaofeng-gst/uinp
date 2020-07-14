@@ -1,8 +1,7 @@
-2020-7-13：
+2020-7-14：
 - [In-progress] 和梦婷/张钰/陈晨一起把模仿学习对接到 dacong，最后对接到真机做验证。
-  - 关注陈晨/梦婷的进度，看看有什么可以帮上忙的。
 - [In-progress] 给 hachy 做一些工具类，提供辅助功能。
-  - 配置项载入。
+  - [In-progress] 提供生成工具简化配置文件的载入。[MR](http://gitlab.corp.hachibot.com/ai/hachy/-/merge_requests/25)
 
 _______
 - 工程化：

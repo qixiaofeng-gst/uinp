@@ -9,10 +9,41 @@
 #include "table-utilities.h"
 #include "terminal-utilities.h"
 
-const wchar_t first_hand = m_initializer_first_hand;
-const wchar_t second_hand = L'X';
-const int first_piece = 0B0001;
-const int second_piece = 0B1000;
+typedef struct {
+    int const x;
+    int const y;
+    int const pieceFlag;
+} HandDescription;
+
+typedef HandDescription (*cb_ptr_player_t)(HandDescription const);
+
+/**
+TODO GameManager:
+gm_start_game();
+while (true) {
+    gm_play_one_hand();
+    if (gm_is_game_end()) {
+        break;
+    }
+}
+gm_end_game();
+
+void
+gm_play_one_hand()
+{
+    nextHand = (*current_player)(prevHand);
+    if (first_player == current_player) {
+        current_player = second_player;
+    } else {
+        current_player = first_player;
+    }
+}
+*/
+
+wchar_t const G_first_hand = m_initializer_first_hand;
+wchar_t const G_second_hand = L'X';
+int const G_first_piece = 0B0001;
+int const G_second_piece = 0B1000;
 
 wchar_t
 _pass_hand()
@@ -20,10 +51,10 @@ _pass_hand()
     static wchar_t currentHand = m_initializer_first_hand;
 
     wchar_t returnHand = currentHand;
-    if (first_hand == currentHand) {
-        currentHand = second_hand;
+    if (G_first_hand == currentHand) {
+        currentHand = G_second_hand;
     } else {
-        currentHand = first_hand;
+        currentHand = G_first_hand;
     }
     return returnHand;
 }
@@ -49,17 +80,14 @@ _clear_message()
     wprintf(L"\033[K");
 }
 
-typedef struct {
-    int const x;
-    int const y;
-    int const pieceFlag;
-} HandDescription;
-
 HandDescription
 _ai_play_hand(HandDescription const referenceHand)
 {
+    wprintf(L"This is a placeholder line for ai player.\n");
     return referenceHand;
 }
+
+cb_ptr_player_t cb_ptr_ai_player = _ai_play_hand;
 
 int
 main(int argc, char const *argv[])
@@ -119,7 +147,7 @@ main(int argc, char const *argv[])
                 if (is_empty_slot(x, y)) {
                     wchar_t hand = _pass_hand();
                     wprintf(L"%lc\033[D", hand);
-                    put_piece_at(x, y, (first_hand == hand) ? first_piece : second_piece);
+                    put_piece_at(x, y, (G_first_hand == hand) ? G_first_piece : G_second_piece);
                     HandDescription handDesc = {
                         .x = 9,
                         .y = 9,
