@@ -1,18 +1,8 @@
-2020-7-15：
+2020-7-16：
 - [In-progress] 和梦婷/张钰/陈晨一起把模仿学习对接到 dacong，最后对接到真机做验证。
-- [In-progress] 简化 RaisimEnv。
-  - [In-progress] 去掉 AbstractRaisimEnv。
-  - [Planned] 使用 config class 收拢散碎的字段。
 - [Planned] 尝试让 dacong 可以直接用于训练。
 
 _______
-- 工程化：
-  - 目前 reward_function 我做成了可以用配置直接切换的程度。
-  - 下一步希望把更多的环节，比如 environment 初始化，step，observation 更新，
-  都做成可以写好 c++ 代码之后，在 python 和 yaml 中可以动态配置拼接的状态。
-  - 希望达到的理想状态是，c++ 代码可以稳定在一个版本后不用再变更，所有训练都可以通过使用 yaml 和 python 来配置完成。
-  - 大家对此有没有什么更好的想法？或者补充更多需要抽取成可热插拔的环节或模块？
-  - 淼神建议我可以做一些工具辅助博士开发。
 
 - [Planned] 绘制完整的基于模仿学习的动作控制的流程图，并发起讨论。
   - 起点是 AI4Animation 的方案。
