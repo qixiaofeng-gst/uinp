@@ -9,6 +9,11 @@
 #include "table-utilities.h"
 #include "terminal-utilities.h"
 
+/*!
+ * All the gm_ prefix means that it belongs to GameManager.
+ * GameManager is a concept object. It does not have an real instance.
+ */
+
 typedef struct {
     int x;
     int y;
@@ -16,30 +21,6 @@ typedef struct {
 } HandDescription;
 
 typedef void (*cb_ptr_player_t)(HandDescription const *const, HandDescription *const);
-
-/**
-TODO GameManager:
-gm_start_game();
-while (true) {
-    gm_cb_ptr_play();
-    gm_output_board();
-    if (gm_is_game_end()) {
-        break;
-    }
-}
-gm_end_game();
-
-void
-gm_cb_ptr_play()
-{
-    nextHand = (*current_player)(prevHand);
-    if (first_player == current_player) {
-        current_player = second_player;
-    } else {
-        current_player = first_player;
-    }
-}
-*/
 
 wchar_t const G_first_hand = m_initializer_first_hand;
 wchar_t const G_second_hand = L'X';

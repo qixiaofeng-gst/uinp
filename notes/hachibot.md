@@ -1,17 +1,8 @@
-2020-7-17：
+2020-7-18：
 - [In-progress] 和梦婷/张钰/陈晨一起把模仿学习对接到 dacong，最后对接到真机做验证。
-- [In-progress] 尝试让 dacong 可以直接用于训练。
-  - 使界面成为可选项。
-    - 提供 sim/sim 启动之外的新的可执行入口。
-    - 将 Simulation 类中的可视化的部分隔离出去。
-  - 使数据的交换方式多出 API 直接访问的方式（目前主要是 SharedMemory + LCM）。
-    - 提供接收 action 的 step 方法。
-    - 提供返回 obs 的 observe 方法。
-    - 提供状态重置的 reset 方法。
-  - 将仿真的主流程做成一个 environment 类，并用 pybind11 包装到 python 模块中。 
-- [Planned] 添加人脸识别的监控。
-  - 为识别的结果（位置、区域、人 ID、置信度、时间戳）添加 ROS 消息。
-  - 监听图像消息和新增的识别结果消息，合成并显示。
+- [In-progress, 15%] 尝试让 dacong 可以直接用于训练。相关任务细分见 [Wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21791171)。
+  - [In-progress] 移植仿真过程的主干逻辑。原逻辑 800 多行，预期移植过来在 400 到 600 行之间。[MR](http://gitlab.corp.hachibot.com/mini-cheetah-about/dacong/-/merge_requests/1)
+- [Planned] 添加人脸识别的监控。相关任务细分见 [Wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21791171)。
 - [Planned] 基于 Prometheus + Grafana 实现数据监控。
 
 PID: Proportional Integral Derivative
