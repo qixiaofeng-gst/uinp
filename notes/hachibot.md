@@ -19,7 +19,6 @@ MPC: Model Predictive Control
 RPC: Rate Predictive Control. It is model free. Adaptive to change, less oscillation.
 
 _______
-
 - [Planned] 绘制完整的基于模仿学习的动作控制的流程图，并发起讨论。
   - 起点是 AI4Animation 的方案。
   - 起点是路径规划的方案。

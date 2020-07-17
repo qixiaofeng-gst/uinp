@@ -17,6 +17,8 @@ if (pieceFlag == target) { \
     return true; \
 }
 
+typedef bool (*cb_ptr_checher_t)(int);
+
 int const win_count = 4;
 
 int board[m_table_logic_size][m_table_logic_size];
@@ -53,9 +55,8 @@ _check_bottom_border(int coordinate)
 }
 
 inline
-bool (*
+cb_ptr_checher_t
 _getChecker(bool isIncreasing)
-)(int)
 {
     return isIncreasing ? _check_bottom_border : _check_up_border;
 }
@@ -77,8 +78,8 @@ _count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int inc
         }
         return count;
     }
-    bool (*xChecker)(int) = _getChecker(incrementX > 0);
-    bool (*yChecker)(int) = _getChecker(incrementY > 0);
+    cb_ptr_checher_t xChecker = _getChecker(incrementX > 0);
+    cb_ptr_checher_t yChecker = _getChecker(incrementY > 0);
     for (int i = x + incrementX; xChecker(i); i += incrementX) {
         for (int j = y + incrementY; yChecker(j); j += incrementY) {
             M_count_piece(board[i][j])
