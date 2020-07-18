@@ -1,5 +1,4 @@
 #include <locale.h>
-#include <stdio.h>
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -29,25 +28,24 @@ int const G_second_piece = 0B1000;
 
 int const G_offset_limit = m_table_logic_size - 1;
 int const G_invalid_coord = -1;
-wchar_t const G_exit_flag = L'x';
 wchar_t const G_pass_flag = L'p';
 wchar_t g_input_char = 0;
 int g_up_offset = 7;
 int g_left_offset = 7;
 
 void
-_exit_program() {
+exit_program() {
     wprintf(L"\033[u\033[K\n");
     int systemResult = 0;
-    systemResult = system("stty cooked");
-    systemResult = system("clear");
+    systemResult += system("stty cooked");
+    systemResult += system("clear");
 
     touch_terminal(true);
     exit(systemResult);
 }
 
 wchar_t
-_switch_piece_appearance() {
+switch_piece_appearance() {
     static wchar_t currentHand = m_initializer_first_hand;
 
     wchar_t returnHand = currentHand;
@@ -59,49 +57,46 @@ _switch_piece_appearance() {
     return returnHand;
 }
 
-inline
 void
-_locate_cursor(int const upOffset, int const leftOffset) {
+locate_cursor(int const upOffset, int const leftOffset) {
     wprintf(L"\033[%dA\033[%dD", upOffset * 2 + 1, leftOffset * 2 + 2);
 }
 
-inline
 void
-_reset_cursor_location() {
+reset_cursor_location() {
     wprintf(L"\033[u\033[s");
 }
 
-inline
 void
-_clear_message() {
+clear_message() {
     wprintf(L"\033[K");
 }
 
 void
-_print_message(wchar_t const *const msg) {
-    _reset_cursor_location();
-    _clear_message();
+print_message(wchar_t const *const msg) {
+    reset_cursor_location();
+    clear_message();
     wprintf(msg);
-    _reset_cursor_location();
-    _locate_cursor(g_up_offset, g_left_offset);
+    reset_cursor_location();
+    locate_cursor(g_up_offset, g_left_offset);
 }
 
 void
-_ai_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
-    _print_message(L"AI's turn.");
+ai_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
+    print_message(L"AI's turn.");
     currHand->x = 0;
     currHand->y = 0;
-    currHand->pieceAppearance = _switch_piece_appearance();
+    currHand->pieceAppearance = switch_piece_appearance();
 }
 
 void
-_human_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
-    _print_message(L"Your turn.");
+human_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
+    print_message(L"Your turn.");
     while (false == (G_pass_flag == g_input_char)) {
         g_input_char = getwchar();
         switch (g_input_char) {
-            case (int) G_exit_flag:
-                _exit_program();
+            case L'x':
+                exit_program();
                 return;
             case L'i':
                 if (g_up_offset < G_offset_limit) {
@@ -131,7 +126,7 @@ _human_play_hand(HandDescription const *const prevHand, HandDescription *const c
                 int x = G_offset_limit - g_left_offset;
                 int y = G_offset_limit - g_up_offset;
                 if (is_empty_slot(x, y)) {
-                    wchar_t hand = _switch_piece_appearance();
+                    wchar_t hand = switch_piece_appearance();
 
                     currHand->x = x;
                     currHand->y = y;
@@ -143,7 +138,7 @@ _human_play_hand(HandDescription const *const prevHand, HandDescription *const c
             }
                 break;
             case L'M':
-                _print_message(L"Cleared message.");
+                print_message(L"Cleared message.");
                 break;
             default:
                 break;
@@ -153,7 +148,7 @@ _human_play_hand(HandDescription const *const prevHand, HandDescription *const c
 }
 
 int
-_get_piece_flag(wchar_t const pieceAppearance)
+get_piece_flag(wchar_t const pieceAppearance)
 {
     return (G_first_hand == pieceAppearance) ? G_first_piece : G_second_piece;
 }
@@ -164,16 +159,16 @@ gm_is_game_end(HandDescription const *const prevHand) {
         return false;
     }
     // TODO There is BUG in is_game_end method. Cannot detect slope lines.
-    if (is_game_end(prevHand->x, prevHand->y, _get_piece_flag(prevHand->pieceAppearance))) {
+    if (is_game_end(prevHand->x, prevHand->y, get_piece_flag(prevHand->pieceAppearance))) {
         // TODO Ask user to restart or exit.
         return true;
     }
     return false;
 }
 
-cb_ptr_player_t gm_cb_ptr_first_player = _human_play_hand;
-cb_ptr_player_t gm_cb_ptr_second_player = _ai_play_hand;
-cb_ptr_player_t gm_cb_ptr_play = _human_play_hand;
+cb_ptr_player_t gm_cb_ptr_first_player = human_play_hand;
+cb_ptr_player_t gm_cb_ptr_second_player = ai_play_hand;
+cb_ptr_player_t gm_cb_ptr_play = human_play_hand;
 
 void
 gm_switch_player() {
@@ -184,8 +179,8 @@ gm_switch_player() {
 
 void
 gm_output_board(HandDescription const *const currHand) {
-    _reset_cursor_location();
-    _locate_cursor(G_offset_limit - currHand->y, G_offset_limit - currHand->x);
+    reset_cursor_location();
+    locate_cursor(G_offset_limit - currHand->y, G_offset_limit - currHand->x);
     wprintf(L"%lc\033[D", currHand->pieceAppearance);
 }
 
@@ -208,7 +203,7 @@ main(int argc, char const *argv[]) {
 
     int systemResult = system("stty raw");
 
-    _locate_cursor(g_up_offset, g_left_offset);
+    locate_cursor(g_up_offset, g_left_offset);
 
     HandDescription prevHand = {
             .x = G_invalid_coord,
@@ -229,6 +224,6 @@ main(int argc, char const *argv[]) {
         prevHand.pieceAppearance = currHand.pieceAppearance;
     }
 
-    _exit_program();
+    exit_program();
     return systemResult;
 }

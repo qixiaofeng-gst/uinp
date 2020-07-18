@@ -11,13 +11,13 @@ if (pieceFlag == target) { \
 }
 
 #define M_check_game_end(iX1, iY1, iX2, iY2) if (win_count <= ( \
-    _count_continuous_same_flag(pieceFlag, x, y, iX1, iY1) \
-    + _count_continuous_same_flag(pieceFlag, x, y, iX2, iY2)) \
+    count_continuous_same_flag(pieceFlag, x, y, iX1, iY1) \
+    + count_continuous_same_flag(pieceFlag, x, y, iX2, iY2)) \
 ) {\
     return true; \
 }
 
-typedef bool (*cb_ptr_checher_t)(int);
+typedef bool (*cb_ptr_checker_t)(int);
 
 int const win_count = 4;
 
@@ -43,43 +43,42 @@ _isSameFlag(int pieceFlag, int x, int y)
 }
 
 bool
-_check_up_border(int coordinate)
+check_up_border(int coordinate)
 {
     return coordinate > -1;
 }
 
 bool
-_check_bottom_border(int coordinate)
+check_bottom_border(int coordinate)
 {
     return coordinate < m_table_logic_size;
 }
 
-inline
-cb_ptr_checher_t
-_getChecker(bool isIncreasing)
+cb_ptr_checker_t
+get_checker(bool isIncreasing)
 {
-    return isIncreasing ? _check_bottom_border : _check_up_border;
+    return isIncreasing ? check_bottom_border : check_up_border;
 }
 
 int
-_count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int incrementY)
+count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int incrementY)
 {
     int count = 0;
     if (0 == incrementX) {
-        bool (*checker)(int) = _getChecker(incrementY > 0);
+        cb_ptr_checker_t checker = get_checker(incrementY > 0);
         for (int i = y + incrementY; checker(i); i += incrementY) {
             M_count_piece(board[x][i])
         }
         return count;
     } else if (0 == incrementY) {
-        bool (*checker)(int) = _getChecker(incrementX > 0);
+        cb_ptr_checker_t checker = get_checker(incrementX > 0);
         for (int i = x + incrementX; checker(i); i += incrementX) {
             M_count_piece(board[i][y])
         }
         return count;
     }
-    cb_ptr_checher_t xChecker = _getChecker(incrementX > 0);
-    cb_ptr_checher_t yChecker = _getChecker(incrementY > 0);
+    cb_ptr_checker_t xChecker = get_checker(incrementX > 0);
+    cb_ptr_checker_t yChecker = get_checker(incrementY > 0);
     for (int i = x + incrementX; xChecker(i); i += incrementX) {
         for (int j = y + incrementY; yChecker(j); j += incrementY) {
             M_count_piece(board[i][j])

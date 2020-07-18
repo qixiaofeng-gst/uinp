@@ -3,19 +3,19 @@
 #include "macro-constants.h"
 
 void
-_test_board_edge_checkers()
+test_board_edge_checkers()
 {
-    M_test_int(_check_bottom_border(14), true)
-    M_test_int(_check_bottom_border(13), true)
-    M_test_int(_check_bottom_border(15), false)
+    M_test_int(check_bottom_border(14), true)
+    M_test_int(check_bottom_border(13), true)
+    M_test_int(check_bottom_border(15), false)
 
-    M_test_int(_check_up_border(-1), false)
-    M_test_int(_check_up_border(0), true)
-    M_test_int(_check_up_border(1), true)
+    M_test_int(check_up_border(-1), false)
+    M_test_int(check_up_border(0), true)
+    M_test_int(check_up_border(1), true)
 }
 
 void
-_test_continuous_counter()
+test_continuous_counter()
 {
     int const flagOne = 9;
     int const flagTwo = 3;
@@ -24,19 +24,19 @@ _test_continuous_counter()
         put_piece_at(0, i, flagOne);
     }
     M_test_int(is_game_end(0, 3, flagOne), false)
-    M_test_int(_count_continuous_same_flag(flagOne, 0, 3, 0, -1), 3)
-    M_test_int(_count_continuous_same_flag(flagOne, 0, 1, 0, -1), 1)
-    M_test_int(_count_continuous_same_flag(flagOne, 0, 1, 0, 1), 2)
-    M_test_int(_count_continuous_same_flag(flagOne, 0, 0, 0, 1), 3)
+    M_test_int(count_continuous_same_flag(flagOne, 0, 3, 0, -1), 3)
+    M_test_int(count_continuous_same_flag(flagOne, 0, 1, 0, -1), 1)
+    M_test_int(count_continuous_same_flag(flagOne, 0, 1, 0, 1), 2)
+    M_test_int(count_continuous_same_flag(flagOne, 0, 0, 0, 1), 3)
     put_piece_at(0, 1, flagTwo);
-    M_test_int(_count_continuous_same_flag(flagTwo, 0, 1, 0, 1), 0)
-    M_test_int(_count_continuous_same_flag(flagTwo, 0, 1, 0, -1), 0)
-    M_test_int(_count_continuous_same_flag(flagTwo, 0, 1, 1, -1), 0)
-    M_test_int(_count_continuous_same_flag(flagTwo, 0, 1, 1, 1), 0)
-    M_test_int(_count_continuous_same_flag(flagTwo, 0, 1, 1, 0), 0)
-    M_test_int(_count_continuous_same_flag(flagTwo, 0, 1, -1, 0), 0)
-    M_test_int(_count_continuous_same_flag(m_empty_slot, 0, 5, 0, -1), 1)
-    M_test_int(_count_continuous_same_flag(m_empty_slot, 0, 5, 0, 1), 9)
+    M_test_int(count_continuous_same_flag(flagTwo, 0, 1, 0, 1), 0)
+    M_test_int(count_continuous_same_flag(flagTwo, 0, 1, 0, -1), 0)
+    M_test_int(count_continuous_same_flag(flagTwo, 0, 1, 1, -1), 0)
+    M_test_int(count_continuous_same_flag(flagTwo, 0, 1, 1, 1), 0)
+    M_test_int(count_continuous_same_flag(flagTwo, 0, 1, 1, 0), 0)
+    M_test_int(count_continuous_same_flag(flagTwo, 0, 1, -1, 0), 0)
+    M_test_int(count_continuous_same_flag(m_empty_slot, 0, 5, 0, -1), 1)
+    M_test_int(count_continuous_same_flag(m_empty_slot, 0, 5, 0, 1), 9)
 
     clear_board();
     for (int i = 0; i < 9; ++i) {
@@ -46,13 +46,13 @@ _test_continuous_counter()
     }
     put_piece_at(9, 9, flagTwo);
     M_test_int(is_game_end(3, 3, flagOne), true)
-    M_test_int(_count_continuous_same_flag(flagOne, 1, 1, -1, -1), 1)
-    M_test_int(_count_continuous_same_flag(flagOne, 1, 1, 1, 1), 7)
+    M_test_int(count_continuous_same_flag(flagOne, 1, 1, -1, -1), 1)
+    M_test_int(count_continuous_same_flag(flagOne, 1, 1, 1, 1), 7)
 }
 
 void
 test_board_checkers()
 {
-    M_run_test_suite(_test_board_edge_checkers)
-    M_run_test_suite(_test_continuous_counter)
+    M_run_test_suite(test_board_edge_checkers)
+    M_run_test_suite(test_continuous_counter)
 }
