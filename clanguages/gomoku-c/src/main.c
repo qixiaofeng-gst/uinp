@@ -2,6 +2,7 @@
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 #include "board.h"
 #include "macro-constants.h"
@@ -73,17 +74,22 @@ clear_message() {
 }
 
 void
-print_message(wchar_t const *const msg) {
+print_message(wchar_t const *msgFormat, ...) {
+    va_list args;
+    va_start(args, msgFormat);
+
     reset_cursor_location();
     clear_message();
-    wprintf(msg);
+    vwprintf(msgFormat, args);
     reset_cursor_location();
     locate_cursor(g_up_offset, g_left_offset);
+
+    va_end(args);
 }
 
 void
 ai_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
-    print_message(L"AI's turn.");
+    print_message(L"AI's turn. PrevHand: %d, %d.", prevHand->x, prevHand->y);
     currHand->x = 0;
     currHand->y = 0;
     currHand->pieceAppearance = switch_piece_appearance();
@@ -91,7 +97,7 @@ ai_play_hand(HandDescription const *const prevHand, HandDescription *const currH
 
 void
 human_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
-    print_message(L"Your turn.");
+    print_message(L"Your turn. PrevHand: %d, %d.", prevHand->x, prevHand->y);
     while (false == (G_pass_flag == g_input_char)) {
         g_input_char = getwchar();
         switch (g_input_char) {
@@ -185,7 +191,7 @@ gm_output_board(HandDescription const *const currHand) {
 }
 
 int
-main(int argc, char const *argv[]) {
+main() {
     clear_board();
     touch_terminal(false);
     turn_off_echo();

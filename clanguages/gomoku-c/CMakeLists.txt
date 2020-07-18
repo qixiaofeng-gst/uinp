@@ -18,7 +18,7 @@ file(GLOB tests "test/*.c")
 
 include_directories(include)
 
-add_executable(test ${tests} ${to_test})
-target_include_directories(test PRIVATE src)
+add_executable(unit_test ${tests} ${to_test})
+target_include_directories(unit_test PRIVATE src)
 
-add_executable(main ${sources})
+add_executable(start_gomoku ${sources})
