@@ -1,7 +1,9 @@
-2020-7-18：
+2020-7-20：
 - [In-progress] 和梦婷/张钰/陈晨一起把模仿学习对接到 dacong，最后对接到真机做验证。
-- [In-progress, 15%] 尝试让 dacong 可以直接用于训练。相关任务细分见 [Wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21791171)。
-  - [In-progress] 移植仿真过程的主干逻辑。原逻辑 800 多行，预期移植过来在 400 到 600 行之间。[MR](http://gitlab.corp.hachibot.com/mini-cheetah-about/dacong/-/merge_requests/1)
+  - [Done] 给梦婷一些 Debug 的建议。
+- [In-progress, 20%] 尝试让 dacong 可以直接用于训练。相关任务细分见 [Wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21791171)。
+  - [In-progress，30%] 实现仿真过程的主干逻辑。[MR](http://gitlab.corp.hachibot.com/mini-cheetah-about/dacong/-/merge_requests/1)
+    - 正在分析原有仿真过程，去除组件之间的通信（数据同步）逻辑之后，结构应该会更清楚。
 - [Planned] 添加人脸识别的监控。相关任务细分见 [Wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21791171)。
 - [Planned] 基于 Prometheus + Grafana 实现数据监控。
 
