@@ -1,10 +1,5 @@
-2020-7-20：
-- [In-progress] 和梦婷/张钰/陈晨一起把模仿学习对接到 dacong，最后对接到真机做验证。
-- [In-progress, 20%] 尝试让 dacong 可以直接用于训练。相关任务细分见 [Wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21791171)。
-  - [In-progress，30%] 实现仿真过程的主干逻辑。[MR](http://gitlab.corp.hachibot.com/mini-cheetah-about/dacong/-/merge_requests/1)
-    - 正在分析原有仿真过程，去除组件之间的通信（数据同步）逻辑之后，结构应该会更清楚。
-- [Planned] 添加人脸识别的监控。相关任务细分见 [Wiki](http://wiki.corp.hachibot.com/pages/viewpage.action?pageId=21791171)。
-- [Planned] 基于 Prometheus + Grafana 实现数据监控。
+2020-7-21：
+- [In-progress] [将 dacong 仿真的主干逻辑在 DacongEnv 中实现](http://jira.corp.hachibot.com/browse/AI-3)
 
 PID: Proportional Integral Derivative
 MPC: Model Predictive Control

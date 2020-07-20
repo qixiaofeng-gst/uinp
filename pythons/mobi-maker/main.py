@@ -44,7 +44,8 @@ def _get_file_names():
 
 
 def _process_file(file_name):
-    with open(file_name, 'r', encoding = 'GB2312') as file:
+    # 'GB2312' 'UTF-8'
+    with open(file_name, 'r', encoding = 'UTF-8') as file:
         lines_limit = 1000000
 
         processed_lines_count = 0
