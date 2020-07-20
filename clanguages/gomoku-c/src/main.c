@@ -2,6 +2,7 @@
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdarg.h>
 
 #include "board.h"
@@ -13,6 +14,23 @@
  * All the gm_ prefix means that it belongs to GameManager.
  * GameManager is a concept object. It does not have an real instance.
  */
+
+FILE *
+get_debug_log() {
+    static FILE *debug_log = NULL;
+    if (NULL == debug_log) {
+        debug_log = fopen("debug.log", "w");
+    }
+    return debug_log;
+}
+
+void
+debug_print(char const *msgFormat, ...) {
+    va_list args;
+    va_start(args, msgFormat);
+    vfprintf(get_debug_log(), msgFormat, args);
+    va_end(args);
+}
 
 typedef struct {
     int x;
@@ -42,6 +60,7 @@ exit_program() {
     systemResult += system("clear");
 
     touch_terminal(true);
+    fclose(get_debug_log());
     exit(systemResult);
 }
 
@@ -154,8 +173,7 @@ human_play_hand(HandDescription const *const prevHand, HandDescription *const cu
 }
 
 int
-get_piece_flag(wchar_t const pieceAppearance)
-{
+get_piece_flag(wchar_t const pieceAppearance) {
     return (G_first_hand == pieceAppearance) ? G_first_piece : G_second_piece;
 }
 
@@ -192,6 +210,7 @@ gm_output_board(HandDescription const *const currHand) {
 
 int
 main() {
+    debug_print("Debug print test. %p", &G_first_hand);
     clear_board();
     touch_terminal(false);
     turn_off_echo();

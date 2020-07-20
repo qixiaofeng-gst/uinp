@@ -119,3 +119,14 @@ breakpoint() { ## Used to prompt work progress.
 ##    # List records
   echo 'TODO: Implement'
 }
+
+gc-make() { ## The make command for gomoku-c.
+  pushd cmake-build-release
+  make -j4 && ./unit_test
+  popd
+}
+
+gc-run() { ## The entry shortcut for gomoku-c.
+  cd ~/Documents/git-repos/uinp/clanguages/gomoku-c
+  cmake-build-release/start_gomoku
+}
