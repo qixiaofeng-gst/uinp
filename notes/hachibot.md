@@ -1,5 +1,7 @@
-2020-7-21：
-- [In-progress] [将 dacong 仿真的主干逻辑在 DacongEnv 中实现](http://jira.corp.hachibot.com/browse/AI-3)
+2020-7-25：
+- [Done] [基于 Prometheus + Grafana 实现数据监控](http://jira.corp.hachibot.com/browse/AI-7)
+
+black box of miao.yang: 100.50
 
 PID: Proportional Integral Derivative
 MPC: Model Predictive Control

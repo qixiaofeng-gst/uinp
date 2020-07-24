@@ -1,7 +1,7 @@
 export HACHY_BUILD=/var/local/local-build/for-raisim
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HACHY_BUILD}/lib
 hachy-cmake() {
-  cmake .. -DCMAKE_PREFIX_PATH=$HACHY_BUILD -DCMAKE_INSTALL_PATH=$HACHY_BUILD
+  cmake .. -DCMAKE_PREFIX_PATH=$HACHY_BUILD -DCMAKE_INSTALL_PREFIX=$HACHY_BUILD -DPYBIND11_TEST=OFF
 }
 hachy-make() {
   pushd build && make -j4
@@ -21,7 +21,7 @@ alias hc-test=hachy-test
 export DACONG_BUILD=/var/local/local-build/for-dacong
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DACONG_BUILD}/lib
 dacong-cmake() {
-  cmake .. -DCMAKE_PREFIX_PATH=$DACONG_BUILD -DCMAKE_INSTALL_PATH=$DACONG_BUILD
+  cmake .. -DCMAKE_PREFIX_PATH=$DACONG_BUILD -DCMAKE_INSTALL_PREFIX=$DACONG_BUILD -DPYBIND11_TEST=OFF
 }
 alias dc-cmake=dacong-cmake
 
