@@ -1,6 +1,7 @@
-2020-7-25：
-- [Done] [基于 Prometheus + Grafana 实现数据监控](http://jira.corp.hachibot.com/browse/AI-7)
+2020-7-29：
+- [In-progress] [实现不同仿真器间的差异比对工具](http://jira.corp.hachibot.com/browse/AI-8)
 
+_______
 black box of miao.yang: 100.50
 
 PID: Proportional Integral Derivative

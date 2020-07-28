@@ -119,9 +119,11 @@ har-sync(){
   rsync -v -r -f '- .git' -f '- data' -f '- models' ../human-activity-recognizer runner@192.168.100.20:/hachi/ai_motion/catkin_ws/src/
 }
 har-cd(){
-  cd ~/Documents/local-sandbox/ros-learning-ws/src/human-activity-recognizer
-  source ../../devel/setup.bash
-  source ../../../catkin_python3_ws/devel/setup.bash --extend
+  local hcr=~/Documents/hachy-repos
+  local catkin_ws=${hcr}/catkin-ws
+  cd ${catkin_ws}/src/human-activity-recognizer
+  source ${catkin_ws}/devel/setup.bash
+  source ${hcr}/catkin-py3-ws/devel/setup.bash --extend
 }
 alias to-har=har-cd
 har-test(){
@@ -158,13 +160,13 @@ alias to-mc=mc-cd
 dk-install-ubt16(){ ## Docker install ubuntu 16.04
   docker pull ubuntu:16.04
 }
-dk-create-ubt16(){
+dk-create-ubt16(){ ## Create a docker container.
   docker run -itd --net=host --name ubuntu16 --volume /var/docker-ubt16-home:/home ubuntu:16.04
 }
-dk-start-ubt16(){
+dk-start-ubt16(){ ## Start a docker container. Use kill/stop to stop a docker container.
   docker start ubuntu16
 }
-dk-login-ubt16(){
+dk-login-ubt16(){ ## Login into a container with /bin/bash.
   docker exec -it ubuntu16 /bin/bash
 }
 
