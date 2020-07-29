@@ -7,12 +7,11 @@
 #include "testool.h"
 #include "lcg.h"
 
-/*
-TODO
-Design a dynamic indexer.
-Design a expanding tree.
-Implement Monte-Carlo tree search.
-*/
+/*TODO -
+ * Design a dynamic indexer.
+ * Design a expanding tree.
+ * Implement Monte-Carlo tree search.
+ */
 
 typedef struct p_Tree Tree;
 typedef struct p_Node Node;
@@ -44,11 +43,11 @@ struct p_Tree {
 };
 
 /*TODO
-Make the testtools with M_ style macro function have to be ended with semicolon.
-Provide a non-pass-print M_test_int_npp macro function.
--
-Design a index provider.
-*/
+ * Make the testtools with M_ style macro function have to be ended with semicolon.
+ * Provide a non-pass-print M_test_int_npp macro function.
+ * -
+ * Design a index provider.
+ */
 #define M_table_index_count 225
 typedef struct p_IndexProvider {
     int count;

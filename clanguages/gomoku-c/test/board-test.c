@@ -39,17 +39,27 @@ test_continuous_counter() {
 
     clear_board();
     for (int i = 0; i < 9; ++i) {
-        for (int j = 0; j < 9; ++j) {
-            put_piece_at(i, j, flagOne);
-        }
+        put_piece_at(i, i, flagOne);
     }
     put_piece_at(9, 9, flagTwo);
     M_test_int(is_game_end(3, 3, flagOne), true)
     M_test_int(p_count_continuous_same_flag(flagOne, 1, 1, -1, -1), 1)
     M_test_int(p_count_continuous_same_flag(flagOne, 1, 1, 1, 1), 7)
-    M_test_int(is_game_end(1, 1, flagOne), true)
+    for (int i = 0; i < 9; ++i) {
+        M_test_int(is_game_end(i, i, flagOne), true)
+    }
     M_test_int(is_empty_slot(10, 10), true)
     M_test_int(is_same_flag(9, 9, flagOne), false)
+    clear_board();
+    for (int i = 0; i < 9; ++i) {
+        int j = 8 - i;
+        put_piece_at(i, j, flagOne);
+    }
+    for (int i = 0; i < 9; ++i) {
+        int j = 8 - i;
+        M_test_int(is_game_end(i, j, flagOne), true)
+    }
+    M_test_int(is_game_end(9, 9, flagOne), false)
 }
 
 void

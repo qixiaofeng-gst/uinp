@@ -5,7 +5,7 @@
 
 #include "configuration.h"
 
-#define M_test_int(value, expected) _report_integer_test( \
+#define M_test_int(value, expected) report_integer_test( \
     #value, \
     __FUNCTION__, \
     __FILE__, \
@@ -21,14 +21,14 @@
     __testSuite(); \
     report_test_suite();
 
-void _report_integer_test(
-    char const * const testedName,
-    char const * const invokerName,
-    char const * const fileName,
-    int const lineNumber,
-    int const value,
-    int const expected,
-    bool const isVerbose
+void report_integer_test(
+    char const * testedName,
+    char const * invokerName,
+    char const * fileName,
+    int lineNumber,
+    int value,
+    int expected,
+    bool isVerbose
 );
 
 void setup_test_suite();

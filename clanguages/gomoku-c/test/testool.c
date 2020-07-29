@@ -10,7 +10,7 @@ int passedTestCount = 0;
 int failedTestCount = 0;
 
 void
-_report_integer_test(
+report_integer_test(
     char const * const testedName,
     char const * const invokerName,
     char const * const fileName,

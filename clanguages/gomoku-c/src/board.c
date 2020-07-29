@@ -3,20 +3,6 @@
 
 #include "macro-constants.h"
 
-#define M_count_piece(target) \
-if (pieceFlag == target) { \
-    ++count; \
-} else { \
-    return count; \
-}
-
-#define M_check_game_end(iX1, iY1, iX2, iY2) if (win_count <= ( \
-    p_count_continuous_same_flag(pieceFlag, x, y, iX1, iY1) \
-    + p_count_continuous_same_flag(pieceFlag, x, y, iX2, iY2)) \
-) {\
-    return true; \
-}
-
 typedef bool (*cb_ptr_checker_t)(int);
 
 int const win_count = 4;
@@ -55,6 +41,13 @@ get_checker(bool isIncreasing) {
 
 int
 p_count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int incrementY) {
+    #define M_count_piece(target) \
+    if (pieceFlag == target) { \
+        ++count; \
+    } else { \
+        return count; \
+    }
+
     int count = 0;
     if (0 == incrementX) {
         cb_ptr_checker_t checker = get_checker(incrementY > 0);
@@ -71,16 +64,23 @@ p_count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int in
     }
     cb_ptr_checker_t xChecker = get_checker(incrementX > 0);
     cb_ptr_checker_t yChecker = get_checker(incrementY > 0);
-    for (int i = x + incrementX; xChecker(i); i += incrementX) {
-        for (int j = y + incrementY; yChecker(j); j += incrementY) {
-            M_count_piece(board[i][j])
-        }
+    for (int i = x + incrementX, j = y + incrementY; xChecker(i) && yChecker(j); i += incrementX, j += incrementY) {
+        M_count_piece(board[i][j])
     }
     return count;
+
+    #undef M_count_piece
 }
 
 bool
 is_game_end(int x, int y, int pieceFlag) {
+    #define M_check_game_end(iX1, iY1, iX2, iY2) if (win_count <= ( \
+        p_count_continuous_same_flag(pieceFlag, x, y, iX1, iY1) \
+        + p_count_continuous_same_flag(pieceFlag, x, y, iX2, iY2)) \
+    ) {\
+        return true; \
+    }
+
     // Check horizontal.
     M_check_game_end(1, 0, -1, 0)
     // Check vertical.
@@ -91,12 +91,11 @@ is_game_end(int x, int y, int pieceFlag) {
     M_check_game_end(-1, 1, 1, -1)
 
     return false;
+
+    #undef M_check_game_end
 }
 
 void
 put_piece_at(int x, int y, int pieceFlag) {
     board[x][y] = pieceFlag;
 }
-
-#undef M_check_game_end
-#undef M_count_piece

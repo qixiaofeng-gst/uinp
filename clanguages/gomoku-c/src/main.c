@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "log.h"
 #include "board.h"
 #include "macro-constants.h"
 #include "table-utilities.h"
@@ -14,23 +15,6 @@
  * All the gm_ prefix means that it belongs to GameManager.
  * GameManager is a concept object. It does not have an real instance.
  */
-
-FILE *
-get_debug_log() {
-    static FILE *debug_log = NULL;
-    if (NULL == debug_log) {
-        debug_log = fopen("debug.log", "w");
-    }
-    return debug_log;
-}
-
-void
-debug_print(char const *msgFormat, ...) {
-    va_list args;
-    va_start(args, msgFormat);
-    vfprintf(get_debug_log(), msgFormat, args);
-    va_end(args);
-}
 
 typedef struct {
     int x;
@@ -60,7 +44,7 @@ exit_program() {
     systemResult += system("clear");
 
     touch_terminal(true);
-    fclose(get_debug_log());
+    fclose(get_debug_log_file());
     exit(systemResult);
 }
 
@@ -109,6 +93,7 @@ print_message(wchar_t const *msgFormat, ...) {
 void
 ai_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
     print_message(L"AI's turn. PrevHand: %d, %d.", prevHand->x, prevHand->y);
+    /*TODO Check if there is any piece occupying the hand position. */
     currHand->x = 0;
     currHand->y = 0;
     currHand->pieceAppearance = switch_piece_appearance();
@@ -182,7 +167,6 @@ gm_is_game_end(HandDescription const *const prevHand) {
     if ((G_invalid_coord == prevHand->x) || (G_invalid_coord == prevHand->y)) {
         return false;
     }
-    // TODO There is BUG in is_game_end method. Cannot detect slope lines.
     if (is_game_end(prevHand->x, prevHand->y, get_piece_flag(prevHand->pieceAppearance))) {
         // TODO Ask user to restart or exit.
         return true;
