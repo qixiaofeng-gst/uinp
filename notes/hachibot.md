@@ -1,5 +1,6 @@
-2020-7-29：
+2020-7-30：
 - [In-progress] [实现不同仿真器间的差异比对工具](http://jira.corp.hachibot.com/browse/AI-8)
+- [In-progress] [设计 Framework of simulation](http://jira.corp.hachibot.com/browse/AI-14)
 
 _______
 black box of miao.yang: 100.50
