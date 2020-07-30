@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "types.h"
 #include "log.h"
 #include "board.h"
+#include "ai_player.h"
 #include "macro-constants.h"
 #include "table-utilities.h"
 #include "terminal-utilities.h"
@@ -15,14 +17,6 @@
  * All the gm_ prefix means that it belongs to GameManager.
  * GameManager is a concept object. It does not have an real instance.
  */
-
-typedef struct {
-    int x;
-    int y;
-    wchar_t pieceAppearance;
-} HandDescription;
-
-typedef void (*cb_ptr_player_t)(HandDescription const *const, HandDescription *const);
 
 wchar_t const G_first_hand = m_initializer_first_hand;
 wchar_t const G_second_hand = L'X';
@@ -91,15 +85,6 @@ print_message(wchar_t const *msgFormat, ...) {
 }
 
 void
-ai_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
-    print_message(L"AI's turn. PrevHand: %d, %d.", prevHand->x, prevHand->y);
-    /*TODO Check if there is any piece occupying the hand position. */
-    currHand->x = 0;
-    currHand->y = 0;
-    currHand->pieceAppearance = switch_piece_appearance();
-}
-
-void
 human_play_hand(HandDescription const *const prevHand, HandDescription *const currHand) {
     print_message(L"Your turn. PrevHand: %d, %d.", prevHand->x, prevHand->y);
     while (false == (G_pass_flag == g_input_char)) {
@@ -140,7 +125,7 @@ human_play_hand(HandDescription const *const prevHand, HandDescription *const cu
 
                     currHand->x = x;
                     currHand->y = y;
-                    currHand->pieceAppearance = hand;
+                    currHand->appearance = hand;
 
                     put_piece_at(x, y, (G_first_hand == hand) ? G_first_piece : G_second_piece);
                     return;
@@ -167,7 +152,7 @@ gm_is_game_end(HandDescription const *const prevHand) {
     if ((G_invalid_coord == prevHand->x) || (G_invalid_coord == prevHand->y)) {
         return false;
     }
-    if (is_game_end(prevHand->x, prevHand->y, get_piece_flag(prevHand->pieceAppearance))) {
+    if (is_game_end(prevHand->x, prevHand->y, get_piece_flag(prevHand->appearance))) {
         // TODO Ask user to restart or exit.
         return true;
     }
@@ -189,7 +174,7 @@ void
 gm_output_board(HandDescription const *const currHand) {
     reset_cursor_location();
     locate_cursor(G_offset_limit - currHand->y, G_offset_limit - currHand->x);
-    wprintf(L"%lc\033[D", currHand->pieceAppearance);
+    wprintf(L"%lc\033[D", currHand->appearance);
 }
 
 int
@@ -217,11 +202,11 @@ main() {
     HandDescription prevHand = {
             .x = G_invalid_coord,
             .y = G_invalid_coord,
-            .pieceAppearance = G_first_hand,
+            .appearance = G_first_hand,
     }, currHand = {
             .x = G_invalid_coord,
             .y = G_invalid_coord,
-            .pieceAppearance = G_first_hand,
+            .appearance = G_first_hand,
     };
     while (false == gm_is_game_end(&prevHand)) {
         gm_cb_ptr_play(&prevHand, &currHand);
@@ -230,7 +215,7 @@ main() {
 
         prevHand.x = currHand.x;
         prevHand.y = currHand.y;
-        prevHand.pieceAppearance = currHand.pieceAppearance;
+        prevHand.appearance = currHand.appearance;
     }
 
     exit_program();
