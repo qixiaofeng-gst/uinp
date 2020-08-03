@@ -1,4 +1,5 @@
 #include "board-test.h"
+#include "ai-test.h"
 
 // ======= Temporary block for quick prototype.
 #include <stdlib.h>
@@ -66,10 +67,12 @@ try_build_tree(void) {
     printf("Hello tree! height: %d, nodeCount: %d,\n"
            "leafsIndex.sectionCount: %d, rootRef: %p,\n"
            "leafsIndex.initialSection[0]: %p,\n"
-           "leafsIndex.initialSection[9]: %p.\n",
+           "leafsIndex.initialSection[9]: %p,\n"
+           "rootRef->childrenIndex.sectionCount: %d.\n",
            tree.height, tree.nodeCount, tree.leafsIndex.sectionCount,
            tree.rootRef, tree.leafsIndex.initialSection.refs[0],
-           tree.leafsIndex.initialSection.refs[9]
+           tree.leafsIndex.initialSection.refs[9],
+           tree.rootRef->childrenIndex.sectionCount
     );
 }
 // ======= Temporary block end.
@@ -93,6 +96,7 @@ void p_test_index_provider() {
 
 int
 main(void) {
+    test_ai();
     test_board_checkers();
     M_run_test_suite(p_test_index_provider)
 
@@ -101,5 +105,6 @@ main(void) {
     try_build_tree();
     // ======= Temporary block end.
 
+    printf("%lu ======= sizeof wchar_t\n", sizeof(wchar_t));
     return 0;
 }

@@ -1,5 +1,5 @@
-2020-7-30：
-- [Done] [设计 Framework of simulation](http://jira.corp.hachibot.com/browse/AI-14)
+2020-8-3：
+- [In-progress] [在 simulation-infrastructure 中实现 pybullet 的仿真](http://jira.corp.hachibot.com/browse/AI-16)
 
 _______
 black box of miao.yang: 100.50

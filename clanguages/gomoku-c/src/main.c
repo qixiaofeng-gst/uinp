@@ -8,7 +8,7 @@
 #include "types.h"
 #include "log.h"
 #include "board.h"
-#include "ai_player.h"
+#include "ai-player.h"
 #include "macro-constants.h"
 #include "table-utilities.h"
 #include "terminal-utilities.h"
