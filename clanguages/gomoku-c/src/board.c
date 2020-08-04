@@ -3,7 +3,7 @@
 
 #include "macro-constants.h"
 
-typedef bool (*cb_ptr_checker_t)(int);
+typedef bool (*cb_checker_t)(int);
 
 int const win_count = 4;
 
@@ -34,7 +34,7 @@ p_check_bottom_border(int coordinate) {
     return coordinate < m_table_logic_size;
 }
 
-cb_ptr_checker_t
+cb_checker_t
 get_checker(bool isIncreasing) {
     return isIncreasing ? p_check_bottom_border : p_check_up_border;
 }
@@ -50,20 +50,20 @@ p_count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int in
 
     int count = 0;
     if (0 == incrementX) {
-        cb_ptr_checker_t checker = get_checker(incrementY > 0);
+        cb_checker_t checker = get_checker(incrementY > 0);
         for (int i = y + incrementY; checker(i); i += incrementY) {
             M_count_piece(board[x][i])
         }
         return count;
     } else if (0 == incrementY) {
-        cb_ptr_checker_t checker = get_checker(incrementX > 0);
+        cb_checker_t checker = get_checker(incrementX > 0);
         for (int i = x + incrementX; checker(i); i += incrementX) {
             M_count_piece(board[i][y])
         }
         return count;
     }
-    cb_ptr_checker_t xChecker = get_checker(incrementX > 0);
-    cb_ptr_checker_t yChecker = get_checker(incrementY > 0);
+    cb_checker_t xChecker = get_checker(incrementX > 0);
+    cb_checker_t yChecker = get_checker(incrementY > 0);
     for (int i = x + incrementX, j = y + incrementY; xChecker(i) && yChecker(j); i += incrementX, j += incrementY) {
         M_count_piece(board[i][j])
     }

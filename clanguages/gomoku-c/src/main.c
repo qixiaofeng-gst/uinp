@@ -159,15 +159,15 @@ gm_is_game_end(HandDescription const *const prevHand) {
     return false;
 }
 
-cb_ptr_player_t gm_cb_ptr_first_player = human_play_hand;
-cb_ptr_player_t gm_cb_ptr_second_player = ai_play_hand;
-cb_ptr_player_t gm_cb_ptr_play = human_play_hand;
+cb_player_t gm_cb_first_player = human_play_hand;
+cb_player_t gm_cb_second_player = ai_play_hand;
+cb_player_t gm_cb_play = human_play_hand;
 
 void
 gm_switch_player() {
-    gm_cb_ptr_play = (gm_cb_ptr_play == gm_cb_ptr_first_player)
-                     ? gm_cb_ptr_second_player
-                     : gm_cb_ptr_first_player;
+    gm_cb_play = (gm_cb_play == gm_cb_first_player)
+                     ? gm_cb_second_player
+                     : gm_cb_first_player;
 }
 
 void
@@ -209,7 +209,7 @@ main() {
             .appearance = G_first_hand,
     };
     while (false == gm_is_game_end(&prevHand)) {
-        gm_cb_ptr_play(&prevHand, &currHand);
+        gm_cb_play(&prevHand, &currHand);
         gm_output_board(&currHand);
         gm_switch_player();
 

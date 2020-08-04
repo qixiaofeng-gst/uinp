@@ -1,5 +1,6 @@
 2020-8-3：
-- [In-progress] [在 simulation-infrastructure 中实现 pybullet 的仿真](http://jira.corp.hachibot.com/browse/AI-16)
+- [Done] [在 simulation-infrastructure 中实现 pybullet 的仿真](http://jira.corp.hachibot.com/browse/AI-16)
+- [TODO] [初步对齐 pybullet 和 dacong 仿真的表现](http://jira.corp.hachibot.com/browse/AI-18)
 
 _______
 black box of miao.yang: 100.50

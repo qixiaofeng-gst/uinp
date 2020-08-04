@@ -4,7 +4,6 @@
 
 #include "wchar.h"
 
-#include "ai-player.h"
 #include "ai-test.h"
 #include "testool.h"
 
@@ -17,7 +16,11 @@ test_accessors() {
 
 void
 test_position_value() {
-
+    Point sourcePoint = {
+        .x = 0,
+        .y = 0
+    };
+    p_evaluate_point(&sourcePoint);
 }
 
 void

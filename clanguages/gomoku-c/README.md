@@ -73,7 +73,19 @@ Examples:
 ## Usefule prefixes and suffixes
 1. Prefix `p_` means private.   
 Things that are only available in current file scope are private.
-1. `cb_` means callback function.
+1. `cb_` means callback function, it implies pointer type.
 1. `ptr_` means pointer.
 1. `arr_` means array.
 1. `_t` means type.
+
+## Order of elements in a source file
+1. The include preprocessor directives.
+   1. Systems ones go first.
+   1. Then local ones.
+1. The global macros.
+   1. Functions like macros go first.
+   1. Then Macro constants.
+1. The type declaration or definition.
+1. The global constants.
+1. The global variable.
+1. The functions.

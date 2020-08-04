@@ -5,6 +5,8 @@
 #ifndef GOMOKU_C_AI_PLAYER_H
 #define GOMOKU_C_AI_PLAYER_H
 
+#include <wchar.h>
+
 #include "types.h"
 
 wchar_t ai_get_appearance();
