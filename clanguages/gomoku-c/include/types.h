@@ -18,4 +18,6 @@ typedef struct {
 
 typedef void (*cb_player_t)(HandDescription const *const, HandDescription *const);
 
+typedef int (*cb_evaluator_t)(Point const *const sourcePoint, Point const *const targetPoint);
+
 #endif //GOMOKU_C_TYPES_H

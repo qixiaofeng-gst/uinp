@@ -7,7 +7,11 @@
 
 #include "ai-player.h"
 
-int p_evaluate_point(Point const * sourcePoint);
+wchar_t p_ai_board_get(Point const *point);
+
+int p_evaluate_point(Point const *sourcePoint, cb_evaluator_t cbEvaluator);
+
+void p_clear_ai_board();
 
 void test_ai();
 
