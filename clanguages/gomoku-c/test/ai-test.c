@@ -28,7 +28,7 @@ test_accessors() {
         for (int j = 0; j < m_table_logic_size; ++j) {
             p.x = i;
             p.y = j;
-            M_test_int(p_ai_board_get(&p), m_empty_point)
+            M_test_int(p_ai_board_get(&p), m_empty_appeance)
         }
     }
 }

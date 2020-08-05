@@ -3,8 +3,12 @@
 
 #define m_table_string_length 992
 #define m_table_logic_size 15
-#define m_initializer_first_hand L'O'
-#define m_empty_point L' '
-#define m_empty_slot 0
+#define m_invalid_coord -1
+
+#define m_first_appearance L'X'
+#define m_second_appearance L'O'
+#define m_empty_appeance L' '
+
+#define m_to_memset 0x00u
 
 #endif // guard end for MARCO_CONSTANTS_H

@@ -12,7 +12,7 @@
 #define M_debug_ppp(point) p_print_point(point, __FUNCTION__, __LINE__);
 
 bool p_enable_print = true;
-wchar_t p_g_appearance = L'X';
+wchar_t p_g_appearance = m_empty_appeance;
 wchar_t ai_board[m_table_logic_size][m_table_logic_size];
 int values[m_table_logic_size][m_table_logic_size];
 
@@ -26,7 +26,7 @@ p_clear_ai_board() {
     // XXX memset does not work here.
     for (int i = 0; i < m_table_logic_size; ++i) {
         for (int j = 0; j < m_table_logic_size; ++j) {
-            ai_board[i][j] = m_empty_point;
+            ai_board[i][j] = m_empty_appeance;
         }
     }
 }

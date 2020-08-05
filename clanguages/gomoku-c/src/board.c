@@ -1,27 +1,33 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "board.h"
 #include "macro-constants.h"
 
 typedef bool (*cb_checker_t)(int);
 
 int const win_count = 4;
 
-int board[m_table_logic_size][m_table_logic_size];
+wchar_t board[m_table_logic_size][m_table_logic_size];
 
 void
 clear_board() {
-    memset(board, m_empty_slot, sizeof(int) * m_table_logic_size * m_table_logic_size);
+    memset(board, m_to_memset, sizeof(board)); //XXX Leave it here for memo. Useless
+    for (int i = 0; i < m_table_logic_size; ++i) {
+        for (int j = 0; j < m_table_logic_size; ++j) {
+            board[i][j] = m_empty_appeance;
+        }
+    }
 }
 
 bool
-is_empty_slot(int x, int y) {
-    return m_empty_slot == board[x][y];
+is_empty_slot(Point const *point) {
+    return m_empty_appeance == board[point->x][point->y];
 }
 
 bool
-is_same_flag(int pieceFlag, int x, int y) {
-    return pieceFlag == board[x][y];
+is_on_board(HandDescription const *hand) {
+    return hand->appearance == board[hand->x][hand->y];
 }
 
 bool
@@ -35,7 +41,7 @@ p_check_bottom_border(int coordinate) {
 }
 
 cb_checker_t
-get_checker(bool isIncreasing) {
+p_get_checker(bool isIncreasing) {
     return isIncreasing ? p_check_bottom_border : p_check_up_border;
 }
 
@@ -50,20 +56,20 @@ p_count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int in
 
     int count = 0;
     if (0 == incrementX) {
-        cb_checker_t checker = get_checker(incrementY > 0);
+        cb_checker_t checker = p_get_checker(incrementY > 0);
         for (int i = y + incrementY; checker(i); i += incrementY) {
             M_count_piece(board[x][i])
         }
         return count;
     } else if (0 == incrementY) {
-        cb_checker_t checker = get_checker(incrementX > 0);
+        cb_checker_t checker = p_get_checker(incrementX > 0);
         for (int i = x + incrementX; checker(i); i += incrementX) {
             M_count_piece(board[i][y])
         }
         return count;
     }
-    cb_checker_t xChecker = get_checker(incrementX > 0);
-    cb_checker_t yChecker = get_checker(incrementY > 0);
+    cb_checker_t xChecker = p_get_checker(incrementX > 0);
+    cb_checker_t yChecker = p_get_checker(incrementY > 0);
     for (int i = x + incrementX, j = y + incrementY; xChecker(i) && yChecker(j); i += incrementX, j += incrementY) {
         M_count_piece(board[i][j])
     }
@@ -73,10 +79,10 @@ p_count_continuous_same_flag(int pieceFlag, int x, int y, int incrementX, int in
 }
 
 bool
-is_game_end(int x, int y, int pieceFlag) {
+is_game_end(HandDescription const *hand) {
     #define M_check_game_end(iX1, iY1, iX2, iY2) if (win_count <= ( \
-        p_count_continuous_same_flag(pieceFlag, x, y, iX1, iY1) \
-        + p_count_continuous_same_flag(pieceFlag, x, y, iX2, iY2)) \
+        p_count_continuous_same_flag(hand->appearance, hand->x, hand->y, iX1, iY1) \
+        + p_count_continuous_same_flag(hand->appearance, hand->x, hand->y, iX2, iY2)) \
     ) {\
         return true; \
     }
@@ -96,6 +102,6 @@ is_game_end(int x, int y, int pieceFlag) {
 }
 
 void
-put_piece_at(int x, int y, int pieceFlag) {
-    board[x][y] = pieceFlag;
+put_piece_at(HandDescription const *hand) {
+    board[hand->x][hand->y] = hand->appearance;
 }

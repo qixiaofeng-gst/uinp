@@ -5,6 +5,8 @@
 #ifndef GOMOKU_C_TYPES_H
 #define GOMOKU_C_TYPES_H
 
+#include <wchar.h>
+
 typedef struct p_Point {
     int x;
     int y;

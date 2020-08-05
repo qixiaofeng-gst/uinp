@@ -18,13 +18,7 @@
  * GameManager is a concept object. It does not have an real instance.
  */
 
-wchar_t const G_first_hand = m_initializer_first_hand;
-wchar_t const G_second_hand = L'X';
-int const G_first_piece = 0B0001;
-int const G_second_piece = 0B1000;
-
 int const G_offset_limit = m_table_logic_size - 1;
-int const G_invalid_coord = -1;
 wchar_t const G_pass_flag = L'p';
 wchar_t g_input_char = 0;
 int g_up_offset = 7;
@@ -40,19 +34,6 @@ exit_program() {
     touch_terminal(true);
     fclose(get_debug_log_file());
     exit(systemResult);
-}
-
-wchar_t
-switch_piece_appearance() {
-    static wchar_t currentHand = m_initializer_first_hand;
-
-    wchar_t returnHand = currentHand;
-    if (G_first_hand == currentHand) {
-        currentHand = G_second_hand;
-    } else {
-        currentHand = G_first_hand;
-    }
-    return returnHand;
 }
 
 void
@@ -120,14 +101,12 @@ human_play_hand(HandDescription const *const prevHand, HandDescription *const cu
             case L'm': {
                 int x = G_offset_limit - g_left_offset;
                 int y = G_offset_limit - g_up_offset;
-                if (is_empty_slot(x, y)) {
-                    wchar_t hand = switch_piece_appearance();
-
+                Point point = {.x = x, .y = y};
+                if (is_empty_slot(&point)) {
                     currHand->x = x;
                     currHand->y = y;
-                    currHand->appearance = hand;
-
-                    put_piece_at(x, y, (G_first_hand == hand) ? G_first_piece : G_second_piece);
+                    currHand->appearance = m_first_appearance;
+                    put_piece_at(currHand);
                     return;
                 }
             }
@@ -142,17 +121,12 @@ human_play_hand(HandDescription const *const prevHand, HandDescription *const cu
     g_input_char = 0;
 }
 
-int
-get_piece_flag(wchar_t const pieceAppearance) {
-    return (G_first_hand == pieceAppearance) ? G_first_piece : G_second_piece;
-}
-
 bool
 gm_is_game_end(HandDescription const *const prevHand) {
-    if ((G_invalid_coord == prevHand->x) || (G_invalid_coord == prevHand->y)) {
+    if ((m_invalid_coord == prevHand->x) || (m_invalid_coord == prevHand->y)) {
         return false;
     }
-    if (is_game_end(prevHand->x, prevHand->y, get_piece_flag(prevHand->appearance))) {
+    if (is_game_end(prevHand)) {
         // TODO Ask user to restart or exit.
         return true;
     }
@@ -166,8 +140,8 @@ cb_player_t gm_cb_play = human_play_hand;
 void
 gm_switch_player() {
     gm_cb_play = (gm_cb_play == gm_cb_first_player)
-                     ? gm_cb_second_player
-                     : gm_cb_first_player;
+                 ? gm_cb_second_player
+                 : gm_cb_first_player;
 }
 
 void
@@ -179,7 +153,7 @@ gm_output_board(HandDescription const *const currHand) {
 
 int
 main() {
-    debug_print("Debug print test. %p", &G_first_hand);
+    debug_print("Debug print test. %p", &G_offset_limit);
     clear_board();
     touch_terminal(false);
     turn_off_echo();
@@ -200,14 +174,15 @@ main() {
     locate_cursor(g_up_offset, g_left_offset);
 
     HandDescription prevHand = {
-            .x = G_invalid_coord,
-            .y = G_invalid_coord,
-            .appearance = G_first_hand,
+            .x = m_invalid_coord,
+            .y = m_invalid_coord,
+            .appearance = m_empty_appeance,
     }, currHand = {
-            .x = G_invalid_coord,
-            .y = G_invalid_coord,
-            .appearance = G_first_hand,
+            .x = m_invalid_coord,
+            .y = m_invalid_coord,
+            .appearance = m_first_appearance,
     };
+    ai_set_appearance(m_second_appearance);
     while (false == gm_is_game_end(&prevHand)) {
         gm_cb_play(&prevHand, &currHand);
         gm_output_board(&currHand);
