@@ -41,10 +41,14 @@ p_print_point(Point const *const point, char const *functionName, int lineNumber
 
 int
 p_evaluate_point(Point const *const sourcePoint, cb_evaluator_t cbEvaluator) {
+    /*!
+     * Empty grid is with value 1.
+     * Ocuppied grid is with value 0.
+     * Accumulate value with counting neighbors.
+     */
     M_debug_ppp(sourcePoint)
     printf("ai_board size: %lu, values size: %lu", sizeof(ai_board), sizeof(values));
-    cbEvaluator(sourcePoint, sourcePoint);
-    return 0;
+    return cbEvaluator(sourcePoint, sourcePoint);
 }
 
 wchar_t

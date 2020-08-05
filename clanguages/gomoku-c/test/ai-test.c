@@ -6,7 +6,6 @@
 
 #include "ai-test.h"
 #include "testool.h"
-#include "macro-constants.h"
 
 int
 dummy_evaluator(Point const *const sourcePoint, Point const *const targetPoint) {

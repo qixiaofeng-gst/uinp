@@ -7,6 +7,12 @@
 
 #include <wchar.h>
 
+#include "macro-constants.h"
+
+typedef struct p_Board {
+    wchar_t grids[m_table_logic_size][m_table_logic_size];
+} Board;
+
 typedef struct p_Point {
     int x;
     int y;

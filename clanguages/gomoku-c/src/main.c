@@ -24,6 +24,8 @@ wchar_t g_input_char = 0;
 int g_up_offset = 7;
 int g_left_offset = 7;
 
+Board board;
+
 void
 exit_program() {
     wprintf(L"\033[u\033[K\n");
@@ -102,11 +104,11 @@ human_play_hand(HandDescription const *const prevHand, HandDescription *const cu
                 int x = G_offset_limit - g_left_offset;
                 int y = G_offset_limit - g_up_offset;
                 Point point = {.x = x, .y = y};
-                if (is_empty_slot(&point)) {
+                if (is_empty_slot(&board, &point)) {
                     currHand->x = x;
                     currHand->y = y;
                     currHand->appearance = m_first_appearance;
-                    put_piece_at(currHand);
+                    put_piece_at(&board, currHand);
                     return;
                 }
             }
@@ -126,7 +128,7 @@ gm_is_game_end(HandDescription const *const prevHand) {
     if ((m_invalid_coord == prevHand->x) || (m_invalid_coord == prevHand->y)) {
         return false;
     }
-    if (is_game_end(prevHand)) {
+    if (is_game_end(&board, prevHand)) {
         // TODO Ask user to restart or exit.
         return true;
     }
@@ -154,7 +156,7 @@ gm_output_board(HandDescription const *const currHand) {
 int
 main() {
     debug_print("Debug print test. %p", &G_offset_limit);
-    clear_board();
+    clear_board(&board);
     touch_terminal(false);
     turn_off_echo();
 
