@@ -37,6 +37,11 @@ redux/mobox
 * 查看系统中已经安装的 python 模块：`pydoc modules`/`pip list/freeze`/`help("modules")`
 * Duck-typing 其实是无类型，执行任何运算时只看对象是否拥有所需的操作符或方法。
 * C/C++ 当中，程序抛出异常退出前的打印，如果是 printf，要加 '\n'，不加则可能没有输出。
+* Anaconda Usage:
+  ```bash
+  conda env export > environment.yaml
+  conda env create -f environment.yaml
+  ```
 
 # 编辑器
 ## Atom

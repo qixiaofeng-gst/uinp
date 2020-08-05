@@ -83,6 +83,10 @@ git_pl() { ## Used to pull current branch.
   git pull origin ${branch}
 }
 
+git_bc() { ## Update branch information for clearing.
+  git fetch --prune --all
+}
+
 git_up() { ## Used to update the git remote url.
   for url in `git remote -v`; do
     if [ 'git@github.com' == ${url:0:14} ]; then
