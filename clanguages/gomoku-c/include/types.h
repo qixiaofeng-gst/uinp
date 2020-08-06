@@ -24,8 +24,8 @@ typedef struct {
     wchar_t appearance;
 } HandDescription;
 
-typedef void (*cb_player_t)(HandDescription const *const, HandDescription *const);
+typedef void (*cb_player_t)(Board *, HandDescription const *, HandDescription *);
 
-typedef int (*cb_evaluator_t)(Point const *const sourcePoint, Point const *const targetPoint);
+typedef unsigned (*cb_evaluator_t)(Board const *, Point const *, Point const *);
 
 #endif //GOMOKU_C_TYPES_H

@@ -96,15 +96,13 @@ void p_test_index_provider() {
 
 int
 main(void) {
-    test_ai();
-    test_board_checkers();
-    M_run_test_suite(p_test_index_provider)
-
     // ======= Temporary block for quick prototype.
     try_random_number();
     try_build_tree();
     // ======= Temporary block end.
 
-    printf("%lu ======= sizeof wchar_t\n", sizeof(wchar_t));
+    M_run_test_suite(p_test_index_provider)
+    test_board_checkers();
+    test_ai();
     return 0;
 }

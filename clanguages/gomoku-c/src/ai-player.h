@@ -13,6 +13,6 @@ wchar_t ai_get_appearance();
 
 void ai_set_appearance(wchar_t targetAppearance);
 
-void ai_play_hand(HandDescription const *prevHand, HandDescription *currHand);
+void ai_play_hand(Board *board, HandDescription const *prevHand, HandDescription *currHand);
 
 #endif //GOMOKU_C_AI_PLAYER_H

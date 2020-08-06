@@ -2,6 +2,7 @@
 #include <stdbool.h>
 
 #include "board.h"
+#include "macro-functions.h"
 
 typedef bool (*cb_checker_t)(int);
 
@@ -10,11 +11,7 @@ int const win_count = 4;
 void
 clear_board(Board *board) {
     memset(board, m_to_memset, sizeof(Board)); //XXX Leave it here for memo. Useless
-    for (int i = 0; i < m_table_logic_size; ++i) {
-        for (int j = 0; j < m_table_logic_size; ++j) {
-            board->grids[i][j] = m_empty_appeance;
-        }
-    }
+    M_clear_board(board->grids, m_empty_appeance)
 }
 
 bool

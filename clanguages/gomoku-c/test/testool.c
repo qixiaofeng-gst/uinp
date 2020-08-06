@@ -19,30 +19,30 @@ report_integer_test(
     int const expected,
     bool const isVerbose
 ) {
-    bool isPassed = (value == expected);
-    if(isVerbose) {
+    bool isFailed = (false == (value == expected));
+    if (isVerbose || isFailed) {
         printf(
                 "Test [%s], testing value[ %s ]: %d, expected: %d\n",
-                isPassed ? trueFlag : falseFlag,
+                isFailed ? falseFlag : trueFlag,
                 testedName,
                 value,
                 expected
         );
-    }
-    if (isVerbose || (false == isPassed)) {
-        printf(
-            "%s    Invoked at %s (%d) (%s)\033[0m\n",
-            darkColorPrefix,
-            fileName,
-            lineNumber,
-            invokerName
-        );
+        if (isFailed) {
+            printf(
+                    "%s    Invoked at %s (%d) (%s)\033[0m\n",
+                    darkColorPrefix,
+                    fileName,
+                    lineNumber,
+                    invokerName
+            );
+        }
     }
     ++totalTestCount;
-    if (isPassed) {
-        ++passedTestCount;
-    } else {
+    if (isFailed) {
         ++failedTestCount;
+    } else {
+        ++passedTestCount;
     }
 }
 

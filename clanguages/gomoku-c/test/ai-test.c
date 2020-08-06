@@ -6,19 +6,24 @@
 
 #include "ai-test.h"
 #include "testool.h"
+#include "board.h"
 
-int
-dummy_evaluator(Point const *const sourcePoint, Point const *const targetPoint) {
-    return sourcePoint->x + targetPoint->y;
+unsigned
+dummy_evaluator(Board const *board, Point const *sourcePoint, Point const *targetPoint) {
+    if (m_empty_appeance == board->grids[sourcePoint->x][sourcePoint->y]) {
+        return sourcePoint->x + targetPoint->y;
+    }
+    return 1;
 }
 
 void
 test_accessors() {
-    wchar_t toUse = L'D';
+    wchar_t const toUse = L'D';
     ai_set_appearance(toUse);
     M_test_int(ai_get_appearance(), toUse)
 
-    p_clear_ai_board();
+    Board board;
+    clear_board(&board);
     Point p = {
             .x = 0,
             .y = 0
@@ -27,18 +32,31 @@ test_accessors() {
         for (int j = 0; j < m_table_logic_size; ++j) {
             p.x = i;
             p.y = j;
-            M_test_int(p_ai_board_get(&p), m_empty_appeance)
+            M_test_int(p_ai_board_get(&board, &p), m_empty_appeance)
         }
     }
 }
 
 void
 test_position_value() {
+    Board board;
+    clear_board(&board);
     Point sourcePoint = {
             .x = 0,
             .y = 0
     };
-    p_evaluate_point(&sourcePoint, dummy_evaluator);
+    M_test_int(p_evaluate_point(&board, &sourcePoint, dummy_evaluator), 0)
+    sourcePoint.x = sourcePoint.y = 2;
+    M_test_int(p_evaluate_point(&board, &sourcePoint, dummy_evaluator), 4)
+    M_test_int(p_evaluate_point(&board, &sourcePoint, p_default_evaluator), 1)
+    HandDescription hand = {
+            .x = 3,
+            .y = 3,
+            .appearance = m_first_appearance,
+    };
+    put_piece_at(&board, &hand);
+    sourcePoint.x = sourcePoint.y = 3;
+    M_test_int(p_evaluate_point(&board, &sourcePoint, p_default_evaluator), 0)
 }
 
 void
