@@ -1,5 +1,4 @@
-- [In-progress] [初步对齐 pybullet 和 dacong 仿真的表现](http://jira.corp.hachibot.com/browse/AI-18)
-- [Done] [将 tensorboard 引入到 simulation-infrastructure 中](http://jira.corp.hachibot.com/browse/AI-19)
+- [In-progress] [实现 dacong 对来自 ai 的指令的密集接收](http://jira.corp.hachibot.com/browse/AI-17)
 
 _______
 black box of miao.yang: 100.50

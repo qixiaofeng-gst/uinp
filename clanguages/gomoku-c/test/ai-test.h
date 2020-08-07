@@ -7,6 +7,8 @@
 
 #include "ai-player.h"
 
+void p_test_array_size();
+
 wchar_t p_ai_board_get(Board const *board, Point const *point);
 
 unsigned p_evaluate_point(Board const *board, Point const *sourcePoint, cb_evaluator_t cbEvaluator);

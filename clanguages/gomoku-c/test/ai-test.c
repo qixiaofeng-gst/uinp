@@ -63,4 +63,5 @@ void
 test_ai() {
     M_run_test_suite(test_position_value)
     M_run_test_suite(test_accessors)
+    p_test_array_size();
 }
