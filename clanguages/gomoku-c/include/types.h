@@ -6,6 +6,7 @@
 #define GOMOKU_C_TYPES_H
 
 #include <wchar.h>
+#include <stdbool.h>
 
 #include "macro-constants.h"
 
@@ -25,6 +26,8 @@ typedef struct {
 } HandDescription;
 
 typedef void (*cb_player_t)(Board *, HandDescription const *, HandDescription *);
+
+typedef bool (*cb_point_validator_t)(Board const *, Point const *, wchar_t);
 
 typedef unsigned (*cb_evaluator_t)(Board const *, Point const *, Point const *);
 

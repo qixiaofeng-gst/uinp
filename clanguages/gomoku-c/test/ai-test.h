@@ -7,7 +7,9 @@
 
 #include "ai-player.h"
 
-void p_test_array_size();
+int p_validate_patterns();
+
+cb_point_validator_t p_get_point_validator(char pattern);
 
 wchar_t p_ai_board_get(Board const *board, Point const *point);
 

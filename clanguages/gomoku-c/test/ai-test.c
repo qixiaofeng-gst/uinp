@@ -17,7 +17,7 @@ dummy_evaluator(Board const *board, Point const *sourcePoint, Point const *targe
 }
 
 void
-test_accessors() {
+test_miscs() {
     wchar_t const toUse = L'D';
     ai_set_appearance(toUse);
     M_test_int(ai_get_appearance(), toUse)
@@ -35,6 +35,16 @@ test_accessors() {
             M_test_int(p_ai_board_get(&board, &p), m_empty_appeance)
         }
     }
+}
+
+void
+test_point_validator() {
+    Board board;
+    clear_board(&board);
+    Point p = {0, 0};
+    M_test_int(p_validate_patterns(), -1)
+    cb_point_validator_t pv = p_get_point_validator('o');
+    M_test_int(pv(&board, &p, m_empty_appeance), true)
 }
 
 void
@@ -62,6 +72,6 @@ test_position_value() {
 void
 test_ai() {
     M_run_test_suite(test_position_value)
-    M_run_test_suite(test_accessors)
-    p_test_array_size();
+    M_run_test_suite(test_miscs)
+    M_run_test_suite(test_point_validator)
 }
