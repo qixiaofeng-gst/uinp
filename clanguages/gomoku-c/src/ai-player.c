@@ -28,8 +28,6 @@ unsigned values[m_table_logic_size][m_table_logic_size];
 char const *const patterns[] = {
         // dead area, 0 score
         "\x02|.***|\xFF", "\x03|*.**|\xFF", "\x03|*.*|\xFF", "\x02|.**|\xFF", "\x02|.*|\xFF", "\x02|.|\xFF",
-        // low area, 1 score
-        "\x02|.::::|\x01", "\x03|:.:::|\x01", "\x04|::.::|\x01",
         // one dead end empty area
         "\x02|.____\x02", "\x03|_.____\x02", "\x04|__.____\x02", "\x05|___.____\x02",
         // dead 1
@@ -48,20 +46,49 @@ char const *const patterns[] = {
         "\x03x_.ooo_x\x09", "\x04x_o.oo_x\x09",
         // winning 4, win point
         "\x02x.oooox\x0A", "\x03xo.ooox\x0A", "\x04xoo.oox\x0A",
+        // low area, 1 score
+        "\x02|.::::|\x01", "\x03|:.:::|\x01", "\x04|::.::|\x01",
 };
 size_t const patterns_size = sizeof(patterns) / sizeof(char *);
 
 bool
-p_wild_pv(Board const *b, Point const *p, wchar_t a) {
-    (void) b;
-    (void) p;
-    (void) a;
+p_wild_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
+    (void) board;
+    (void) point;
+    (void) allyAppearance;
     return true;
 }
 
 bool
-p_ally_pv(Board const *b, Point const *p, wchar_t a) {
-    return a == b->grids[p->x][p->y];
+p_ally_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
+    return allyAppearance == board->grids[point->x][point->y];
+}
+
+bool
+p_non_ally_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
+    return allyAppearance != board->grids[point->x][point->y];
+}
+
+bool
+p_empty_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
+    (void) allyAppearance;
+    return m_empty_appeance == board->grids[point->x][point->y];
+}
+
+bool
+p_barrier_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
+    (void) allyAppearance;
+    // TODO =======
+    return m_empty_appeance == board->grids[point->x][point->y];
+}
+
+bool
+p_friend_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
+    wchar_t actualAppearance = board->grids[point->x][point->y];
+    return (
+            (m_empty_appeance == actualAppearance) ||
+            (allyAppearance == actualAppearance)
+    );
 }
 
 cb_point_validator_t
@@ -71,7 +98,14 @@ p_get_point_validator(char pattern) {
             return p_wild_pv;
         case 'o':
             return p_ally_pv;
-        // TODO more point validators.
+        case 'x':
+            return p_non_ally_pv;
+        case '_':
+            return p_empty_pv;
+        case '|':
+            return p_barrier_pv;
+        case ':':
+            return p_friend_pv;
         default:
             return p_wild_pv;
     }

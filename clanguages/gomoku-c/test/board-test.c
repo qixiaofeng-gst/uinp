@@ -15,6 +15,23 @@ test_board_edge_checkers() {
 }
 
 void
+test_board_point_validator() {
+    Point p = {0, 0};
+    for (int i = 0; i < m_table_logic_size; ++i) {
+        for (int j = 0; j < m_table_logic_size; ++j) {
+            p.x = i, p.y = j;
+            M_test_int(validate_board_point(&p), true)
+        }
+    }
+    p.x = m_table_logic_size, p.y = m_table_logic_size;
+    M_test_int(validate_board_point(&p), false)
+    p.y = 0, p.x = 0;
+    M_test_int(validate_board_point(&p), true)
+    p.x = m_table_logic_size, p.y = m_table_logic_size;
+    M_test_int(validate_board_point(&p), false)
+}
+
+void
 test_continuous_counter() {
     Board board;
     HandDescription hand = {
@@ -91,4 +108,5 @@ void
 test_board_checkers() {
     M_run_test_suite(test_board_edge_checkers)
     M_run_test_suite(test_continuous_counter)
+    M_run_test_suite(test_board_point_validator)
 }

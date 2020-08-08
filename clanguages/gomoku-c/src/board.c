@@ -34,6 +34,22 @@ p_check_bottom_border(int coordinate) {
     return coordinate < m_table_logic_size;
 }
 
+bool
+p_validate_coordinate(int coordinate) {
+    return (
+            p_check_up_border(coordinate) &&
+            p_check_bottom_border(coordinate)
+    );
+}
+
+bool
+validate_board_point(Point const *point) {
+    return (
+            p_validate_coordinate(point->x) &&
+            p_validate_coordinate(point->y)
+    );
+}
+
 cb_checker_t
 p_get_checker(bool isIncreasing) {
     return isIncreasing ? p_check_bottom_border : p_check_up_border;
