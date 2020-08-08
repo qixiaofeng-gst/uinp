@@ -53,42 +53,47 @@ size_t const patterns_size = sizeof(patterns) / sizeof(char *);
 
 bool
 p_wild_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
-    (void) board;
-    (void) point;
-    (void) allyAppearance;
+    (void) board, (void) point, (void) allyAppearance;
     return true;
 }
 
 bool
 p_ally_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
-    return allyAppearance == board->grids[point->x][point->y];
+    if (validate_board_point(point)) {
+        return allyAppearance == board->grids[point->x][point->y];
+    }
+    return false;
 }
 
 bool
 p_non_ally_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
-    return allyAppearance != board->grids[point->x][point->y];
+    return false == p_ally_pv(board, point, allyAppearance);
 }
 
 bool
 p_empty_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
     (void) allyAppearance;
-    return m_empty_appeance == board->grids[point->x][point->y];
-}
-
-bool
-p_barrier_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
-    (void) allyAppearance;
-    // TODO =======
-    return m_empty_appeance == board->grids[point->x][point->y];
+    if (validate_board_point(point)) {
+        return m_empty_appeance == board->grids[point->x][point->y];
+    }
+    return false;
 }
 
 bool
 p_friend_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
-    wchar_t actualAppearance = board->grids[point->x][point->y];
-    return (
-            (m_empty_appeance == actualAppearance) ||
-            (allyAppearance == actualAppearance)
-    );
+    if (validate_board_point(point)) {
+        wchar_t const actualAppearance = board->grids[point->x][point->y];
+        return (
+                (m_empty_appeance == actualAppearance) ||
+                (allyAppearance == actualAppearance)
+        );
+    }
+    return false;
+}
+
+bool
+p_barrier_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
+    return false == p_friend_pv(board, point, allyAppearance);
 }
 
 cb_point_validator_t

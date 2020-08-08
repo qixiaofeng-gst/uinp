@@ -27,7 +27,13 @@ test_board_point_validator() {
     M_test_int(validate_board_point(&p), false)
     p.y = 0, p.x = 0;
     M_test_int(validate_board_point(&p), true)
-    p.x = m_table_logic_size, p.y = m_table_logic_size;
+    p.x = -1;
+    M_test_int(validate_board_point(&p), false)
+    p.x = 0, p.y = -1;
+    M_test_int(validate_board_point(&p), false)
+    p.y = m_table_logic_size;
+    M_test_int(validate_board_point(&p), false)
+    p.x = m_table_logic_size, p.y = 0;
     M_test_int(validate_board_point(&p), false)
 }
 

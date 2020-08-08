@@ -17,6 +17,37 @@ dummy_evaluator(Board const *board, Point const *sourcePoint, Point const *targe
 }
 
 void
+test_point_validator() {
+    Board board;
+    clear_board(&board);
+    Point p = {0, 0};
+
+    cb_point_validator_t pv = p_get_point_validator('o');
+    HandDescription toPut = {0, 0, m_first_appearance};
+    put_piece_at(&board, &toPut);
+    toPut.y = 1, toPut.appearance = m_second_appearance;
+    put_piece_at(&board, &toPut);
+    M_test_int(pv(&board, &p, m_first_appearance), true)
+    p.x = -1;
+    M_test_int(pv(&board, &p, m_first_appearance), false)
+    p.x = 1;
+    M_test_int(pv(&board, &p, m_first_appearance), false)
+    p.x = 0, p.y = 1;
+    M_test_int(pv(&board, &p, m_first_appearance), false)
+    p.y = 0;
+
+    pv = p_get_point_validator('*');
+    M_test_int(pv(&board, &p, m_first_appearance), true)
+    p.x = -1;
+    M_test_int(pv(&board, &p, m_first_appearance), true)
+    p.x = 1;
+    M_test_int(pv(&board, &p, m_first_appearance), true)
+    p.x = 0, p.y = 1;
+    M_test_int(pv(&board, &p, m_first_appearance), true)
+    p.y = 0;
+}
+
+void
 test_miscs() {
     wchar_t const toUse = L'D';
     ai_set_appearance(toUse);
@@ -35,16 +66,8 @@ test_miscs() {
             M_test_int(p_ai_board_get(&board, &p), m_empty_appeance)
         }
     }
-}
 
-void
-test_point_validator() {
-    Board board;
-    clear_board(&board);
-    Point p = {0, 0};
     M_test_int(p_validate_patterns(), -1)
-    cb_point_validator_t pv = p_get_point_validator('o');
-    M_test_int(pv(&board, &p, m_empty_appeance), true)
 }
 
 void
@@ -71,7 +94,7 @@ test_position_value() {
 
 void
 test_ai() {
-    M_run_test_suite(test_position_value)
     M_run_test_suite(test_miscs)
+    M_run_test_suite(test_position_value)
     M_run_test_suite(test_point_validator)
 }
