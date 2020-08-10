@@ -67,8 +67,8 @@ test_continuous_counter() {
     M_test_int(p_count_continuous_same_flag(&board, flagTwo, 0, 1, 1, 1), 0)
     M_test_int(p_count_continuous_same_flag(&board, flagTwo, 0, 1, 1, 0), 0)
     M_test_int(p_count_continuous_same_flag(&board, flagTwo, 0, 1, -1, 0), 0)
-    M_test_int(p_count_continuous_same_flag(&board, m_empty_appeance, 0, 5, 0, -1), 1)
-    M_test_int(p_count_continuous_same_flag(&board, m_empty_appeance, 0, 5, 0, 1), 9)
+    M_test_int(p_count_continuous_same_flag(&board, m_empty_appearance, 0, 5, 0, -1), 1)
+    M_test_int(p_count_continuous_same_flag(&board, m_empty_appearance, 0, 5, 0, 1), 9)
 
     clear_board(&board);
     hand.appearance = flagOne;

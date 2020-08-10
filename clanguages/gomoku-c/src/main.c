@@ -177,7 +177,7 @@ main() {
     HandDescription prevHand = {
             .x = m_invalid_coord,
             .y = m_invalid_coord,
-            .appearance = m_empty_appeance,
+            .appearance = m_empty_appearance,
     }, currHand = {
             .x = m_invalid_coord,
             .y = m_invalid_coord,

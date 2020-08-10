@@ -7,7 +7,7 @@
 
 #define m_first_appearance L'X'
 #define m_second_appearance L'O'
-#define m_empty_appeance L' '
+#define m_empty_appearance L' '
 
 #define m_to_memset 0x00u
 

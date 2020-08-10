@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -11,12 +12,45 @@ int const win_count = 4;
 void
 clear_board(Board *board) {
     memset(board, m_to_memset, sizeof(Board)); //XXX Leave it here for memo. Useless
-    M_clear_board(board->grids, m_empty_appeance)
+    M_clear_board(board->grids, m_empty_appearance)
+}
+
+void
+print_region_edge(char *edge, size_t width) {
+    for (size_t i = 0; i < width; ++i) {
+        edge[i] = '-';
+    }
+    printf("%s\n", edge);
+}
+
+void print_board_region(Board const *board, BoardRegion const *region) {
+    (void) board;
+    char line[region->w + 1];
+    line[region->w] = '\0';
+    print_region_edge(line, region->w);
+    for (size_t i = 0; i < region->h; ++i) {
+        for (size_t j = 0; j < region->w; ++j) {
+            wchar_t b = board->grids[j][i];
+            switch (b) {
+                case m_first_appearance:
+                    line[j] = 'X';
+                    break;
+                case m_second_appearance:
+                    line[j] = 'O';
+                    break;
+                case m_empty_appearance:
+                default:
+                    line[j] = ' ';
+            }
+        }
+        printf("%s\n", line);
+    }
+    print_region_edge(line, region->w);
 }
 
 bool
 is_empty_slot(Board const *board, Point const *point) {
-    return m_empty_appeance == board->grids[point->x][point->y];
+    return m_empty_appearance == board->grids[point->x][point->y];
 }
 
 bool
@@ -57,35 +91,17 @@ p_get_checker(bool isIncreasing) {
 
 int
 p_count_continuous_same_flag(Board const *board, int pieceFlag, int x, int y, int incrementX, int incrementY) {
-    #define M_count_piece(target) \
-    if (pieceFlag == target) { \
-        ++count; \
-    } else { \
-        return count; \
-    }
-
     int count = 0;
-    if (0 == incrementX) {
-        cb_checker_t checker = p_get_checker(incrementY > 0);
-        for (int i = y + incrementY; checker(i); i += incrementY) {
-            M_count_piece(board->grids[x][i])
-        }
-        return count;
-    } else if (0 == incrementY) {
-        cb_checker_t checker = p_get_checker(incrementX > 0);
-        for (int i = x + incrementX; checker(i); i += incrementX) {
-            M_count_piece(board->grids[i][y])
-        }
-        return count;
-    }
     cb_checker_t xChecker = p_get_checker(incrementX > 0);
     cb_checker_t yChecker = p_get_checker(incrementY > 0);
     for (int i = x + incrementX, j = y + incrementY; xChecker(i) && yChecker(j); i += incrementX, j += incrementY) {
-        M_count_piece(board->grids[i][j])
+        if (pieceFlag == board->grids[i][j]) {
+            ++count;
+        } else {
+            return count;
+        }
     }
     return count;
-
-    #undef M_count_piece
 }
 
 bool
