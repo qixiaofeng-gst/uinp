@@ -2,7 +2,7 @@
 // Created by qixiaofeng on 2020/8/3.
 //
 
-#include <wchar.h>
+#include <stdlib.h>
 
 #include "ai-test.h"
 #include "testool.h"
@@ -116,6 +116,36 @@ test_miscs() {
     }
 
     M_test_int(p_validate_patterns(), -1)
+
+    unsigned toSort[] = {5, 4, 3, 8, 7, 6, 2, 1, 0, 9,};
+    qsort(toSort, 10, sizeof(unsigned), p_desc_compare_unsigned);
+    for (int i = 0; i < 10; ++i) {
+        M_test_int(toSort[i], 9 - i)
+    }
+
+    PointValues pv = {0, 0, {1, 2, 3, 4,}};
+    M_test_int(p_sum_point_values(&pv), 10)
+
+    PointValues pvs[] = {
+            {5, 5, {1, 2, 2, 0,}},
+            {4, 4, {1, 2, 1, 0,}},
+            {7, 7, {1, 2, 3, 1,}},
+            {8, 8, {1, 2, 3, 2,}},
+            {6, 6, {1, 2, 3, 0,}},
+            {2, 2, {1, 1, 0, 0,}},
+            {3, 3, {1, 2, 0, 0,}},
+            {9, 9, {1, 2, 3, 3,}},
+            {0, 0, {0, 0, 0, 0,}},
+            {1, 1, {1, 0, 0, 0,}},
+    };
+    qsort(pvs, 10, sizeof(PointValues), p_desc_compare_point_values);
+    for (int i = 0; i < 10; ++i) {
+        int targetValue = 9 - i;
+        PointValues *ptr = &(pvs[i]);
+        M_test_int(p_sum_point_values(ptr), targetValue)
+        M_test_int(ptr->y, targetValue)
+        M_test_int(ptr->x, targetValue)
+    }
 }
 
 void
@@ -221,9 +251,50 @@ test_match_pattern() {
 }
 
 void
+test_board_evaluator() {
+    Board board;
+    clear_board(&board);
+    BoardValues values;
+
+    p_evaluate_board(&board, &values, m_first_appearance);
+    PointValues const *pv = &(values.points[0]);
+    M_test_int(pv->x, 4)
+    M_test_int(pv->y, 4)
+    for (int i = 0; i < 4; ++i) {
+        M_test_int(pv->values[i], 4)
+    }
+
+    pv = &(values.points[2]);
+    M_test_int(pv->x, 6)
+    M_test_int(pv->y, 4)
+    for (int i = 0; i < 4; ++i) {
+        M_test_int(pv->values[i], 4)
+    }
+
+    pv = &(values.points[49]);
+    M_test_int(pv->x, 4)
+    M_test_int(pv->y, 0)
+    M_test_int(pv->values[0], 4)
+    for (int i = 1; i < 4; ++i) {
+        M_test_int(pv->values[i], 2)
+    }
+
+    pv = &(values.points[224]);
+    M_test_int(pv->x, 14)
+    M_test_int(pv->y, 14)
+    M_test_int(pv->values[0], 2)
+    M_test_int(pv->values[1], 2)
+    M_test_int(pv->values[2], 2)
+    M_test_int(pv->values[3], 0)
+
+    // TODO Put a HandDescription and evaluate board again.
+}
+
+void
 test_ai() {
     M_run_test_suite(test_miscs)
     M_run_test_suite(test_match_pattern)
     M_run_test_suite(test_position_value)
     M_run_test_suite(test_point_validator)
+    M_run_test_suite(test_board_evaluator)
 }

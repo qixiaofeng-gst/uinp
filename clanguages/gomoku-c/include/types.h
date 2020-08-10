@@ -22,8 +22,14 @@ typedef struct p_BoardRegion {
 } BoardRegion;
 
 typedef struct p_PointValues {
+    unsigned x;
+    unsigned y;
     unsigned values[4];
 } PointValues;
+
+typedef struct p_BoardValues {
+    PointValues points[m_table_logic_size * m_table_logic_size];
+} BoardValues;
 
 typedef struct p_Point {
     int x;
