@@ -154,7 +154,7 @@ gm_output_board(HandDescription const *const currHand) {
 int
 main() {
     Board board;
-    debug_print("Debug print test. %p", &G_offset_limit);
+    debug_print("Debug print test. %p\n", &G_offset_limit);
     clear_board(&board);
     touch_terminal(false);
     turn_off_echo();

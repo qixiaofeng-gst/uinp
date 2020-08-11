@@ -1,4 +1,12 @@
 - [In-progress] [实现 dacong 对来自 ai 的指令的密集接收](http://jira.corp.hachibot.com/browse/AI-17)
+现存问题：
+1. 在 dacong 中，没有使用 URDF 文件，狗子的物理参数是 hard code 的。   
+   在我们所有其余的仿真环境中，使用的是 URDF 文件，但是其中的物理参数是否是按我们预期的方式被使用，这一点并不明确。   
+   解决方案：
+   1. 统一使用 URDF，在 dacong 中嵌入 URDF 解析器。需要对 dacong 的仿真逻辑进行较大规模（30%～50%代码量）的重构。
+   1. 统一参数来源，比如使用一个独立的描述文件（yaml 之类的），从该文件出发，生成 URDF 和 dacong 所需代码。
+   1. 维持现状，发现一些错漏就两边修改修改，工作量最小。
+1. ...
 
 _______
 black box of miao.yang: 100.50

@@ -13,10 +13,10 @@
 #include "macro-functions.h"
 
 #define m_point_cache_capacity 64
-typedef struct p_PointCache {
+typedef struct p_PointValueCache {
     int size;
-    Point points[m_point_cache_capacity];
-} PointCache;
+    PointValues points[m_point_cache_capacity];
+} PointValueCache;
 
 Point const G_ray_directions[] = {
         {1, 0}, // Horizontal
@@ -72,7 +72,7 @@ size_t const G_value_patterns_size = sizeof(G_value_patterns) / sizeof(G_value_p
 
 bool p_g_enable_print = true;
 wchar_t p_g_appearance = m_empty_appearance;
-PointCache p_g_point_cache;
+PointValueCache p_g_point_cache;
 BoardValues p_g_board_values;
 
 void
@@ -95,15 +95,18 @@ p_clear_point_cache() {
 void
 p_add_to_point_cache(PointValues const *pointValues) {
     size_t const index = p_g_point_cache.size++;
-    p_g_point_cache.points[index].x = (size_t) pointValues->x;
-    p_g_point_cache.points[index].y = (size_t) pointValues->y;
+    p_g_point_cache.points[index].x = pointValues->x;
+    p_g_point_cache.points[index].y = pointValues->y;
+    for (int i = 0; i < 4; ++i) {
+        p_g_point_cache.points[index].values[i] = pointValues->values[i];
+    }
 }
 
 void
 p_pick_from_point_cache(HandDescription *hand) {
     int const index = lcg_get() % p_g_point_cache.size;
-    hand->x = p_g_point_cache.points[index].x;
-    hand->y = p_g_point_cache.points[index].y;
+    hand->x = (int) p_g_point_cache.points[index].x;
+    hand->y = (int) p_g_point_cache.points[index].y;
     p_clear_point_cache();
 }
 
@@ -362,6 +365,22 @@ p_batch_add_to_point_cache(BoardValues const *boardValues) {
     }
 }
 
+void
+p_shrink_point_cache() {
+    for (int i = 1; i < p_g_point_cache.size; ++i) {
+        int const j = i - 1;
+        if (0 == p_desc_compare_point_values(
+                &(p_g_point_cache.points[j]),
+                &(p_g_point_cache.points[i])
+        )) {
+            continue;
+        } else {
+            p_g_point_cache.size = i;
+            break;
+        }
+    }
+}
+
 wchar_t
 ai_get_appearance() {
     return p_g_appearance;
@@ -383,6 +402,8 @@ ai_play_hand(Board *board, HandDescription const *prevHand, HandDescription *cur
             p_g_appearance == m_first_appearance ? m_second_appearance : m_first_appearance
     );
     p_batch_add_to_point_cache(&p_g_board_values);
+    qsort(&(p_g_point_cache.points), p_g_point_cache.size, sizeof(PointValues), p_desc_compare_point_values);
+    p_shrink_point_cache();
     p_pick_from_point_cache(currHand);
     currHand->appearance = p_g_appearance;
     put_piece_at(board, currHand);
