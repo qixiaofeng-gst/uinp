@@ -30,6 +30,8 @@ bool p_match_pattern(Board const *board, Ray const *ray, char const *pattern);
 
 void p_evaluate_board(Board const *board, BoardValues *values, wchar_t allyAppearance);
 
+void p_print_point(Point const *point);
+
 void test_ai();
 
 #endif //GOMOKU_C_AI_TEST_H

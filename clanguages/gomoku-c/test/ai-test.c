@@ -92,7 +92,6 @@ test_point_validator() {
     M_test_int(pv(&board, &p, m_first_appearance), true)
     p.x = 0, p.y = 1;
     M_test_int(pv(&board, &p, m_first_appearance), true)
-    p.y = 0;
 }
 
 void
@@ -107,6 +106,7 @@ test_miscs() {
             .x = 0,
             .y = 0
     };
+    p_print_point(&p);
     for (int i = 0; i < m_table_logic_size; ++i) {
         for (int j = 0; j < m_table_logic_size; ++j) {
             p.x = i;
@@ -287,7 +287,34 @@ test_board_evaluator() {
     M_test_int(pv->values[2], 2)
     M_test_int(pv->values[3], 0)
 
-    // TODO Put a HandDescription and evaluate board again.
+    HandDescription toPut = {7, 7, m_first_appearance};
+    put_piece_at(&board, &toPut);
+    p_evaluate_board(&board, &values, m_first_appearance);
+    pv = &(values.points[224]);
+    M_test_int(pv->x, 7)
+    M_test_int(pv->y, 7)
+    for (int i = 0; i < 4; ++i) {
+        M_test_int(pv->values[i], 0)
+    }
+    pv = &(values.points[0]);
+    M_test_int(pv->x, 4)
+    M_test_int(pv->y, 4)
+    M_test_int(pv->values[0], 5)
+    for (int i = 1; i < 4; ++i) {
+        M_test_int(pv->values[i], 4)
+    }
+    for (int i = 8; i < 11; ++i) {
+        toPut.x = i;
+        put_piece_at(&board, &toPut);
+    }
+    p_evaluate_board(&board, &values, m_first_appearance);
+    pv = &(values.points[0]);
+    M_test_int(pv->x, 6)
+    M_test_int(pv->y, 7)
+    M_test_int(pv->values[0], 10)
+    for (int i = 1; i < 4; ++i) {
+        M_test_int(pv->values[i], 4)
+    }
 }
 
 void

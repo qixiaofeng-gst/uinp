@@ -7,14 +7,17 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "lcg.h"
 #include "board.h"
 #include "ai-player.h"
 #include "macro-functions.h"
 
-#define M_debug_ppp(point) p_print_point(point, __FUNCTION__, __LINE__);
+#define m_point_cache_capacity 64
+typedef struct p_PointCache {
+    int size;
+    Point points[m_point_cache_capacity];
+} PointCache;
 
-bool p_enable_print = true;
-wchar_t p_g_appearance = m_empty_appearance;
 Point const G_ray_directions[] = {
         {1, 0}, // Horizontal
         {0, 1}, // Vertical
@@ -46,7 +49,7 @@ char const *const G_piece_patterns[] = {
         // dead 2, constructing half 3
         "\x04|oo.__x\x06", "\x05|oo_._x\x06", "\x06|oo__.x\x06",
         // alive 2, constructing alive 3
-        "\x03x_.oo_x\x07", "\x04x_o.o_x\x07", "\x04x_o._o_x\x07",
+        "\x03x_.oo__x\x07", "\x04x__.oo_x\x07", "\x04x_o.o__x\x07", "\x04x_o._o_x\x07",
         // half 3, constructing winning 4
         "\x02x._ooo|\x08", "\x03x_.ooo|\x08", "\x04x_o.oo|\x08", "\x05x_oo.o|\x08", "\x06x_ooo.|\x08",
         // alive 3, constructing winning 4
@@ -57,6 +60,68 @@ char const *const G_piece_patterns[] = {
         "\x02|.::::|\x01", "\x03|:.:::|\x01", "\x04|::.::|\x01",
 };
 size_t const G_piece_patterns_size = sizeof(G_piece_patterns) / sizeof(char *);
+
+unsigned const G_value_patterns[][2] = {
+        {0x0Au, 0x00u,},
+        {0x09u, 0x00u,},
+        {0x08u, 0x08u,},
+        {0x08u, 0x07u,},
+        {0x07u, 0x07u,},
+};
+size_t const G_value_patterns_size = sizeof(G_value_patterns) / sizeof(G_value_patterns[0]);
+
+bool p_g_enable_print = true;
+wchar_t p_g_appearance = m_empty_appearance;
+PointCache p_g_point_cache;
+BoardValues p_g_board_values;
+
+void
+p_print_point(Point const *point) {
+    if (false == p_g_enable_print) {
+        return;
+    }
+    printf(
+            "Print Point(%d, %d). Address: %p.\n",
+            point->x, point->y, point
+    );
+    printf("======= %lu\n", G_value_patterns_size);
+}
+
+void
+p_clear_point_cache() {
+    p_g_point_cache.size = 0;
+}
+
+void
+p_add_to_point_cache(PointValues const *pointValues) {
+    size_t const index = p_g_point_cache.size++;
+    p_g_point_cache.points[index].x = (size_t) pointValues->x;
+    p_g_point_cache.points[index].y = (size_t) pointValues->y;
+}
+
+void
+p_pick_from_point_cache(HandDescription *hand) {
+    int const index = lcg_get() % p_g_point_cache.size;
+    hand->x = p_g_point_cache.points[index].x;
+    hand->y = p_g_point_cache.points[index].y;
+    p_clear_point_cache();
+}
+
+int
+p_evaluate_values(PointValues const *pointValues) {
+    for (size_t i = 0; i < G_value_patterns_size; ++i) {
+        if (G_value_patterns[i][0] == pointValues->values[0]) {
+            bool const isSecondZero = (0x00u == G_value_patterns[i][1]);
+            if (isSecondZero) {
+                return i;
+            }
+            if (G_value_patterns[i][1] == pointValues->values[1]) {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
 
 bool
 p_wild_pv(Board const *board, Point const *point, wchar_t allyAppearance) {
@@ -159,17 +224,6 @@ p_ai_board_get(Board const *board, Point const *point) {
     return board->grids[point->x][point->y];
 }
 
-void
-p_print_point(Point const *point, char const *functionName, int lineNumber) {
-    if (false == p_enable_print) {
-        return;
-    }
-    printf(
-            "Print Point(%d, %d) at %s [%d]. Address: %p.\n",
-            point->x, point->y, functionName, lineNumber, point
-    );
-}
-
 bool
 p_match_mono(Board const *board, Ray const *ray, char const *pattern, int scanLimit) {
     Point p = {ray->x, ray->y};
@@ -234,8 +288,18 @@ p_sum_point_values(PointValues const *pv) {
 int
 p_desc_compare_point_values(void const *a, void const *b) {
     PointValues const *pvA = (PointValues *) a, *pvB = (PointValues *) b;
-    unsigned const sumA = p_sum_point_values(pvA), sumB = p_sum_point_values(pvB);
-    return p_desc_compare_unsigned(&sumA, &sumB);
+    int const vA = p_evaluate_values(pvA), vB = p_evaluate_values(pvB);
+    bool const invalidA = (-1 == vA), invalidB = (-1 == vB);
+    if (invalidA && invalidB) {
+        unsigned const sumA = p_sum_point_values(pvA), sumB = p_sum_point_values(pvB);
+        return p_desc_compare_unsigned(&sumA, &sumB);
+    } else if (invalidA) {
+        return 1;
+    } else if (invalidB) {
+        return -1;
+    } else {
+        return vA - vB;
+    }
 }
 
 PointValues
@@ -276,7 +340,26 @@ p_evaluate_board(Board const *board, BoardValues *values, wchar_t allyAppearance
             values->points[pIndex] = pv;
         }
     }
-    qsort(values->points, m_table_logic_size * m_table_logic_size, sizeof(PointValues), p_desc_compare_point_values);
+    qsort(
+            values->points, m_table_logic_size * m_table_logic_size,
+            sizeof(PointValues), p_desc_compare_point_values
+    );
+}
+
+void
+p_batch_add_to_point_cache(BoardValues const *boardValues) {
+    p_add_to_point_cache(&(boardValues->points[0]));
+    for (int i = 1; i < 225; ++i) {
+        int const j = i - 1;
+        if (0 == p_desc_compare_point_values(
+                &(boardValues->points[j]),
+                &(boardValues->points[i])
+        )) {
+            p_add_to_point_cache(&(boardValues->points[i]));
+        } else {
+            break;
+        }
+    }
 }
 
 wchar_t
@@ -293,11 +376,14 @@ void
 ai_play_hand(Board *board, HandDescription const *prevHand, HandDescription *currHand) {
     (void) prevHand;
 
-    /*TODO Check if there is any piece occupying the hand position. */
-    currHand->x = 0;
-    currHand->y = 0;
+    p_evaluate_board(board, &p_g_board_values, p_g_appearance);
+    p_batch_add_to_point_cache(&p_g_board_values);
+    p_evaluate_board(
+            board, &p_g_board_values,
+            p_g_appearance == m_first_appearance ? m_second_appearance : m_first_appearance
+    );
+    p_batch_add_to_point_cache(&p_g_board_values);
+    p_pick_from_point_cache(currHand);
     currHand->appearance = p_g_appearance;
     put_piece_at(board, currHand);
 }
-
-#undef M_debug_ppp
