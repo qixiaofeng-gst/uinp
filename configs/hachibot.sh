@@ -110,7 +110,7 @@ hcr-ctrl(){
   ~/Documents/hachy-repos/dacong/build/user/MIT_Controller/mit_ctrl m s
 }
 count(){
-  wc -l `ls` | sort -n -
+  wc -l `find $1 -type f` | sort -n -
 }
 
 #======= ======= =======

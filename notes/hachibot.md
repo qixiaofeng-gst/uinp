@@ -1,4 +1,8 @@
-- [In-progress] [实现 dacong 对来自 ai 的指令的密集接收](http://jira.corp.hachibot.com/browse/AI-17)
+- [Closed] [使用 tensorflow 2.x 实现执行器网络](http://jira.corp.hachibot.com/browse/AI-23)
+- [Done] [给 dacong 添加播放参考动作的功能](http://jira.corp.hachibot.com/browse/AI-24)
+- [In-progress] [使用 conda 的 environment.yaml 替换 requirement.txt](http://jira.corp.hachibot.com/browse/AI-25)
+
+- 抽取 python 公共模块
 现存问题：
 1. 在 dacong 中，没有使用 URDF 文件，狗子的物理参数是 hard code 的。   
    在我们所有其余的仿真环境中，使用的是 URDF 文件，但是其中的物理参数是否是按我们预期的方式被使用，这一点并不明确。   
