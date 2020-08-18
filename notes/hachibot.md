@@ -1,6 +1,5 @@
-- [Closed] [使用 tensorflow 2.x 实现执行器网络](http://jira.corp.hachibot.com/browse/AI-23)
-- [Done] [给 dacong 添加播放参考动作的功能](http://jira.corp.hachibot.com/browse/AI-24)
 - [In-progress] [使用 conda 的 environment.yaml 替换 requirement.txt](http://jira.corp.hachibot.com/browse/AI-25)
+
 
 - 抽取 python 公共模块
 现存问题：

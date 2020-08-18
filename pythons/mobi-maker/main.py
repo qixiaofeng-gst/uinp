@@ -22,6 +22,7 @@ _TEMPLATE_END = '</body></html>'
 _CHAPTER_TITLE_PATTERNS = [
     r'^\#+(第.+章\s?[^\#]+)\#+\s*$',
     r'^\s?(第.+章\s?.+)\s*$',
+    r'^\s?(\d+、\s?.+)\s*$',
 ]
 
 
