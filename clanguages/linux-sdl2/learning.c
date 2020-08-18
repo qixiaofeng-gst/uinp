@@ -3,17 +3,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-enum qxf_enum_SurfaceIndex {
-    SurfaceIndexDefault,
-    SurfaceIndexUp,
-    SurfaceIndexDown,
-    SurfaceIndexRight,
-    SurfaceIndexLeft,
-    SurfaceIndexLimit,
-};
-
-const int qxf_c_ScreenWidth = 640;
-const int qxf_c_ScreenHeight = 480;
+int const qxf_c_ScreenWidth = 640;
+int const qxf_c_ScreenHeight = 480;
 
 /******* Method declarations *******/
 bool qxf_Init();
@@ -22,10 +13,7 @@ void qxf_Close();
 
 /******* Global variables *******/
 SDL_Window *qxf_g_Window = NULL;
-SDL_Surface *qxf_g_ScreenSurface = NULL;
-
-SDL_Surface *qxf_g_CurrentImageSurface = NULL;
-SDL_Surface *qxf_g_PreloadedImageSurface[SurfaceIndexLimit];
+SDL_Renderer *qxf_g_renderer = NULL;
 
 /******* Method definitions *******/
 bool qxf_Init() {
@@ -46,7 +34,7 @@ bool qxf_Init() {
             success = false;
         } else {
             //Get window surface
-            qxf_g_ScreenSurface = SDL_GetWindowSurface(qxf_g_Window);
+            qxf_g_renderer = SDL_CreateRenderer(qxf_g_Window, -1, SDL_RENDERER_ACCELERATED);
         }
     }
 
@@ -54,12 +42,7 @@ bool qxf_Init() {
 }
 
 void qxf_Close() {
-    //Deallocate surface
-    for (int i = 0; i < SurfaceIndexLimit; ++i) {
-        SDL_FreeSurface(qxf_g_PreloadedImageSurface[i]);
-        qxf_g_PreloadedImageSurface[i] = NULL;
-    }
-
+    SDL_DestroyRenderer(qxf_g_renderer);
     //Destroy window
     SDL_DestroyWindow(qxf_g_Window);
     qxf_g_Window = NULL;
@@ -75,7 +58,6 @@ int main() {
     } else {
         //Main loop flag
         bool isRunning = true;
-        qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[SurfaceIndexDefault];
 
         //Event handler
         SDL_Event e;
@@ -86,34 +68,23 @@ int main() {
                 if (e.type == SDL_QUIT) {
                     isRunning = false;
                 } else if (e.type == SDL_KEYDOWN) {
-                    switch (e.key.keysym.sym) {
-                        case SDLK_UP:
-                            qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[SurfaceIndexUp];
-                            break;
-                        case SDLK_DOWN:
-                            qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[SurfaceIndexDown];
-                            break;
-                        case SDLK_RIGHT:
-                            qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[SurfaceIndexRight];
-                            break;
-                        case SDLK_LEFT:
-                            qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[SurfaceIndexLeft];
-                            break;
-                        case SDLK_ESCAPE:
-                            isRunning = false;
-                            break;
-                        default:
-                            qxf_g_CurrentImageSurface = qxf_g_PreloadedImageSurface[SurfaceIndexDefault];
+                    if (SDLK_ESCAPE == e.key.keysym.sym) {
+                        isRunning = false;
                     }
                 }
             }
-            SDL_Rect stretchRect;
-            stretchRect.x = 0;
-            stretchRect.y = 0;
-            stretchRect.w = qxf_c_ScreenWidth;
-            stretchRect.h = qxf_c_ScreenHeight;
-            SDL_BlitScaled(qxf_g_CurrentImageSurface, NULL, qxf_g_ScreenSurface, &stretchRect);
-            SDL_UpdateWindowSurface(qxf_g_Window);
+
+            SDL_SetRenderDrawColor(qxf_g_renderer, 0xff, 0xff, 0xff, 0xff);
+            SDL_RenderClear(qxf_g_renderer);
+
+            SDL_SetRenderDrawColor(qxf_g_renderer, 0x00, 0x00, 0xFF, 0xFF);
+            SDL_RenderDrawLine(
+                    qxf_g_renderer,
+                    0, qxf_c_ScreenHeight / 2,
+                    qxf_c_ScreenWidth, qxf_c_ScreenHeight / 2
+            );
+            SDL_RenderPresent(qxf_g_renderer);
+            SDL_Delay(10);
         }
     }
 
