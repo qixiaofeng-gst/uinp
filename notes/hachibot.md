@@ -1,4 +1,4 @@
-- [In-progress] [使用 conda 的 environment.yaml 替换 requirement.txt](http://jira.corp.hachibot.com/browse/AI-25)
+- [Done] [motion-runner 主分支 code 去重](http://jira.corp.hachibot.com/browse/AI-26)
 
 
 - 抽取 python 公共模块

@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-int const qxf_c_ScreenWidth = 640;
-int const qxf_c_ScreenHeight = 480;
+int const G_screen_width = 640;
+int const G_screen_height = 480;
+int const G_center_flag = 0x2FFF0000; /// Check SDL_WINDOWPOS_CENTERED
 
 /*!
 var c = document.getElementById('canv');
@@ -75,17 +76,12 @@ function p(x, y) {
 draw();
 */
 
-/******* Method declarations *******/
-bool qxf_Init();
-
-void qxf_Close();
-
 /******* Global variables *******/
 SDL_Window *qxf_g_Window = NULL;
 SDL_Renderer *qxf_g_renderer = NULL;
 
 /******* Method definitions *******/
-bool qxf_Init() {
+bool init_sdl2() {
     bool success = true;
 
     //Initialize SDL
@@ -95,8 +91,8 @@ bool qxf_Init() {
     } else {
         //Create window
         qxf_g_Window = SDL_CreateWindow(
-                "SDL Tutorial", 0, 0,
-                qxf_c_ScreenWidth, qxf_c_ScreenHeight, SDL_WINDOW_SHOWN
+                "Canvas2D", G_center_flag, G_center_flag,
+                G_screen_width, G_screen_height, SDL_WINDOW_SHOWN
         );
         if (qxf_g_Window == NULL) {
             printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -110,7 +106,7 @@ bool qxf_Init() {
     return success;
 }
 
-void qxf_Close() {
+void close_sdl2() {
     SDL_DestroyRenderer(qxf_g_renderer);
     //Destroy window
     SDL_DestroyWindow(qxf_g_Window);
@@ -120,44 +116,52 @@ void qxf_Close() {
     SDL_Quit();
 }
 
+void draw_circle() {
+
+}
+
 int main() {
     //Start up SDL and create window
-    if (false == qxf_Init()) {
+    if (false == init_sdl2()) {
         printf("Failed to initialize!\n");
-    } else {
-        //Main loop flag
-        bool isRunning = true;
-
-        //Event handler
-        SDL_Event e;
-
-        while (isRunning) {
-            while (SDL_PollEvent(&e)) {
-                //User requests quit
-                if (e.type == SDL_QUIT) {
-                    isRunning = false;
-                } else if (e.type == SDL_KEYDOWN) {
-                    if (SDLK_ESCAPE == e.key.keysym.sym) {
-                        isRunning = false;
-                    }
-                }
-            }
-
-            SDL_SetRenderDrawColor(qxf_g_renderer, 0xff, 0xff, 0xff, 0xff);
-            SDL_RenderClear(qxf_g_renderer);
-
-            SDL_SetRenderDrawColor(qxf_g_renderer, 0x00, 0x00, 0xFF, 0xFF);
-            SDL_RenderDrawLine(
-                    qxf_g_renderer,
-                    0, qxf_c_ScreenHeight / 2,
-                    qxf_c_ScreenWidth, qxf_c_ScreenHeight / 2
-            );
-            SDL_RenderPresent(qxf_g_renderer);
-            SDL_Delay(10);
-        }
+        goto tag_quit;
     }
 
-    //Free resources and close SDL
-    qxf_Close();
+    //Main loop flag
+    bool isRunning = true;
+
+    //Event handler
+    SDL_Event e;
+
+    while (isRunning) {
+        while (SDL_PollEvent(&e)) {
+            //User requests quit
+            if (e.type == SDL_QUIT) {
+                isRunning = false;
+            } else if (e.type == SDL_KEYDOWN) {
+                if (SDLK_ESCAPE == e.key.keysym.sym) {
+                    isRunning = false;
+                }
+            }
+        }
+
+        SDL_SetRenderDrawColor(qxf_g_renderer, 0xff, 0xff, 0xff, 0xff);
+        SDL_RenderClear(qxf_g_renderer);
+
+        SDL_SetRenderDrawColor(qxf_g_renderer, 0x00, 0x00, 0xFF, 0xFF);
+        SDL_RenderDrawLine(
+                qxf_g_renderer,
+                0, G_screen_height / 2,
+                G_screen_width, G_screen_height / 2
+        );
+
+        SDL_RenderDrawPoint(qxf_g_renderer, 0, 0);
+
+        SDL_RenderPresent(qxf_g_renderer);
+        SDL_Delay(10);
+    }
+
+    tag_quit:
+    close_sdl2();
     return 0;
 }
