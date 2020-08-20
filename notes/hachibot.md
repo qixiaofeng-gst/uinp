@@ -1,4 +1,4 @@
-- [Done] [motion-runner 主分支 code 去重](http://jira.corp.hachibot.com/browse/AI-26)
+- [Done] [辅助陈晨调试 simulation-infrastructure 中的脚本](http://jira.corp.hachibot.com/browse/AI-27)
 
 
 - 抽取 python 公共模块
