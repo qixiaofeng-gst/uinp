@@ -67,7 +67,9 @@ int main() {
     Uint32 const startTicks = SDL_GetTicks();
 
     Uint32 nextTicks = startTicks;
+    Uint32 counter = 0;
     while (isRunning) {
+        counter++;
         nextTicks += deltaTicks;
 
         while (SDL_PollEvent(&e)) {
@@ -89,6 +91,10 @@ int main() {
         SDL_RenderPresent(g_renderer);
 
         SDL_Delay(nextTicks - SDL_GetTicks());
+
+        if (counter == 50) {
+            //break;
+        }
     }
 
     tag_quit:

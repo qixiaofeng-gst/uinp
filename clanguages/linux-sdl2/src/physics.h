@@ -8,7 +8,7 @@
 typedef struct p_2D {
     double x;
     double y;
-} Point, Vector;
+} Point, Vector, Size;
 
 typedef struct p_Motion {
     Vector velocity;
@@ -25,7 +25,18 @@ typedef struct p_RigidCircle {
     Motion motion;
 } RigidCircle;
 
+typedef struct p_AABB {
+    Point origin;
+    Size halfSize;
+} AABB;
+
+typedef struct p_RigidAABB {
+    AABB aabb;
+    Motion motion;
+} RigidAABB;
+
 void add_gravity_to(RigidCircle *rigidCircle);
 void update_motion(RigidCircle *rigidCircle, double deltaSeconds);
+void collide_circle_with_aabb(RigidCircle *rigidCircle, RigidAABB *rigidAABB);
 
 #endif //QXF_CANVAS_PHYSICS_H

@@ -60,24 +60,71 @@ void p_draw_circle(SDL_Renderer *renderer, Circle *circle) {
     );
 }
 
+void p_draw_aabb(SDL_Renderer *renderer, AABB *aabb) {
+    double const
+            xLeftTop = aabb->origin.x - aabb->halfSize.x,
+            yLeftTop = aabb->origin.y - aabb->halfSize.y;
+    SDL_Rect rect = {
+            .x = M_round(xLeftTop),
+            .y = M_round(yLeftTop),
+            .w = M_round(aabb->halfSize.x * 2),
+            .h = M_round(aabb->halfSize.y * 2),
+    };
+    SDL_RenderDrawRect(renderer, &rect);
+}
+
 void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     static double passedSeconds = 0.0;
     static RigidCircle rigidCircle = {
             .circle = {
                     .origin = {
                             .x = 10.0,
-                            .y = 10.0,
+                            .y = 100.0,
                     },
                     .radius = 10.0,
             },
             .motion = {
                     .velocity = {
-                            .x = 0.0,
+                            .x = 320.0,
                             .y = 0.0,
                     },
                     .acceleration = {
                             .x = 0.0,
                             .y = 0.0,
+                    },
+            },
+    };
+    static RigidAABB ground = {
+            .aabb = {
+                    .origin = {
+                            .x = 320.0,
+                            .y = 485.0,
+                    },
+                    .halfSize = {
+                            .x = 350.0,
+                            .y = 5.0,
+                    },
+            },
+    }, rightWall = {
+            .aabb = {
+                    .origin = {
+                            .x = 645.0,
+                            .y = 240.0,
+                    },
+                    .halfSize = {
+                            .x = 5.0,
+                            .y = 250.0,
+                    },
+            },
+    }, leftWall = {
+            .aabb = {
+                    .origin = {
+                            .x = -5.0,
+                            .y = 240.0,
+                    },
+                    .halfSize = {
+                            .x = 5.0,
+                            .y = 250.0,
                     },
             },
     };
@@ -99,5 +146,9 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     p_draw_rotating_line(renderer, 100, 50, theta);
 
     update_motion(&rigidCircle, deltaSeconds);
+    collide_circle_with_aabb(&rigidCircle, &ground);
     p_draw_circle(renderer, &rigidCircle.circle);
+    p_draw_aabb(renderer, &ground.aabb);
+    p_draw_aabb(renderer, &leftWall.aabb);
+    p_draw_aabb(renderer, &rightWall.aabb);
 }
