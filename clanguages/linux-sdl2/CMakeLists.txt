@@ -12,8 +12,10 @@ set(CMAKE_C_FLAGS_DEBUG "-g")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
 message(STATUS "Using build type: ${CMAKE_BUILD_TYPE}")
 
-file(GLOB sources "*.c")
+file(GLOB sources "src/*.c")
 
 add_executable(canvas ${sources})
 target_link_libraries(canvas PRIVATE
         SDL2)
+target_include_directories(canvas PRIVATE
+        include)
