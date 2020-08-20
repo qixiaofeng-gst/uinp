@@ -21,7 +21,7 @@ bool init_sdl2() {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         success = false;
     } else {
-        render = p_default_render;
+        render = default_render;
         //Create window
         g_window = SDL_CreateWindow(
                 "Canvas2D", G_center_flag, G_center_flag,

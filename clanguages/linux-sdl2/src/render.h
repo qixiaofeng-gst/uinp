@@ -5,6 +5,6 @@
 #ifndef QXF_CANVAS_RENDER_H
 #define QXF_CANVAS_RENDER_H
 
-void p_default_render(SDL_Renderer *renderer, double deltaSeconds);
+void default_render(SDL_Renderer *renderer, double deltaSeconds);
 
 #endif //QXF_CANVAS_RENDER_H
