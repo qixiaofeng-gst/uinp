@@ -62,10 +62,10 @@ void p_draw_circle(SDL_Renderer *renderer, Circle *circle) {
 
 void p_draw_aabb(SDL_Renderer *renderer, AABB *aabb) {
     static SDL_Rect rect;
-    rect.x = M_round(aabb->leftTop.x);
-    rect.y = M_round(aabb->leftTop.y);
-    rect.w = M_round(aabb->rightBottom.x - aabb->leftTop.x);
-    rect.h = M_round(aabb->rightBottom.y - aabb->leftTop.y);
+    rect.x = M_round(aabb->left);
+    rect.y = M_round(aabb->top);
+    rect.w = M_round(aabb->right - aabb->left);
+    rect.h = M_round(aabb->bottom - aabb->top);
     SDL_RenderDrawRect(renderer, &rect);
 }
 
@@ -73,7 +73,7 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     static double passedSeconds = 0.0;
     static RigidCircle rigidCircle = {
             .circle = {
-                    {10.0, 100.0,},
+                    {50.0, 100.0,},
                     10.0,
             },
             .motion = {
@@ -81,16 +81,12 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
                     {0.0,   0.0,},
             },
     };
-    static AABB ground = {
-            {-1.0,  470.0,},
-            {641.0, 490.0,},
-    }, rightWall = {
-            {640, 0,},
-            {650, 480,},
-    }, leftWall = {
-            {-10, 0,},
-            {0, 480,},
-    };
+    static AABB
+            ground = {0.0, 450.0, 640.0, 480.0,},
+            rightWall = {610, 0, 640, 480,},
+            leftWall = {0, 0, 30, 480,},
+            ceil = {0, 0, 640, 30,};
+
     if (passedSeconds == 0.0) {
         add_gravity_to(&rigidCircle);
     }
@@ -110,8 +106,14 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
 
     update_motion(&rigidCircle, deltaSeconds);
     collide_circle_with_aabb(&rigidCircle, &ground);
+    collide_circle_with_aabb(&rigidCircle, &rightWall);
+    collide_circle_with_aabb(&rigidCircle, &leftWall);
+    collide_circle_with_aabb(&rigidCircle, &ceil);
+
     p_draw_circle(renderer, &rigidCircle.circle);
     p_draw_aabb(renderer, &ground);
     p_draw_aabb(renderer, &leftWall);
     p_draw_aabb(renderer, &rightWall);
+    p_draw_aabb(renderer, &ceil);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 }

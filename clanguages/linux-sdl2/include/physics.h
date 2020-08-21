@@ -26,8 +26,10 @@ typedef struct p_RigidCircle {
 } RigidCircle;
 
 typedef struct p_AABB {
-    Point leftTop;
-    Point rightBottom;
+    double left;
+    double top;
+    double right;
+    double bottom;
 } AABB;
 
 typedef struct p_RigidAABB {
@@ -37,6 +39,7 @@ typedef struct p_RigidAABB {
 
 void add_gravity_to(RigidCircle *rigidCircle);
 void update_motion(RigidCircle *rigidCircle, double deltaSeconds);
-void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *rigidAABB);
+void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *aabb);
+void get_circle_aabb(Circle const *circle, AABB *aabb);
 
 #endif //QXF_CANVAS_PHYSICS_H
