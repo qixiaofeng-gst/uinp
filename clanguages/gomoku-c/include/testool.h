@@ -13,13 +13,13 @@
     value, \
     expected, \
     m_is_test_verbose \
-);
+)
 
 #define M_run_test_suite(__testSuite) \
     setup_test_suite(); \
     printf("Start test suite [%s]\n", #__testSuite); \
     __testSuite(); \
-    report_test_suite();
+    report_test_suite()
 
 void report_integer_test(
     char const * testedName,
