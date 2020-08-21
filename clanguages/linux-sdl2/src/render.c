@@ -73,56 +73,23 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     static double passedSeconds = 0.0;
     static RigidCircle rigidCircle = {
             .circle = {
-                    .origin = {
-                            .x = 10.0,
-                            .y = 100.0,
-                    },
-                    .radius = 10.0,
+                    {10.0, 100.0,},
+                    10.0,
             },
             .motion = {
-                    .velocity = {
-                            .x = 320.0,
-                            .y = 0.0,
-                    },
-                    .acceleration = {
-                            .x = 0.0,
-                            .y = 0.0,
-                    },
+                    {320.0, 0.0,},
+                    {0.0,   0.0,},
             },
     };
-    static RigidAABB ground = {
-            .aabb = {
-                    .leftTop = {
-                            .x = -1.0,
-                            .y = 470.0,
-                    },
-                    .rightBottom = {
-                            .x = 641.0,
-                            .y = 490.0,
-                    },
-            },
+    static AABB ground = {
+            {-1.0,  470.0,},
+            {641.0, 490.0,},
     }, rightWall = {
-            .aabb = {
-                    .leftTop = {
-                            .x = 640.0,
-                            .y = 0.0,
-                    },
-                    .rightBottom = {
-                            .x = 650.0,
-                            .y = 480.0,
-                    },
-            },
+            {640, 0,},
+            {650, 480,},
     }, leftWall = {
-            .aabb = {
-                    .leftTop = {
-                            .x = -10.0,
-                            .y = 0.0,
-                    },
-                    .rightBottom = {
-                            .x = 0.0,
-                            .y = 480.0,
-                    },
-            },
+            {-10, 0,},
+            {0, 480,},
     };
     if (passedSeconds == 0.0) {
         add_gravity_to(&rigidCircle);
@@ -144,7 +111,7 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     update_motion(&rigidCircle, deltaSeconds);
     collide_circle_with_aabb(&rigidCircle, &ground);
     p_draw_circle(renderer, &rigidCircle.circle);
-    p_draw_aabb(renderer, &ground.aabb);
-    p_draw_aabb(renderer, &leftWall.aabb);
-    p_draw_aabb(renderer, &rightWall.aabb);
+    p_draw_aabb(renderer, &ground);
+    p_draw_aabb(renderer, &leftWall);
+    p_draw_aabb(renderer, &rightWall);
 }

@@ -37,6 +37,6 @@ typedef struct p_RigidAABB {
 
 void add_gravity_to(RigidCircle *rigidCircle);
 void update_motion(RigidCircle *rigidCircle, double deltaSeconds);
-void collide_circle_with_aabb(RigidCircle *rigidCircle, RigidAABB *rigidAABB);
+void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *rigidAABB);
 
 #endif //QXF_CANVAS_PHYSICS_H
