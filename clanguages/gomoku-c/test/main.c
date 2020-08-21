@@ -78,19 +78,19 @@ try_build_tree(void) {
 // ======= Temporary block end.
 
 void p_test_index_provider() {
-    IndexProvider *const indexProvider = malloc(sizeof(IndexProvider));
-    init_index_provider(indexProvider);
-    M_test_int(has_more_index(indexProvider), true)
-    M_test_int(remove_index(indexProvider, 224), true)
-    M_test_int(remove_index(indexProvider, 225), false)
-    M_test_int(remove_index(indexProvider, 250), false)
-    M_test_int(remove_index(indexProvider, -1), false)
-    M_test_int(remove_index(indexProvider, 0), true)
-    M_test_int(indexProvider->count, 223)
-    M_test_int(provide_index(indexProvider) < 224, true)
+    IndexProvider indexProvider;
+    init_index_provider(&indexProvider);
+    M_test_int(has_more_index(&indexProvider), true)
+    M_test_int(remove_index(&indexProvider, 224), true)
+    M_test_int(remove_index(&indexProvider, 225), false)
+    M_test_int(remove_index(&indexProvider, 250), false)
+    M_test_int(remove_index(&indexProvider, -1), false)
+    M_test_int(remove_index(&indexProvider, 0), true)
+    M_test_int(indexProvider.count, 223)
+    M_test_int(provide_index(&indexProvider) < 224, true)
     for (int i = 0; i < 222; ++i) {
-        M_test_int(provide_index(indexProvider) < 224, true)
-        M_test_int(indexProvider->count, 221 - i)
+        M_test_int(provide_index(&indexProvider) < 224, true)
+        M_test_int(indexProvider.count, 221 - i)
     }
 }
 

@@ -3,10 +3,34 @@
 //
 
 #include <stdio.h>
+#include <stdbool.h>
 #include "physics.h"
 
 #define m_g 9.8
 #define m_pixels_per_meter 50
+
+void p_get_circle_aabb(Circle const *circle, AABB *aabb) {
+    aabb->leftTop.x = circle->origin.x - circle->radius;
+    aabb->leftTop.y = circle->origin.y - circle->radius;
+    aabb->rightBottom.x = circle->origin.x + circle->radius;
+    aabb->rightBottom.y = circle->origin.y + circle->radius;
+}
+
+bool p_is_overlap(AABB *a, AABB *b) {
+    if (a->leftTop.x > b->rightBottom.x) {
+        return false;
+    }
+    if (b->leftTop.x > a->rightBottom.x) {
+        return false;
+    }
+    if (a->leftTop.y < b->rightBottom.y) {
+        return false;
+    }
+    if (b->leftTop.y < a->rightBottom.y) {
+        return false;
+    }
+    return true;
+}
 
 void update_motion(RigidCircle *rigidCircle, double deltaSeconds) {
     #define M_update(t) \
@@ -15,7 +39,9 @@ void update_motion(RigidCircle *rigidCircle, double deltaSeconds) {
         t##VelocityIncrementHalf = t##VelocityIncrement * 0.5,\
         t##VelocityMiddle = rigidCircle->motion.velocity.t + t##VelocityIncrementHalf,\
         t##Movement = deltaSeconds * t##VelocityMiddle;\
-    printf(#t": %.4f, ", rigidCircle->motion.velocity.t);\
+    printf(#t": %+5.4f, d"#t": %+5.4f, ds: %+5.4f, mv: %+5.4f; ",\
+        rigidCircle->motion.velocity.t, rigidCircle->motion.acceleration.t,\
+        deltaSeconds, t##Movement);\
     rigidCircle->motion.velocity.t += t##VelocityIncrement;\
     rigidCircle->circle.origin.t += t##Movement;
 
@@ -32,57 +58,16 @@ void add_gravity_to(RigidCircle *rigidCircle) {
 }
 
 void collide_circle_with_aabb(RigidCircle *rigidCircle, RigidAABB *rigidAABB) {
-    if ((rigidCircle->circle.origin.y + rigidCircle->circle.radius) >
-        (rigidAABB->aabb.origin.y - rigidAABB->aabb.halfSize.y)) {
-        if (rigidCircle->motion.velocity.y < 0) {
-            // Up
-            double const
-                    distance = rigidCircle->circle.origin.y - rigidAABB->aabb.origin.y,
-                    distanceLimit = rigidAABB->aabb.halfSize.y + rigidCircle->circle.radius;
-            if (distance < distanceLimit) {
-                rigidCircle->motion.velocity.y = -rigidCircle->motion.velocity.y;
-            }
-        }
+    static AABB circleAABB;
+    p_get_circle_aabb(&rigidCircle->circle, &circleAABB);
+    if (false == p_is_overlap(&circleAABB, &rigidAABB->aabb)) {
+        return;
     }
-    if ((rigidCircle->circle.origin.y - rigidCircle->circle.radius) <
-        (rigidAABB->aabb.origin.y + rigidAABB->aabb.halfSize.y)) {
-        if (rigidCircle->motion.velocity.y > 0) {
-            // Down
-            double const
-                    distance = rigidAABB->aabb.origin.y - rigidCircle->circle.origin.y,
-                    distanceLimit = rigidAABB->aabb.halfSize.y + rigidCircle->circle.radius;
-            if (distance < distanceLimit) {
-                rigidCircle->motion.velocity.y = -rigidCircle->motion.velocity.y;
-            }
-        }
-    }
-
-    if ((rigidCircle->circle.origin.x - rigidCircle->circle.radius) >
-        (rigidAABB->aabb.origin.x + rigidAABB->aabb.halfSize.x)) {
-        if (rigidCircle->motion.velocity.x < 0) {
-            // Right
-            double const
-                    distance = rigidCircle->circle.origin.x - rigidAABB->aabb.origin.x,
-                    distanceLimit = rigidAABB->aabb.halfSize.x + rigidCircle->circle.radius;
-            if (distance < distanceLimit) {
-                printf("=======\n");
-                rigidCircle->motion.velocity.x = -rigidCircle->motion.velocity.x;
-            }
-        }
-    }
-    if ((rigidCircle->circle.origin.x + rigidCircle->circle.radius) <
-        (rigidAABB->aabb.origin.x - rigidAABB->aabb.halfSize.x)) {
-        if (rigidCircle->motion.velocity.x > 0) {
-            // Left
-            double const
-                    distance = rigidAABB->aabb.origin.x - rigidCircle->circle.origin.x,
-                    distanceLimit = rigidAABB->aabb.halfSize.x + rigidCircle->circle.radius;
-            if (distance < distanceLimit) {
-                printf("------- %f, %f\n", distance, distanceLimit);
-                rigidCircle->motion.velocity.x = -rigidCircle->motion.velocity.x;
-            }
-        }
-    }
+    printf("=======");
+    rigidCircle->motion.velocity.y = rigidCircle->motion.velocity.y;
+    rigidCircle->circle.origin.y = rigidCircle->circle.origin.y - (
+            0.1 + circleAABB.rightBottom.y - rigidAABB->aabb.leftTop.y
+    );
 }
 
 #undef m_g

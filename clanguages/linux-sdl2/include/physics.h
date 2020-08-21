@@ -26,8 +26,8 @@ typedef struct p_RigidCircle {
 } RigidCircle;
 
 typedef struct p_AABB {
-    Point origin;
-    Size halfSize;
+    Point leftTop;
+    Point rightBottom;
 } AABB;
 
 typedef struct p_RigidAABB {

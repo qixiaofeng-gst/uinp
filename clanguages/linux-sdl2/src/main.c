@@ -92,8 +92,8 @@ int main() {
 
         SDL_Delay(nextTicks - SDL_GetTicks());
 
-        if (counter == 50) {
-            //break;
+        if (counter == 200) {
+            break;
         }
     }
 

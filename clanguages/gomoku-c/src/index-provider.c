@@ -7,28 +7,24 @@
 
 #include "index-provider.h"
 
-void
-init_index_provider(IndexProvider *const provider) {
+void init_index_provider(IndexProvider *const provider) {
     provider->count = M_table_index_count;
     for (int i = 0; i < M_table_index_count; ++i) {
         provider->indexes[i] = i;
     }
 }
 
-bool
-has_more_index(IndexProvider const *const provider) {
+bool has_more_index(IndexProvider const *const provider) {
     return provider->count > 0;
 }
 
-void
-p_do_remove_index(IndexProvider *const provider, int const targetIndex) {
+void p_do_remove_index(IndexProvider *const provider, int const targetIndex) {
     int lastIndex = provider->count - 1;
     provider->indexes[targetIndex] = provider->indexes[lastIndex];
     provider->count = lastIndex;
 }
 
-bool
-remove_index(IndexProvider *const provider, int const targetIndex) {
+bool remove_index(IndexProvider *const provider, int const targetIndex) {
     if (
             (targetIndex >= M_table_index_count) ||
             (targetIndex < 0)
@@ -57,8 +53,7 @@ remove_index(IndexProvider *const provider, int const targetIndex) {
 Have to check with has_more_index(provider) before use provide_index(provider).
 May cause undefined behavior without checking.
 */
-int
-provide_index(IndexProvider *const provider) {
+int provide_index(IndexProvider *const provider) {
     // Generate random number, and convert to index.
     int targetIndex = lcg_get() % provider->count;
     // Get the index.

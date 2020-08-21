@@ -61,15 +61,11 @@ void p_draw_circle(SDL_Renderer *renderer, Circle *circle) {
 }
 
 void p_draw_aabb(SDL_Renderer *renderer, AABB *aabb) {
-    double const
-            xLeftTop = aabb->origin.x - aabb->halfSize.x,
-            yLeftTop = aabb->origin.y - aabb->halfSize.y;
-    SDL_Rect rect = {
-            .x = M_round(xLeftTop),
-            .y = M_round(yLeftTop),
-            .w = M_round(aabb->halfSize.x * 2),
-            .h = M_round(aabb->halfSize.y * 2),
-    };
+    static SDL_Rect rect;
+    rect.x = M_round(aabb->leftTop.x);
+    rect.y = M_round(aabb->leftTop.y);
+    rect.w = M_round(aabb->rightBottom.x - aabb->leftTop.x);
+    rect.h = M_round(aabb->rightBottom.y - aabb->leftTop.y);
     SDL_RenderDrawRect(renderer, &rect);
 }
 
@@ -96,35 +92,35 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     };
     static RigidAABB ground = {
             .aabb = {
-                    .origin = {
-                            .x = 320.0,
-                            .y = 485.0,
+                    .leftTop = {
+                            .x = -1.0,
+                            .y = 470.0,
                     },
-                    .halfSize = {
-                            .x = 350.0,
-                            .y = 5.0,
+                    .rightBottom = {
+                            .x = 641.0,
+                            .y = 490.0,
                     },
             },
     }, rightWall = {
             .aabb = {
-                    .origin = {
-                            .x = 645.0,
-                            .y = 240.0,
+                    .leftTop = {
+                            .x = 640.0,
+                            .y = 0.0,
                     },
-                    .halfSize = {
-                            .x = 5.0,
-                            .y = 250.0,
+                    .rightBottom = {
+                            .x = 650.0,
+                            .y = 480.0,
                     },
             },
     }, leftWall = {
             .aabb = {
-                    .origin = {
-                            .x = -5.0,
-                            .y = 240.0,
+                    .leftTop = {
+                            .x = -10.0,
+                            .y = 0.0,
                     },
-                    .halfSize = {
-                            .x = 5.0,
-                            .y = 250.0,
+                    .rightBottom = {
+                            .x = 0.0,
+                            .y = 480.0,
                     },
             },
     };
