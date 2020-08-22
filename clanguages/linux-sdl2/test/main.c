@@ -29,8 +29,8 @@ void p_test_matrix() {
     M2x2 i2x2 = {{{1, 0}, {0, 1}}};
 
     M1x2_multiply_M2x2(&out1x2, &m1X2, &i2x2);
-    printf("%f, %f ======= =======\n", M1x2_get_item(&m1X2, 1, 1), M1x2_get_item(&out1x2, 1, 2));
-    M_test_int(M1x2_get_item(&m1X2, 1, 1) == M1x2_get_item(&out1x2, 1, 2), true);
+    M_test_int(M1x2_get_item(&m1X2, 1, 1) == M1x2_get_item(&out1x2, 1, 1), true);
+    M_test_int(M1x2_get_item(&m1X2, 1, 2) == M1x2_get_item(&out1x2, 1, 2), true);
 }
 
 void p_test_is_overlap() {
