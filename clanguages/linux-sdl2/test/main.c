@@ -1,11 +1,13 @@
 #include "testool.h"
 #include "test-physics.h"
 
+#include "matrix.h"
+
 /*TODO
+ * # Matrix math.
  * # Two ball bounce.
  *   - Both moving.
  *   - One moving.
- * # Matrix math.
  * # Engine: File based objects loader.
  * # Engine: Objects manager.
  * # Engine: Physics manager.
@@ -20,6 +22,15 @@ void p_print_aabb(AABB const *aabb, char const *name, char const *function) {
            function, name,
            aabb->left, aabb->right,
            aabb->top, aabb->bottom);
+}
+
+void p_test_matrix() {
+    M1x2 m1X2 = {{{2, 3}}}, out1x2;
+    M2x2 i2x2 = {{{1, 0}, {0, 1}}};
+
+    M1x2_multiply_M2x2(&out1x2, &m1X2, &i2x2);
+    printf("%f, %f ======= =======\n", M1x2_get_item(&m1X2, 1, 1), M1x2_get_item(&out1x2, 1, 2));
+    M_test_int(M1x2_get_item(&m1X2, 1, 1) == M1x2_get_item(&out1x2, 1, 2), true);
 }
 
 void p_test_is_overlap() {
@@ -40,5 +51,6 @@ void p_test_is_overlap() {
 
 int main() {
     M_run_test_suite(p_test_is_overlap);
+    M_run_test_suite(p_test_matrix);
     return 0;
 }
