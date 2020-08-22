@@ -71,24 +71,23 @@ void p_draw_aabb(SDL_Renderer *renderer, AABB *aabb) {
 
 void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     static double passedSeconds = 0.0;
-    static RigidCircle rigidCircle = {
-            .circle = {
-                    {50.0, 100.0,},
-                    10.0,
-            },
-            .motion = {
-                    {320.0, 0.0,},
-                    {0.0,   0.0,},
-            },
+    static RigidCircle rigidCircleA = {
+            {{150.0,  150.0,}, 10.0,},
+            {{320.0, 0.0,},   {0.0, 0.0,},},
+    }, rigidCircleB = {
+            {{150.0, 170.0,}, 10.0,},
+            {{0.0,  0.0,},   {0.0, 0.0,},},
     };
     static AABB
-            ground = {0.0, 450.0, 640.0, 480.0,},
-            rightWall = {610, 0, 640, 480,},
-            leftWall = {0, 0, 30, 480,},
-            ceil = {0, 0, 640, 30,};
+            ground = {0.0, 400.0, 640.0, 480.0,},
+            rightWall = {510, 0, 640, 480,},
+            leftWall = {0, 0, 130, 480,},
+            middle = {200, 200, 400, 220,},
+            ceil = {0, 0, 640, 130,};
 
     if (passedSeconds == 0.0) {
-        add_gravity_to(&rigidCircle);
+        add_gravity_to(&rigidCircleA);
+        add_gravity_to(&rigidCircleB);
     }
 
     passedSeconds += deltaSeconds;
@@ -104,16 +103,31 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     p_fill_circle_with_formula(renderer, 50, 50, 10);
     p_draw_rotating_line(renderer, 100, 50, theta);
 
-    update_motion(&rigidCircle, deltaSeconds);
-    collide_circle_with_aabb(&rigidCircle, &ground);
-    collide_circle_with_aabb(&rigidCircle, &rightWall);
-    collide_circle_with_aabb(&rigidCircle, &leftWall);
-    collide_circle_with_aabb(&rigidCircle, &ceil);
+    update_motion(&rigidCircleA, deltaSeconds);
+    update_motion(&rigidCircleB, deltaSeconds);
 
-    p_draw_circle(renderer, &rigidCircle.circle);
+    collide_circle_with_aabb(&rigidCircleA, &ground);
+    collide_circle_with_aabb(&rigidCircleA, &rightWall);
+    collide_circle_with_aabb(&rigidCircleA, &leftWall);
+    collide_circle_with_aabb(&rigidCircleA, &middle);
+    collide_circle_with_aabb(&rigidCircleA, &ceil);
+
+    collide_circle_with_aabb(&rigidCircleB, &ground);
+    collide_circle_with_aabb(&rigidCircleB, &rightWall);
+    collide_circle_with_aabb(&rigidCircleB, &leftWall);
+    collide_circle_with_aabb(&rigidCircleB, &middle);
+    collide_circle_with_aabb(&rigidCircleB, &ceil);
+
+    collide_circles(&rigidCircleA, &rigidCircleB);
+
+    p_draw_circle(renderer, &rigidCircleA.circle);
+    p_draw_circle(renderer, &rigidCircleB.circle);
+
     p_draw_aabb(renderer, &ground);
     p_draw_aabb(renderer, &leftWall);
     p_draw_aabb(renderer, &rightWall);
+    p_draw_aabb(renderer, &middle);
     p_draw_aabb(renderer, &ceil);
+
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 }

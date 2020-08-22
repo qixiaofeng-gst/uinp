@@ -7,7 +7,6 @@
 
 #include "physics.h"
 
-bool p_is_overlap(AABB const *a, AABB const *b);
-void p_print_aabb(AABB const *aabb, char const *name);
+bool p_is_aabb_overlap(AABB const *a, AABB const *b);
 
 #endif //QXF_CANVAS_TEST_PHYCIS_H

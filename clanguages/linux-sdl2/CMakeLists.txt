@@ -19,7 +19,7 @@ file(GLOB tests "test/*.c")
 
 add_executable(canvas ${sources})
 target_link_libraries(canvas PRIVATE
-        SDL2)
+        SDL2 m)
 target_include_directories(canvas PRIVATE
         include)
 
@@ -28,7 +28,7 @@ add_executable(unit-test
         ${to-test}
         ../gomoku-c/test/testool.c)
 target_link_libraries(unit-test PRIVATE
-        SDL2)
+        SDL2 m)
 target_include_directories(unit-test PRIVATE
         include
         ../gomoku-c/include)

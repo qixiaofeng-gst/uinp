@@ -2,21 +2,70 @@
 // Created by qixiaofeng on 2020/8/20.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <math.h>
 #include <stdbool.h>
 #include "physics.h"
 
 #define m_g 9.8
 #define m_pixels_per_meter 50
-#define M_print_aabb(aabb) p_print_aabb(aabb, #aabb, __FUNCTION__)
 
-void p_print_aabb(AABB const *aabb, char const *name, char const *function) {
-    printf("%s: AABB [%s], left: %6.2f, right: %6.2f; "
-           "top: %6.2f, bottom: %6.2f\n",
-           function, name,
-           aabb->left, aabb->right,
-           aabb->top, aabb->bottom);
+typedef struct p_CircleCollision {
+    Point contactPoint;
+    Vector normalVector;
+    bool isCollided;
+} CircleCollision;
+
+double p_calc_vector_len(Vector const *v) {
+    return sqrt(v->x * v->x + v->y * v->y);
+}
+
+void p_normalize_vector(Vector *output, Vector const *v, double length) {
+    output->x = v->x / length;
+    output->y = v->y / length;
+}
+
+void p_vector_multiply_scalar(Vector *output, Vector const *v, double s) {
+    output->x = v->x * s;
+    output->y = v->y * s;
+}
+
+void p_vector_add_vector(Vector *output, Vector const *a, Vector const *b) {
+    output->x = a->x + b->x;
+    output->y = a->y + b->y;
+}
+
+void p_vector_rotate(Vector *output, Vector const *v, double theta) {
+    // TODO Implement.
+    (void) output, (void) v, (void) theta;
+}
+
+bool p_is_circle_overlap(Circle const *circleA, Circle const *circleB, CircleCollision *output) {
+    static Vector ab;
+    ab.x = circleB->origin.x - circleA->origin.x;
+    ab.y = circleB->origin.y - circleA->origin.y;
+
+    output->isCollided = true;
+    if (0 == ab.x && 0 == ab.y) {
+        output->contactPoint.x = circleA->origin.x;
+        output->contactPoint.y = circleA->origin.y;
+        output->normalVector.x = 0;
+        output->normalVector.y = 0;
+        return output->isCollided;
+    }
+    double const
+            radiusSum = circleA->radius + circleB->radius,
+            length = p_calc_vector_len(&ab);
+    if (length <= radiusSum) {
+        double const acLength = length * circleA->radius / radiusSum;
+        p_normalize_vector(&ab, &ab, length);
+        p_vector_rotate(&output->normalVector, &ab, 3.1415926 * 0.5);
+        p_vector_multiply_scalar(&ab, &ab, acLength);
+        p_vector_add_vector(&output->contactPoint, &ab, &circleA->origin);
+        return output->isCollided;
+    }
+
+    output->isCollided = false;
+    return output->isCollided;
 }
 
 bool p_is_segment_overlap(double aMin, double aMax, double bMin, double bMax) {
@@ -29,7 +78,7 @@ bool p_is_segment_overlap(double aMin, double aMax, double bMin, double bMax) {
     return true;
 }
 
-bool p_is_overlap(AABB const *a, AABB const *b) {
+bool p_is_aabb_overlap(AABB const *a, AABB const *b) {
     if (false == p_is_segment_overlap(a->left, a->right, b->left, b->right)) {
         return false;
     }
@@ -77,7 +126,7 @@ void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *aabb) {
     static AABB circleAABB;
     get_circle_aabb(&rigidCircle->circle, &circleAABB);
 
-    if (false == p_is_overlap(&circleAABB, aabb)) {
+    if (false == p_is_aabb_overlap(&circleAABB, aabb)) {
         return;
     }
 
@@ -90,6 +139,21 @@ void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *aabb) {
     } else {
         // Horizontal
         rigidCircle->motion.velocity.x = -rigidCircle->motion.velocity.x;
+    }
+}
+
+void collide_circles(RigidCircle *rigidCircleA, RigidCircle *rigidCircleB) {
+    static AABB aabbA, aabbB;
+    static CircleCollision collision;
+    get_circle_aabb(&rigidCircleA->circle, &aabbA);
+    get_circle_aabb(&rigidCircleB->circle, &aabbB);
+
+    if (false == p_is_aabb_overlap(&aabbA, &aabbB)) {
+        return;
+    }
+
+    if (false == p_is_circle_overlap(&rigidCircleA->circle, &rigidCircleB->circle, &collision)) {
+        return;
     }
 }
 
