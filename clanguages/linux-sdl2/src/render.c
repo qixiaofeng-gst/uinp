@@ -72,11 +72,11 @@ void p_draw_aabb(SDL_Renderer *renderer, AABB *aabb) {
 void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     static double passedSeconds = 0.0;
     static RigidCircle rigidCircleA = {
-            {{150.0,  150.0,}, 10.0,},
+            {{150.0, 150.0,}, 10.0,},
             {{320.0, 0.0,},   {0.0, 0.0,},},
     }, rigidCircleB = {
             {{150.0, 170.0,}, 10.0,},
-            {{0.0,  0.0,},   {0.0, 0.0,},},
+            {{0.0,   0.0,},   {0.0, 0.0,},},
     };
     static AABB
             ground = {0.0, 400.0, 640.0, 480.0,},
@@ -128,6 +128,13 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     p_draw_aabb(renderer, &rightWall);
     p_draw_aabb(renderer, &middle);
     p_draw_aabb(renderer, &ceil);
+
+    Vector toDraw = {400, 400}, rotated;
+    SDL_RenderDrawLine(renderer, 0, 0, M_round(toDraw.x), M_round(toDraw.y));
+    vector_rotate(&rotated, &toDraw, 3.1415926 * 0.2);
+    SDL_RenderDrawLine(renderer, 0, 0, M_round(rotated.x), M_round(rotated.y));
+    vector_rotate(&rotated, &toDraw, -3.1415926 * 0.1);
+    SDL_RenderDrawLine(renderer, 0, 0, M_round(rotated.x), M_round(rotated.y));
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 }

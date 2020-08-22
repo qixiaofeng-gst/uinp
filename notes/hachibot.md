@@ -1,5 +1,4 @@
-- [Done] [辅助陈晨调试 simulation-infrastructure 中的脚本](http://jira.corp.hachibot.com/browse/AI-27)
-
+- [In-progress] [给仿真平台添加功能 - Phase Alpha](http://jira.corp.hachibot.com/browse/AI-28)
 
 - 抽取 python 公共模块
 现存问题：

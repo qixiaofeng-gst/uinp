@@ -4,6 +4,7 @@
 
 #include <math.h>
 #include <stdbool.h>
+#include "matrix.h"
 #include "physics.h"
 
 #define m_g 9.8
@@ -14,6 +15,14 @@ typedef struct p_CircleCollision {
     Vector normalVector;
     bool isCollided;
 } CircleCollision;
+
+void p_get_rotation_matrix(M2x2 *output, double theta) {
+    double const sinTheta = sin(theta), cosTheta = cos(theta);
+    output->ns[0][0] = cosTheta;
+    output->ns[0][1] = -sinTheta;
+    output->ns[1][0] = sinTheta;
+    output->ns[1][1] = cosTheta;
+}
 
 double p_calc_vector_len(Vector const *v) {
     return sqrt(v->x * v->x + v->y * v->y);
@@ -34,9 +43,15 @@ void p_vector_add_vector(Vector *output, Vector const *a, Vector const *b) {
     output->y = a->y + b->y;
 }
 
-void p_vector_rotate(Vector *output, Vector const *v, double theta) {
-    // TODO Implement.
-    (void) output, (void) v, (void) theta;
+void vector_rotate(Vector *output, Vector const *v, double theta) {
+    static M2x2 rotation;
+    p_get_rotation_matrix(&rotation, theta);
+
+    M1x2 const toMultiply = {{{v->x, v->y}}};
+    M1x2 rotated;
+    M1x2_multiply_M2x2(&rotated, &toMultiply, &rotation);
+    output->x = rotated.ns[0][0];
+    output->y = rotated.ns[0][1];
 }
 
 bool p_is_circle_overlap(Circle const *circleA, Circle const *circleB, CircleCollision *output) {
@@ -58,7 +73,7 @@ bool p_is_circle_overlap(Circle const *circleA, Circle const *circleB, CircleCol
     if (length <= radiusSum) {
         double const acLength = length * circleA->radius / radiusSum;
         p_normalize_vector(&ab, &ab, length);
-        p_vector_rotate(&output->normalVector, &ab, 3.1415926 * 0.5);
+        vector_rotate(&output->normalVector, &ab, 3.1415926 * 0.5);
         p_vector_multiply_scalar(&ab, &ab, acLength);
         p_vector_add_vector(&output->contactPoint, &ab, &circleA->origin);
         return output->isCollided;
@@ -90,11 +105,11 @@ bool p_is_aabb_overlap(AABB const *a, AABB const *b) {
     return true;
 }
 
-void get_circle_aabb(Circle const *circle, AABB *aabb) {
-    aabb->left = circle->origin.x - circle->radius;
-    aabb->top = circle->origin.y - circle->radius;
-    aabb->right = circle->origin.x + circle->radius;
-    aabb->bottom = circle->origin.y + circle->radius;
+void get_circle_aabb(AABB *output, Circle const *circle) {
+    output->left = circle->origin.x - circle->radius;
+    output->top = circle->origin.y - circle->radius;
+    output->right = circle->origin.x + circle->radius;
+    output->bottom = circle->origin.y + circle->radius;
 }
 
 void update_motion(RigidCircle *rigidCircle, double deltaSeconds) {
@@ -124,7 +139,7 @@ void add_gravity_to(RigidCircle *rigidCircle) {
 
 void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *aabb) {
     static AABB circleAABB;
-    get_circle_aabb(&rigidCircle->circle, &circleAABB);
+    get_circle_aabb(&circleAABB, &rigidCircle->circle);
 
     if (false == p_is_aabb_overlap(&circleAABB, aabb)) {
         return;
@@ -145,8 +160,8 @@ void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *aabb) {
 void collide_circles(RigidCircle *rigidCircleA, RigidCircle *rigidCircleB) {
     static AABB aabbA, aabbB;
     static CircleCollision collision;
-    get_circle_aabb(&rigidCircleA->circle, &aabbA);
-    get_circle_aabb(&rigidCircleB->circle, &aabbB);
+    get_circle_aabb(&aabbA, &rigidCircleA->circle);
+    get_circle_aabb(&aabbB, &rigidCircleB->circle);
 
     if (false == p_is_aabb_overlap(&aabbA, &aabbB)) {
         return;

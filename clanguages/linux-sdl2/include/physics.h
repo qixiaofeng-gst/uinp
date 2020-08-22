@@ -37,9 +37,10 @@ typedef struct p_RigidAABB {
     Motion motion;
 } RigidAABB;
 
+void vector_rotate(Vector *output, Vector const *v, double theta);
 void add_gravity_to(RigidCircle *);
 void update_motion(RigidCircle *, double);
-void get_circle_aabb(Circle const *, AABB *);
+void get_circle_aabb(AABB *, Circle const *);
 
 void collide_circle_with_aabb(RigidCircle *, AABB const *);
 void collide_circles(RigidCircle *, RigidCircle *);
