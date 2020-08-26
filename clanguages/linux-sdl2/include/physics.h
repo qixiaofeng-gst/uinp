@@ -5,10 +5,9 @@
 #ifndef QXF_CANVAS_PHYSICS_H
 #define QXF_CANVAS_PHYSICS_H
 
-typedef struct p_2D {
-    double x;
-    double y;
-} Point, Vector;
+#include "matrix.h"
+
+typedef M1x2 Point, Vector;
 
 typedef struct p_Motion {
     Vector velocity;
@@ -43,6 +42,7 @@ void update_motion(RigidCircle *, double);
 void get_circle_aabb(AABB *, Circle const *);
 
 void collide_circle_with_aabb(RigidCircle *, AABB const *);
+void collide_circle_with_circle(RigidCircle *, Circle const *);
 void collide_circles(RigidCircle *, RigidCircle *);
 
 #endif //QXF_CANVAS_PHYSICS_H

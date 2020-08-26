@@ -25,46 +25,46 @@ void p_get_rotation_matrix(M2x2 *output, double theta) {
 }
 
 double p_calc_vector_len(Vector const *v) {
-    return sqrt(v->x * v->x + v->y * v->y);
+    return sqrt(M1x2_dot_M1x2(v, v));
 }
 
 void p_normalize_vector(Vector *output, Vector const *v, double length) {
-    output->x = v->x / length;
-    output->y = v->y / length;
+    output->ns[0][0] = v->ns[0][0] / length;
+    output->ns[0][1] = v->ns[0][1] / length;
 }
 
 void p_vector_multiply_scalar(Vector *output, Vector const *v, double s) {
-    output->x = v->x * s;
-    output->y = v->y * s;
+    output->ns[0][0] = v->ns[0][0] * s;
+    output->ns[0][1] = v->ns[0][1] * s;
 }
 
 void p_vector_add_vector(Vector *output, Vector const *a, Vector const *b) {
-    output->x = a->x + b->x;
-    output->y = a->y + b->y;
+    output->ns[0][0] = a->ns[0][0] + b->ns[0][0];
+    output->ns[0][1] = a->ns[0][1] + b->ns[0][1];
 }
 
 void vector_rotate(Vector *output, Vector const *v, double theta) {
     static M2x2 rotation;
     p_get_rotation_matrix(&rotation, theta);
 
-    M1x2 const toMultiply = {{{v->x, v->y}}};
+    M1x2 const toMultiply = {{{v->ns[0][0], v->ns[0][1]}}};
     M1x2 rotated;
     M1x2_multiply_M2x2(&rotated, &toMultiply, &rotation);
-    output->x = rotated.ns[0][0];
-    output->y = rotated.ns[0][1];
+    output->ns[0][0] = rotated.ns[0][0];
+    output->ns[0][1] = rotated.ns[0][1];
 }
 
 bool p_is_circle_overlap(Circle const *circleA, Circle const *circleB, CircleCollision *output) {
     static Vector ab;
-    ab.x = circleB->origin.x - circleA->origin.x;
-    ab.y = circleB->origin.y - circleA->origin.y;
+    ab.ns[0][0] = circleB->origin.ns[0][0] - circleA->origin.ns[0][0];
+    ab.ns[0][1] = circleB->origin.ns[0][1] - circleA->origin.ns[0][1];
 
     output->isCollided = true;
-    if (0 == ab.x && 0 == ab.y) {
-        output->contactPoint.x = circleA->origin.x;
-        output->contactPoint.y = circleA->origin.y;
-        output->normalVector.x = 0;
-        output->normalVector.y = 0;
+    if (0 == ab.ns[0][0] && 0 == ab.ns[0][1]) {
+        output->contactPoint.ns[0][0] = circleA->origin.ns[0][0];
+        output->contactPoint.ns[0][1] = circleA->origin.ns[0][1];
+        output->normalVector.ns[0][0] = 0;
+        output->normalVector.ns[0][1] = 0;
         return output->isCollided;
     }
     double const
@@ -106,27 +106,27 @@ bool p_is_aabb_overlap(AABB const *a, AABB const *b) {
 }
 
 void get_circle_aabb(AABB *output, Circle const *circle) {
-    output->left = circle->origin.x - circle->radius;
-    output->top = circle->origin.y - circle->radius;
-    output->right = circle->origin.x + circle->radius;
-    output->bottom = circle->origin.y + circle->radius;
+    output->left = circle->origin.ns[0][0] - circle->radius;
+    output->top = circle->origin.ns[0][1] - circle->radius;
+    output->right = circle->origin.ns[0][0] + circle->radius;
+    output->bottom = circle->origin.ns[0][1] + circle->radius;
 }
 
 void update_motion(RigidCircle *rigidCircle, double deltaSeconds) {
     #define M_update(t) \
     double const\
-        t##VelocityIncrement = deltaSeconds * rigidCircle->motion.acceleration.t,\
-        t##VelocityIncrementHalf = t##VelocityIncrement * 0.5,\
-        t##VelocityMiddle = rigidCircle->motion.velocity.t + t##VelocityIncrementHalf,\
-        t##Movement = deltaSeconds * t##VelocityMiddle;\
+        velocityIncrement##t = deltaSeconds * rigidCircle->motion.acceleration.ns[0][t],\
+        velocityIncrementHalf##t = velocityIncrement##t * 0.5,\
+        velocityMiddle##t = rigidCircle->motion.velocity.ns[0][t] + velocityIncrementHalf##t,\
+        movement##t = deltaSeconds * velocityMiddle##t;\
     /*printf(#t": %+5.4f, d"#t": %+5.4f, ds: %+5.4f, mv: %+5.4f; ",\
         rigidCircle->motion.velocity.t, rigidCircle->motion.acceleration.t,\
         deltaSeconds, t##Movement);*/\
-    rigidCircle->motion.velocity.t += t##VelocityIncrement;\
-    rigidCircle->circle.origin.t += t##Movement;
+    rigidCircle->motion.velocity.ns[0][t] += velocityIncrement##t;\
+    rigidCircle->circle.origin.ns[0][t] += movement##t;
 
-    M_update(y)
-    M_update(x)
+    M_update(0)
+    M_update(1)
     // printf("\n");
 
     #undef M_update
@@ -134,7 +134,7 @@ void update_motion(RigidCircle *rigidCircle, double deltaSeconds) {
 
 void add_gravity_to(RigidCircle *rigidCircle) {
     static double const G_actual_g = m_g * m_pixels_per_meter;
-    rigidCircle->motion.acceleration.y += G_actual_g;
+    rigidCircle->motion.acceleration.ns[0][1] += G_actual_g;
 }
 
 void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *aabb) {
@@ -146,15 +146,36 @@ void collide_circle_with_aabb(RigidCircle *rigidCircle, AABB const *aabb) {
     }
 
     if (
-            (rigidCircle->circle.origin.y < aabb->top && rigidCircle->motion.velocity.y > 0) ||
-            (rigidCircle->circle.origin.y > aabb->bottom && rigidCircle->motion.velocity.y < 0)
+            (rigidCircle->circle.origin.ns[0][1] < aabb->top && rigidCircle->motion.velocity.ns[0][1] > 0) ||
+            (rigidCircle->circle.origin.ns[0][1] > aabb->bottom && rigidCircle->motion.velocity.ns[0][1] < 0)
             ) {
         // Vertical
-        rigidCircle->motion.velocity.y = -rigidCircle->motion.velocity.y;
+        rigidCircle->motion.velocity.ns[0][1] = -rigidCircle->motion.velocity.ns[0][1];
     } else {
         // Horizontal
-        rigidCircle->motion.velocity.x = -rigidCircle->motion.velocity.x;
+        rigidCircle->motion.velocity.ns[0][0] = -rigidCircle->motion.velocity.ns[0][0];
     }
+}
+
+void collide_circle_with_circle(RigidCircle *rigidCircle, Circle const *staticCircle) {
+    static AABB a, b;
+    static CircleCollision collision;
+    get_circle_aabb(&a, &rigidCircle->circle);
+    get_circle_aabb(&b, staticCircle);
+    if (false == p_is_aabb_overlap(&a, &b)) {
+        return;
+    }
+    if (false == p_is_circle_overlap(&rigidCircle->circle, staticCircle, &collision)) {
+        return;
+    }
+    /**
+     * a and b are vectors.
+     * a_1 is projection of a on b.
+     * a_2 is rejection of a on b.
+     * a_1 = b * \dot(a, b)/\dot(b, b);
+     * a_2 = a - a_1;
+     */
+    // TODO Implement.
 }
 
 void collide_circles(RigidCircle *rigidCircleA, RigidCircle *rigidCircleB) {

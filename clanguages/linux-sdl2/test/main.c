@@ -5,13 +5,16 @@
 
 /*TODO
  * # Two ball bounce.
- *   - Both moving.
  *   - One moving.
+ *   - Both moving.
  * # Matrix math.
  * # Engine: File based objects loader.
  * # Engine: Objects manager.
  * # Engine: Physics manager.
  * # Double-buffer.
+ *
+ * Done:
+ * # Replace physics structs with matrix stuff.
  */
 
 #define M_print_aabb(aabb) p_print_aabb(aabb, #aabb, __FUNCTION__)
@@ -34,6 +37,11 @@ void p_test_matrix() {
     M1x2_multiply_M2x2(&out1x2, &m1X2, &i2x2);
     M_test_int(M1x2_get_item(&m1X2, 1, 1) == M1x2_get_item(&out1x2, 1, 1), true);
     M_test_int(M1x2_get_item(&m1X2, 1, 2) == M1x2_get_item(&out1x2, 1, 2), true);
+    M_test_int(M1x2_dot_M1x2(&m1X2, &out1x2), 13);
+    M1x2_multiply_scalar(&out1x2, &m1X2, 1);
+    M_test_int(M1x2_get_item(&m1X2, 1, 1) == M1x2_get_item(&out1x2, 1, 1), true);
+    M_test_int(M1x2_get_item(&m1X2, 1, 2) == M1x2_get_item(&out1x2, 1, 2), true);
+
     M2x2_multiply_M2x2(&out2x2, &i2x2, &a2x2);
     M_test_int(M2x2_get_item(&a2x2, 1, 1) == M2x2_get_item(&out2x2, 1, 1), true);
     M_test_int(M2x2_get_item(&a2x2, 1, 2) == M2x2_get_item(&out2x2, 1, 2), true);

@@ -1,5 +1,5 @@
 - [Done] [创建比对现存所有 Environment 的演示](http://jira.corp.hachibot.com/browse/AI-30)
-- [In-progress] [将变速箱应用到 dacong 项目中](http://jira.corp.hachibot.com/browse/AI-33)
+- [In-progress] [部署和测试 vvui-ros 节点](http://jira.corp.hachibot.com/browse/AI-36)
 
 - 抽取 python 公共模块
 现存问题：

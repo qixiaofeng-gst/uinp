@@ -54,8 +54,8 @@ void p_draw_rotating_line(SDL_Renderer *renderer, int oX, int oY, double theta) 
 void p_draw_circle(SDL_Renderer *renderer, Circle *circle) {
     p_fill_circle_with_formula(
             renderer,
-            M_round(circle->origin.x),
-            M_round(circle->origin.y),
+            M_round(circle->origin.ns[0][0]),
+            M_round(circle->origin.ns[0][1]),
             M_round(circle->radius)
     );
 }
@@ -72,12 +72,19 @@ void p_draw_aabb(SDL_Renderer *renderer, AABB *aabb) {
 void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     static double passedSeconds = 0.0;
     static RigidCircle rigidCircleA = {
-            {{150.0, 150.0,}, 10.0,},
-            {{320.0, 0.0,},   {0.0, 0.0,},},
+            {{{{150.0, 150.0,}}}, 10.0,},
+            {
+             {{{320.0, 0.0,}}},
+                                  {{{0.0, 0.0,}}},
+            },
     }, rigidCircleB = {
-            {{150.0, 170.0,}, 10.0,},
-            {{0.0,   0.0,},   {0.0, 0.0,},},
+            {{{{170.0, 170.0,}}}, 10.0,},
+            {
+             {{{0.0,   0.0,}}},
+                                  {{{0.0, 0.0,}}},
+            },
     };
+    static Circle staticCircle = {{{{160, 250,}}}, 20.0};
     static AABB
             ground = {0.0, 400.0, 640.0, 480.0,},
             rightWall = {510, 0, 640, 480,},
@@ -117,11 +124,13 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     collide_circle_with_aabb(&rigidCircleB, &leftWall);
     collide_circle_with_aabb(&rigidCircleB, &middle);
     collide_circle_with_aabb(&rigidCircleB, &ceil);
+    collide_circle_with_circle(&rigidCircleB, &staticCircle);
 
     collide_circles(&rigidCircleA, &rigidCircleB);
 
     p_draw_circle(renderer, &rigidCircleA.circle);
     p_draw_circle(renderer, &rigidCircleB.circle);
+    p_draw_circle(renderer, &staticCircle);
 
     p_draw_aabb(renderer, &ground);
     p_draw_aabb(renderer, &leftWall);
@@ -129,12 +138,12 @@ void default_render(SDL_Renderer *renderer, double deltaSeconds) {
     p_draw_aabb(renderer, &middle);
     p_draw_aabb(renderer, &ceil);
 
-    Vector toDraw = {400, 400}, rotated;
-    SDL_RenderDrawLine(renderer, 0, 0, M_round(toDraw.x), M_round(toDraw.y));
+    Vector toDraw = {{{400, 400}}}, rotated;
+    SDL_RenderDrawLine(renderer, 0, 0, M_round(toDraw.ns[0][0]), M_round(toDraw.ns[0][1]));
     vector_rotate(&rotated, &toDraw, 3.1415926 * 0.2);
-    SDL_RenderDrawLine(renderer, 0, 0, M_round(rotated.x), M_round(rotated.y));
+    SDL_RenderDrawLine(renderer, 0, 0, M_round(rotated.ns[0][0]), M_round(rotated.ns[0][1]));
     vector_rotate(&rotated, &toDraw, -3.1415926 * 0.1);
-    SDL_RenderDrawLine(renderer, 0, 0, M_round(rotated.x), M_round(rotated.y));
+    SDL_RenderDrawLine(renderer, 0, 0, M_round(rotated.ns[0][0]), M_round(rotated.ns[0][1]));
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
 }
