@@ -1,4 +1,5 @@
-- [In-progress] [给仿真平台添加功能 - Phase Alpha](http://jira.corp.hachibot.com/browse/AI-28)
+- [Done] [创建比对现存所有 Environment 的演示](http://jira.corp.hachibot.com/browse/AI-30)
+- [In-progress] [将变速箱应用到 dacong 项目中](http://jira.corp.hachibot.com/browse/AI-33)
 
 - 抽取 python 公共模块
 现存问题：
@@ -11,6 +12,9 @@
 1. ...
 
 _______
+播放科大讯飞6麦克风 SDK 录制的原始音频：ffplay -autoexit -f s32le -ar 16000 -ac 8 mic_demo_vvui_ori.pcm
+去噪过的：ffplay -autoexit -f s16le -ar 16000 mic_demo_vvui_deno.pcm
+
 black box of miao.yang: 100.50
 
 PID: Proportional Integral Derivative

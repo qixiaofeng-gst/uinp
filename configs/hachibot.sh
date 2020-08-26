@@ -238,7 +238,7 @@ py-tf2(){
 #======= ======= =======
 # Belows for dacong simulation.
 to-dc(){
-  cd ~/Documents/hachy-repos/dacong/build
+  cd ~/Documents/hachy-repos/dacong/cmake-build-dacongbuild
 }
 dc-activate() {
   source /var/local/venv-py3.6-for-raisim/bin/activate
