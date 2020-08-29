@@ -207,6 +207,12 @@ ds-run(){
   roslaunch deep_speaker demo.launch
 }
 alias to-ds=ds-cd
+xf-cd() {
+  to-har
+  cd ../xf6mic-ros-node
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PWD}/lib/x64
+}
+alias to-xf=xf-cd
 
 #======= ======= =======
 # Shortcut for sound processing projects.

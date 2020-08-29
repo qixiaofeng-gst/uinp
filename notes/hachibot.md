@@ -1,5 +1,4 @@
-- [Done] [创建比对现存所有 Environment 的演示](http://jira.corp.hachibot.com/browse/AI-30)
-- [In-progress] [部署和测试 vvui-ros 节点](http://jira.corp.hachibot.com/browse/AI-36)
+- [In-progress] [接入基于 kaldi 的声纹识别](http://jira.corp.hachibot.com/browse/AI-37)
 
 - 抽取 python 公共模块
 现存问题：

@@ -13,15 +13,17 @@ import re
 
 _TEMPLATE_START = (
     '<html lang="zh">'
-    '<head><title>{}</title>'
+    '<head><title>%s</title>'
     '<meta http-equiv="content-type" content="text/html; charset=UTF-8">'
-    '</head><body>'
+    '<style>h1{font-size:1em;font-weight:200;}</style>'
+    '</head><body style="background-color:#CCE8CF;">'
 )
 _TEMPLATE_END = '</body></html>'
 
 _CHAPTER_TITLE_PATTERNS = [
     r'^\#+(第.+章\s?[^\#]+)\#+\s*$',
     r'^\s?(第.+章\s?.+)\s*$',
+    r'^卷\s+(第.+章\s?.+)\s*$',
     r'^\s?(\d+、\s?.+)\s*$',
 ]
 
@@ -45,8 +47,8 @@ def _get_file_names():
 
 
 def _process_file(file_name):
-    # 'GB2312' 'UTF-8'
-    with open(file_name, 'r', encoding = 'UTF-8') as file:
+    # 'GB2312' 'UTF-8' 'GBK'
+    with open(file_name, 'r', encoding = 'GBK') as file:
         lines_limit = 1000000
 
         processed_lines_count = 0
@@ -54,7 +56,7 @@ def _process_file(file_name):
         words_count = 0
         line = file.readline()
         head_and_toc = [
-            _TEMPLATE_START.format(line[:-1]),
+            _TEMPLATE_START % line[:-1],
             '<h1 id="content">目录</h1>',
         ]
         line = file.readline()
