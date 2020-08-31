@@ -58,6 +58,15 @@ double M1x##n##_dot_M1x##n(M1x##n const *a, M1x##n const *b)
     return dot;\
 }
 
+#define M_declare_vector_sub(n)\
+void M1x##n##_sub_M1x##n(M1x##n *output, M1x##n const *a, M1x##n const *b)
+
+#define M_define_vector_sub(n) M_declare_vector_sub(n) {\
+    for (unsigned i = 0; i < n; ++i) {\
+        output->ns[0][i] = (a->ns[0][i] - b->ns[0][i]);\
+    }\
+}
+
 M_declare_matrix(1, 2);
 
 M_declare_matrix(2, 2);
@@ -71,6 +80,8 @@ M_declare_matrix(3, 3);
 M_declare_matrix_multiply(3, 3, 3);
 
 M_declare_vector_dot(2);
+
+M_declare_vector_sub(2);
 
 M_declare_matrix_multiply_scalar(1, 2);
 

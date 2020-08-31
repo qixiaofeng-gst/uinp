@@ -75,8 +75,11 @@ ssh-car(){
 ssh-agx(){
   ssh -X runner@192.168.100.20
 }
-ssh-ai-server(){
+ssh-ai5-server(){
   ssh -X runner@192.168.100.5
+}
+ssh-ai6-server(){
+  ssh -X xiaofeng.qi@192.168.100.6
 }
 ssh-dog-nuc(){
   ssh -X caihuan@192.168.100.25

@@ -1,4 +1,7 @@
-- [In-progress] [接入基于 kaldi 的声纹识别](http://jira.corp.hachibot.com/browse/AI-37)
+- [In-progress] [优化声纹识别过程](http://jira.corp.hachibot.com/browse/AI-38)
+TODO:
+1. 字符串名字改数字ID
+1. 部署到 100.6
 
 - 抽取 python 公共模块
 现存问题：
