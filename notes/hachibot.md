@@ -1,7 +1,8 @@
 - [In-progress] [优化声纹识别过程](http://jira.corp.hachibot.com/browse/AI-38)
-TODO:
-1. 字符串名字改数字ID
-1. 部署到 100.6
+- [Done] [实现声控指令](http://jira.corp.hachibot.com/browse/AI-39)
+- [Closed] [使用 conda 的 environment.yaml 替换 requirement.txt](http://jira.corp.hachibot.com/browse/AI-25)
+
+noise suppress: obs studio
 
 - 抽取 python 公共模块
 现存问题：

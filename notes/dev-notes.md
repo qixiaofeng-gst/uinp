@@ -135,6 +135,9 @@ Windows 下可创建快捷方式并添加参数
   gpg 将自动检测同目录下无后缀同名文件，如果报出 No public key 的问题，可查看输出中的 RSA id，
   调 `gpg --search-keys the_rsa_id` 按命令行提示操作可导入 public key，`gpg --list-keys` 可列出所有已导入的 public key，
   `gpg --edit-key the_rsa_id` 可对相应的 public key 进行编辑。
+* gpg 不提示密码的问题：https://unix.stackexchange.com/questions/395875/gpg-does-not-ask-for-password
+  ~/.gnupg/gpg-agent.conf 中有两个值 default-cache-ttl（自上次使用计） 和 max-cache-ttl（总计）。
+  conf 文件的配置格式：name value
 
 # Legacy for GST JoyCity project
 ```
