@@ -33,16 +33,6 @@ void p_normalize_vector(Vector *output, Vector const *v, double length) {
     output->ns[0][1] = v->ns[0][1] / length;
 }
 
-void p_vector_multiply_scalar(Vector *output, Vector const *v, double s) {
-    output->ns[0][0] = v->ns[0][0] * s;
-    output->ns[0][1] = v->ns[0][1] * s;
-}
-
-void p_vector_add_vector(Vector *output, Vector const *a, Vector const *b) {
-    output->ns[0][0] = a->ns[0][0] + b->ns[0][0];
-    output->ns[0][1] = a->ns[0][1] + b->ns[0][1];
-}
-
 void vector_rotate(Vector *output, Vector const *v, double theta) {
     static M2x2 rotation;
     p_get_rotation_matrix(&rotation, theta);
@@ -74,8 +64,8 @@ bool p_is_circle_overlap(Circle const *circleA, Circle const *circleB, CircleCol
         double const acLength = length * circleA->radius / radiusSum;
         p_normalize_vector(&ab, &ab, length);
         vector_rotate(&output->normalVector, &ab, 3.1415926 * 0.5);
-        p_vector_multiply_scalar(&ab, &ab, acLength);
-        p_vector_add_vector(&output->contactPoint, &ab, &circleA->origin);
+        M1x2_multiply_scalar(&ab, &ab, acLength);
+        M1x2_add_M1x2(&output->contactPoint, &ab, &circleA->origin);
         return output->isCollided;
     }
 

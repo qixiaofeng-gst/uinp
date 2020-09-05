@@ -8,19 +8,21 @@ M_define_matrix(2, 2)
 
 M_define_matrix(1, 2)
 
-M_define_matrix_multiply(1, 2, 2)
-
-M_define_matrix_multiply(2, 2, 2)
-
-M_define_matrix(3, 3)
-
-M_define_matrix_multiply(3, 3, 3)
-
 M_define_vector_dot(2)
 
 M_define_vector_sub(2)
 
+M_define_vector_add(2)
+
+M_define_matrix_multiply(1, 2, 2)
+
+M_define_matrix_multiply(2, 2, 2)
+
 M_define_matrix_multiply_scalar(1, 2)
+
+M_define_matrix(3, 3)
+
+M_define_matrix_multiply(3, 3, 3)
 
 unsigned calc_indices_permutation_tau(unsigned const *indices, unsigned count) {
     unsigned tau = 0;
