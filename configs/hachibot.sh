@@ -72,8 +72,8 @@ to-lt(){
 start-tf(){
   docker run -u $(id -u):$(id -g) --gpus all -it tensorflow/tensorflow:latest-gpu bash
 }
-ssh-car(){
-  ssh -X caihuan@192.168.2.131
+ssh-dog-blue(){
+  ssh -X hachi@192.168.100.103
 }
 ssh-agx(){
   ssh -X runner@192.168.100.20
@@ -210,7 +210,7 @@ ds-cd(){
   cd ../deep-speaker
 }
 ds-run(){
-  roslaunch deep_speaker demo.launch
+  roslaunch deep_speaker recognize_speaker.launch
 }
 alias to-ds=ds-cd
 xf-cd() {
@@ -269,4 +269,7 @@ dc-ctrl() {
 }
 dc-video-record() {
   ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+$1,$2 output.mp4
+}
+dc-make-lcm() {
+  /var/local/dependencies/for-dacong/lcm-1.4.0/build/lcmgen/lcm-gen $1 $2
 }

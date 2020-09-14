@@ -1,4 +1,12 @@
-- [In-progress] [优化声纹识别过程](http://jira.corp.hachibot.com/browse/AI-38)
+- [Done] [将 motion-runner 中的模仿学习测试环境对齐到 motion-imitation 中的训练环境](http://jira.corp.hachibot.com/browse/AI-45)
+- [Done] [调查 DacongEnv coredump 的问题](http://jira.corp.hachibot.com/browse/AI-46)
+
+world（目前只有地面）、robot 在 envs/locomotion_gym_env.py reset 方法里被创建（在 200 行左右）。
+ref_model 在 envs/env_wrappers/imitation_task.py 里被创建、更新、渲染。
+
+_______
+webrtcvad: audio segmentation
+给正常语音添加噪音 https://zhuanlan.zhihu.com/p/98960359
 
 noise suppress: obs studio
 
