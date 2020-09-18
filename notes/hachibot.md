@@ -1,5 +1,4 @@
-- [Done] [将 motion-runner 中的模仿学习测试环境对齐到 motion-imitation 中的训练环境](http://jira.corp.hachibot.com/browse/AI-45)
-- [Done] [调查 DacongEnv coredump 的问题](http://jira.corp.hachibot.com/browse/AI-46)
+- [In-progress] [使用 MANN 为模仿学习生成参考动作](http://jira.corp.hachibot.com/browse/AI-47)
 
 world（目前只有地面）、robot 在 envs/locomotion_gym_env.py reset 方法里被创建（在 200 行左右）。
 ref_model 在 envs/env_wrappers/imitation_task.py 里被创建、更新、渲染。

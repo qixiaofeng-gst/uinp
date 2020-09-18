@@ -73,6 +73,7 @@ redux/mobox
 * 查看 head 与前一 commit 的差异 `git diff head~1 head`
 * 关闭自动行尾转换 `git config --global core.autocrlf false`
 * 清理所有已删除分支 `git fetch --prune --all` 或者 `git remote prune origin`
+* 回退一个 commit `git revert <commit-hash>`
 * 推送本地工程到远程空工程
   ```
   git pull origin master --allow-unrelated-histories

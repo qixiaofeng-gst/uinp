@@ -59,7 +59,8 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 ## 系统管理
 * 查看系统版本信息 `lsb_release -a`。
 * 查看已安装软件包 `dpkg -l`。
-* 查看硬件信息 `lscpu/lshw/hwinfo/lspci/lsscsi/lsusb/lnxi/lsblk/df/fdisk/mount/free/dmidecode/hdparm`，可以在 /proc 目录下找到一些系统硬件和配置信息。
+* 查看硬件信息 `lscpu/lshw/hwinfo/lspci/lsscsi/lsusb/lnxi/lsblk/df/fdisk/mount/free/dmidecode/hdparm`，
+可以在 /proc 目录下找到一些系统硬件和配置信息。
 * 查看 kernel ring buffer：`dmesg`。
 * 应用图标面板配置位置：~/.local/share/applications/;/usr/share/applications/。
 * 应用相关配置指令 `gsettings`。
@@ -70,6 +71,22 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 添加应用到目录 `gsettings set org.gnome.desktop.app-folders.folder:/org/gnome/desktop/app-folders/folders/Audio/
   apps "['audacious.desktop', 'brasero.desktop']"`。
   * 更详细的解释 https://developer.gnome.org/AppFolders/。
+* 手动创建应用程序 launcher 的步骤（https://averagelinuxuser.com/ubuntu_custom_launcher_dock/）：
+  * `sudo nano /usr/share/applications/<appname>.desktop`
+  * 将下列内容粘贴进去：
+  ```
+  #!/usr/bin/env xdg-open
+  [Desktop Entry]
+  Version=1.0
+  Type=Application
+  Terminal=false
+  Exec=/path/to/<appname>
+  Name=<AppName>
+  Comment=Description of YourApp
+  Icon=/path/to/yourapp.png
+  ```
+  * `sudo chmod +x /usr/share/applications/<appname>.desktop`
+  * 退出系统账户后重新登录。
 * 日志目录 /var/log/。
 * 如果某些不想删除的包出现在了 apt autoremove 的列表中，使用 apt install 这些包，可以将其从列表中移除。
 * PPA: Personal Package Archive：
