@@ -1,8 +1,11 @@
-- [In-progress] [使用 MANN 为模仿学习生成参考动作](http://jira.corp.hachibot.com/browse/AI-47)
+- [Done] 在 GPU2 服务器安装 raisim 环境。
+- [In-progress] Jira 使用培训。
+
 
 world（目前只有地面）、robot 在 envs/locomotion_gym_env.py reset 方法里被创建（在 200 行左右）。
 ref_model 在 envs/env_wrappers/imitation_task.py 里被创建、更新、渲染。
 
+macOS SMB connecting: finder -> menu 'Go' -> last item 'connect to server'
 _______
 webrtcvad: audio segmentation
 给正常语音添加噪音 https://zhuanlan.zhihu.com/p/98960359

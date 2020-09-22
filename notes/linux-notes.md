@@ -62,6 +62,19 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 查看硬件信息 `lscpu/lshw/hwinfo/lspci/lsscsi/lsusb/lnxi/lsblk/df/fdisk/mount/free/dmidecode/hdparm`，
 可以在 /proc 目录下找到一些系统硬件和配置信息。
 * 查看 kernel ring buffer：`dmesg`。
+* 日志目录 /var/log/。
+* 如果某些不想删除的包出现在了 apt autoremove 的列表中，使用 apt install 这些包，可以将其从列表中移除。
+* PPA: Personal Package Archive：
+  * 使用 `apt install -y software-properties-common` 安装 `add-apt-repository` 指令；
+  * 要移除使用 `add-apt-repository` 添加的个人仓库，使用 `apt-key list/del` 来完成。
+* 管理应用的名称/版本 `update-alternatives /path/to/symbolic-name /path/to/real/executable`。
+* 系统级环境变量设置在 `/etc/profile.d/*.sh` 或 `/etc/environment`，推荐前者。
+* 文件系统的挂载配置在 /etc/fstab 中。
+
+## 应用程序
+* 通过 deb 文件安装 `sudo dpkg -i /path/to/deb/file && sudo apt install -f`。
+* 截屏工具 shutter。
+* 音频录制和播放 `arecord/aplay`。
 * 应用图标面板配置位置：~/.local/share/applications/;/usr/share/applications/。
 * 应用相关配置指令 `gsettings`。
   * 查看已有目录 `gsettings get org.gnome.desktop.app-folders folder-children`。
@@ -87,24 +100,22 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   ```
   * `sudo chmod +x /usr/share/applications/<appname>.desktop`
   * 退出系统账户后重新登录。
-* 日志目录 /var/log/。
-* 如果某些不想删除的包出现在了 apt autoremove 的列表中，使用 apt install 这些包，可以将其从列表中移除。
-* PPA: Personal Package Archive：
-  * 使用 `apt install -y software-properties-common` 安装 `add-apt-repository` 指令；
-  * 要移除使用 `add-apt-repository` 添加的个人仓库，使用 `apt-key list/del` 来完成。
+
+## 用户
 * 列出用户 `cat /etc/passwd`，格式：username:password:UID:GID:Comment:HomeDirectory:ShellUsed。
 * `cat /etc/passwd | cut -d: -f1` 或 `cat /etc/passwd | awk -F: '{print $1}'`。
 * `getent passwd`。
 * `who`。
 * 列出用户组 `cat /etc/group`，格式：groupname:password:GID:users。
-* 管理应用的名称/版本 `update-alternatives /path/to/symbolic-name /path/to/real/executable`。
-* 系统级环境变量设置在 `/etc/profile.d/*.sh` 或 `/etc/environment`，推荐前者。
-* 文件系统的挂载配置在 /etc/fstab 中。
-
-## 应用程序
-* 通过 deb 文件安装 `sudo dpkg -i /path/to/deb/file && sudo apt install -f`。
-* 截屏工具 shutter。
-* 音频录制和播放 `arecord/aplay`。
+* 查看超级用户的配置 `cat /etc/sudoers`
+* 查看系统支持的 shell 类型： `cat /etc/shells`
+* 查看系统用户的登录 shell 类型： `cat /etc/passwd`
+* 修改系统用户的登录 shell 类型：
+  * `usermod --shell /bin/bash <username>`
+  * 或者 `chsh --shell /bin/sh <username>`
+  * 针对所有域用户 `sudo vim /etc/sssd/sssd.conf` 修改其中的 default_shell 的值
+  * 针对当前登录的域用户，`getent passwd $(id -un) | sudo tee -a /etc/passwd`
+* 密码的密文在 `/etc/shadow` 中，参见 https://www.cyberciti.biz/faq/where-are-the-passwords-of-the-users-located-in-linux/
 
 ## 开发
 * 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
@@ -144,7 +155,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 查找命令相关 `updatedb/mlocate/whereis/find`。
 * 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`。
 * 录制屏幕 `ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+99,88 output.mp4`。
-* Under ubuntu use `cat /etc/X11/default-display-manager` to check which display manager being used.
+* Under ubuntu use `cat /etc/X11/default-display-manager` to check using which display manager.
 * Under ubuntu use `nautilus /path/to/folder` to open folder with GUI file manager.
 * Under ubuntu use `eog <picture-path>` to view picture. Alternatives: `feh/xdg-open/display`.
 * 解决 docker 权限问题：

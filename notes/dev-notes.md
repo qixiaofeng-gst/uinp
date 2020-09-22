@@ -35,12 +35,25 @@ redux/mobox
 * C on linux, `struct S a = *b;`, b pointed struct S is copied to a.
 * C on linux, public struct should be put in header file, private one put in .c file.
 * 查看系统中已经安装的 python 模块：`pydoc modules`/`pip list/freeze`/`help("modules")`
+* python 的依赖管理工具的配置文件位置：
+  * setuptools、easy_install: `~/.pydistutils.cfg`
+  ```cfg
+  [easy_install]
+  index-url=<the-url>
+  ```
+  * pip: `~/.pip/pip.conf` 或者 `~/.config/pip/pip.conf`
+  ```cfg
+  [global]
+  index-url = <the-url>
+  ```
+  * 阿里云的源： https://mirrors.aliyun.com/pypi/simple/
 * Duck-typing 其实是无类型，执行任何运算时只看对象是否拥有所需的操作符或方法。
 * C/C++ 当中，程序抛出异常退出前的打印，如果是 printf，要加 '\n'，不加则可能没有输出。
 * Anaconda Usage:
   ```bash
   conda env export > environment.yaml
   conda env create -f environment.yaml
+  conda env remove --name <env-name>
   ```
 
 # 编辑器
@@ -80,6 +93,7 @@ redux/mobox
   git remote add origin git@blablabla:url
   git push -u origin master
   ```
+* 切换远程 URL `git remote set-url origin <url>`
 * 查看远程分支 `git branch -r` or `git branch -a`
 * 保存用户密码 `git config --global credential.helper store`
 
