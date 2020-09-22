@@ -1,9 +1,7 @@
 - [Done] 在 GPU2 服务器安装 raisim 环境。
-- [In-progress] Jira 使用培训。
-
-
-world（目前只有地面）、robot 在 envs/locomotion_gym_env.py reset 方法里被创建（在 200 行左右）。
-ref_model 在 envs/env_wrappers/imitation_task.py 里被创建、更新、渲染。
+- [Done] Jira 使用培训。
+- [Done] 使得 hachy 使用与 motion-imitation 一致的 zip 格式存储模型参数。
+- [In-progress] Jira dashboard 教程。
 
 macOS SMB connecting: finder -> menu 'Go' -> last item 'connect to server'
 _______
