@@ -1,8 +1,3 @@
-- [Done] 在 GPU2 服务器安装 raisim 环境。
-- [Done] Jira 使用培训。
-- [Done] 使得 hachy 使用与 motion-imitation 一致的 zip 格式存储模型参数。
-- [In-progress] Jira dashboard 教程。
-
 macOS SMB connecting: finder -> menu 'Go' -> last item 'connect to server'
 _______
 webrtcvad: audio segmentation
