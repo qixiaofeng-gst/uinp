@@ -13,10 +13,14 @@ hachy-calibrate() {
 hachy-test() {
   python -m launcher.test
 }
+hachy-train() {
+  python -m launcher.train
+}
 alias hc-cmake=hachy-cmake
 alias hc-make=hachy-make
 alias hc-calibrate=hachy-calibrate
 alias hc-test=hachy-test
+alias hc-train=hachy-train
 
 export DACONG_BUILD=/var/local/local-build/for-dacong
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DACONG_BUILD}/lib
