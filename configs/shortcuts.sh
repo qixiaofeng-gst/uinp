@@ -134,3 +134,8 @@ gc-run() { ## The entry shortcut for gomoku-c.
   cd ~/Documents/git-repos/uinp/clanguages/gomoku-c
   cmake-build-release/start_gomoku
 }
+
+start-yii() { ## Start the yes-it-is server.
+  cd ~/Documents/git-repos/yes-it-is
+  node server/index.js
+}
