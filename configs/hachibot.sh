@@ -136,7 +136,7 @@ har-sync(){
 }
 har-cd(){
   setup-catkin
-  cd ~/Documents/hachy-repos/src/human-activity-recognizer
+  cd ~/Documents/hachy-repos/catkin-ws/src/human-activity-recognizer
 }
 alias to-har=har-cd
 har-test(){
