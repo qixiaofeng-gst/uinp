@@ -1,7 +1,4 @@
-如果 ROS 消息无法接收，第一个思路是确认 master 和 client 都正确地设置了
-ROS_MASTER_URI、ROS_IP、ROS_HOSTNAME，使用 localhost 是不行的，最好全都是 IP。
-
-100.5 /hachi/ai_detect/human-activity-recognizer/bin bx/pose/refactor2singleprocess 有修改没提交。
+Proposal: 将分支都合并起来？
 
 macOS SMB connecting: finder -> menu 'Go' -> last item 'connect to server'
 _______
