@@ -123,17 +123,20 @@ count(){
   wc -l `find $1 -type f` | sort -n -
 }
 
+setup-catkin() {
+  local hcr=~/Documents/hachy-repos
+  source ${hcr}/catkin-ws/devel/setup.bash
+  source ${hcr}/catkin-py3-ws/devel/setup.bash --extend
+}
+
 #======= ======= =======
 # Belows for human-activity-recognizer project
 har-sync(){
   rsync -v -r -f '- .git' -f '- data' -f '- models' ../human-activity-recognizer runner@192.168.100.20:/hachi/ai_motion/catkin_ws/src/
 }
 har-cd(){
-  local hcr=~/Documents/hachy-repos
-  local catkin_ws=${hcr}/catkin-ws
-  cd ${catkin_ws}/src/human-activity-recognizer
-  source ${catkin_ws}/devel/setup.bash
-  source ${hcr}/catkin-py3-ws/devel/setup.bash --extend
+  setup-catkin
+  cd ~/Documents/hachy-repos/src/human-activity-recognizer
 }
 alias to-har=har-cd
 har-test(){
