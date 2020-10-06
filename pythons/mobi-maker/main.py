@@ -38,17 +38,17 @@ def _search_chapter_name(line):
 
 def _get_file_names():
     import argparse
-    parser = argparse.ArgumentParser(description = 'Parse file name.')
+    parser = argparse.ArgumentParser(description='Parse file name.')
     parser.add_argument(
-        'file_names', metavar = 'file_name', type = str,
-        nargs = '+', help = 'file name',
+        'file_names', metavar='file_name', type=str,
+        nargs='+', help='file name',
     )
     return parser.parse_args()
 
 
 def _process_file(file_name):
     # 'GB2312' 'UTF-8' 'GBK'
-    with open(file_name, 'r', encoding = 'UTF-8') as file:
+    with open(file_name, 'r', encoding='UTF-8') as file:
         lines_limit = 1000000
 
         processed_lines_count = 0
@@ -90,7 +90,7 @@ def _process_file(file_name):
 
 
 def _save_to_html(file_name, head_and_toc, text):
-    with open(file_name, 'w+', encoding = 'UTF-8') as file:
+    with open(file_name, 'w+', encoding='UTF-8') as file:
         file.writelines(head_and_toc)
         file.writelines(text)
         file.writelines([_TEMPLATE_END])
