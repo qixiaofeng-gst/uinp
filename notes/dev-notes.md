@@ -55,6 +55,9 @@ redux/mobox
   conda env export > environment.yaml
   conda env create -f environment.yaml
   conda env remove --name <env-name>
+  
+  conda create -n <env-name> <package-spec>
+  # eg. conda create -n tf-py3.7 python=3.7
   ```
 
 # 编辑器

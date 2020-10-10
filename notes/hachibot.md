@@ -1,3 +1,6 @@
+https://github.com/jw1401/PPO-Tensorflow-2.0
+https://github.com/fomorians/ppo
+
 Proposal: 将分支都合并起来？
 
 macOS SMB connecting: finder -> menu 'Go' -> last item 'connect to server'
