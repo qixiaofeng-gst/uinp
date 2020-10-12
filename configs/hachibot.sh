@@ -280,3 +280,15 @@ dc-video-record() {
 dc-make-lcm() {
   /var/local/dependencies/for-dacong/lcm-1.4.0/build/lcmgen/lcm-gen $1 $2
 }
+
+setup-dc-ctrl() {
+  sudo ifconfig enp7s0 multicast
+  sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev enp7s0
+  export ROS_HOSTNAME=192.168.10.1
+  export ROS_IP=192.168.10.1
+  export ROS_MASTER_URI=http://192.168.10.1:11311
+}
+ssh-dc() {
+  # hint: 1-6
+  ssh hachi@192.168.10.10
+}
