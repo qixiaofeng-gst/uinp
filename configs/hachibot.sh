@@ -281,12 +281,25 @@ dc-make-lcm() {
   /var/local/dependencies/for-dacong/lcm-1.4.0/build/lcmgen/lcm-gen $1 $2
 }
 
+check-nic-id() { ## nic: network interface card. 打印主网卡的 ID。
+  local first_line=`ifconfig | grep "^[a-z0-9]*:" | head -n 1`
+  local nc_id=`expr "$first_line" : '\(^[a-z0-9]*\)'`
+  echo $nc_id
+}
+setup-dc-connection() { # Check if the dog power on.
+  local nic=`check-nic-id`
+  sudo -s
+  echo 1 > /proc/sys/net/ipv4/ip_forward
+  iptables -t nat -A POSTROUTING -o $nic -j MASQUERADE
+  iptables -t nat -A POSTROUTING -o wlp0s20f3 -j MASQUERADE
+  iptables-save > /etc/iptables.rules
+  exit
+}
 setup-dc-ctrl() {
-  sudo ifconfig enp7s0 multicast
-  sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev enp7s0
-  export ROS_HOSTNAME=192.168.10.1
-  export ROS_IP=192.168.10.1
-  export ROS_MASTER_URI=http://192.168.10.1:11311
+  local nic=`check-nic-id`
+  sudo ifconfig $nic multicast
+  sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev $nic
+  sw-ros-pure-local
 }
 ssh-dc() {
   # hint: 1-6
