@@ -55,7 +55,9 @@ sw-ros-ai5() {
   export ROS_MASTER_URI=http://192.168.100.5:11311
 }
 sw-ros-pure-local() {
+  # 下面一行针对 roscore 运行的机器。
   export ROS_MASTER_URI=http://127.0.0.1:11311
+  # 下面两行针对本地的 ROS 节点，设置成当前机器的数字 IP。
   export ROS_IP=127.0.0.1
   export ROS_HOSTNAME=127.0.0.1
 }
@@ -64,6 +66,9 @@ sw-ros-jetson() {
 }
 sw-ros-nuc() {
   export ROS_MASTER_URI=http://192.168.100.25:11311
+}
+sw-ros-radar-nuc() {
+  export ROS_MASTER_URI=http://192.168.100.27:11311
 }
 sw-ros-local
 alias lock='gnome-screensaver-command -l'
@@ -263,24 +268,25 @@ dc-activate() {
   source /var/local/venv-py3.6-for-raisim/bin/activate
 }
 dc-sim() {
-  to-dc
   gnome-terminal -- roscore
   dc-old-sim
 }
 dc-old-sim() {
+  to-dc
   gnome-terminal -- sim/sim
 }
 dc-ctrl() {
   to-dc
   gnome-terminal -- user/MIT_Controller/mit_ctrl m s
 }
-dc-video-record() {
+record-video() {
   ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+$1,$2 output.mp4
 }
 dc-make-lcm() {
   /var/local/dependencies/for-dacong/lcm-1.4.0/build/lcmgen/lcm-gen $1 $2
 }
 
+# 下面的命令用于与真机调试
 check-nic-id() { ## nic: network interface card. 打印主网卡的 ID。
   local first_line=`ifconfig | grep "^[a-z0-9]*:" | head -n 1`
   local nc_id=`expr "$first_line" : '\(^[a-z0-9]*\)'`
@@ -288,12 +294,10 @@ check-nic-id() { ## nic: network interface card. 打印主网卡的 ID。
 }
 setup-dc-connection() { # Check if the dog power on.
   local nic=`check-nic-id`
-  sudo -s
   echo 1 > /proc/sys/net/ipv4/ip_forward
   iptables -t nat -A POSTROUTING -o $nic -j MASQUERADE
   iptables -t nat -A POSTROUTING -o wlp0s20f3 -j MASQUERADE
   iptables-save > /etc/iptables.rules
-  exit
 }
 setup-dc-ctrl() {
   local nic=`check-nic-id`
