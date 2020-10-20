@@ -273,6 +273,7 @@ dc-sim() {
 }
 dc-old-sim() {
   to-dc
+  rm -rf logs/*
   gnome-terminal -- sim/sim
 }
 dc-ctrl() {
