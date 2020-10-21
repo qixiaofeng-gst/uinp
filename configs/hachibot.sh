@@ -31,7 +31,7 @@ alias dc-cmake=dacong-cmake
 
 export ROS_IP=192.168.2.101
 export ROS_HOSTNAME=192.168.2.101
-source /opt/ros/melodic/setup.bash
+# source /opt/ros/melodic/setup.bash
 
 # ======= ======= ======= ======= ======= ======= =======
 to-hc(){

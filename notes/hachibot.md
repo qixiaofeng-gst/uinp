@@ -1,7 +1,3 @@
-dacong 的主分支切换到了 beta 2。
-catkin config -DPYTHON_EXECUTABLE=/var/local/anaconda3/envs/ai_motion_torch1_6/bin/python -DPYTHON_INCLUDE_DIR=/var/local/anaconda3/envs/ai_motion_torch1_6/include/python3.7m -DPYTHON_LIBRARY=/var/local/anaconda3/envs/ai_motion_torch1_6/lib/libpython3.7m.so
-catkin config --install
-
 https://github.com/jw1401/PPO-Tensorflow-2.0
 https://github.com/fomorians/ppo
 
