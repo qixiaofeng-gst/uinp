@@ -4,6 +4,7 @@
 
 ### 配置命令行
 * 实用的 ll 命令。在 ~/.bashrc 添加：`alias ll='ls -alh'`。
+* 神器 tmux，装了不后悔。
 
 ### 配置开发工具
 * 为 git 设置 ssh 密钥。
