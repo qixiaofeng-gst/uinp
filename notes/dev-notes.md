@@ -100,6 +100,8 @@ redux/mobox
 * 切换远程 URL `git remote set-url origin <url>`
 * 查看远程分支 `git branch -r` or `git branch -a`
 * 保存用户密码 `git config --global credential.helper store`
+* 新增 tag `git tag -a <tag-name> <commit-hash> && git push origin <tag-name>`
+* 删除 tag `git tag -d <tag-name> && git push origin --delete <tag-name>`
 
 # 常用指令
 * 使用命令行进行文本查找：`grep 'target-pattern' ./* -R`。
