@@ -49,7 +49,9 @@ sw-ros-car() {
   export ROS_MASTER_URI=http://192.168.2.131:11311
 }
 sw-ros-local() {
-  export ROS_MASTER_URI=http://192.168.2.101:11311
+  export ROS_MASTER_URI=http://192.168.2.100:11311
+  export ROS_IP=192.168.2.100
+  export ROS_HOSTNAME=192.168.2.100
 }
 sw-ros-ai5() {
   export ROS_MASTER_URI=http://192.168.100.5:11311

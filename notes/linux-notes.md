@@ -44,6 +44,12 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 ```
 * axel multithread download: `axel -a -n 12 http://url.to.download`, `-a` shows a progress bar.
 
+## 驱动
+* 如果 nvidia-smi 突然说连不上显卡驱动了，可使用 `sudo apt install nvidia-driver-440` 来尝试重新安装。   
+  如果显示驱动是已经安装好的，上面的指令会打印出版本号，比如 `450.80.02`。   
+  使用 `sudo apt install dkms` 确保 Dynamic Kernel Module Support 工具存在。
+  使用 `sudo dkms install -m nvidia -v 450.80.02` 重新生成驱动模块，然后重启电脑。
+
 ## 启停
 * 卡死重启：按下 `Sys Rq` 键，通常该健与 `Prtscn` 共键，因此 `Alt + Prtscn` 即可，按住 `Sys Rq` 的时候输入 `reisub`：
   1. unRaw 从 X Server 取回键盘控制权；
