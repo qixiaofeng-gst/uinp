@@ -59,6 +59,8 @@ redux/mobox
   conda create -n <env-name> <package-spec>
   # eg. conda create -n tf-py3.7 python=3.7
   ```
+* 查看可执行文件汇编信息：`objdump -S -d/--disassemble <file-path>`，`-S` 用于显示混在可执行文件中的源码（如果有）。
+* 将任意文件转换成 16 进制文本：`xxd <file-path>`，使用 `xxd -r <file-path>` 反向转换。类似工具还有 `hexdump`。
 
 # 编辑器
 ## Atom
