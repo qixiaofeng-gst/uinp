@@ -98,6 +98,12 @@ ssh-ai6-server(){
 ssh-dog-nuc(){
   ssh -X caihuan@192.168.100.25
 }
+ssh-radar-nuc(){
+  ssh -X runner@192.168.100.27
+}
+ssh-tv-nuc(){
+  ssh -X ai@192.168.100.31
+}
 rdp-agx(){
   xfreerdp 192.168.100.20
 }
