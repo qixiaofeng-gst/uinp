@@ -105,6 +105,10 @@ redux/mobox
 * 保存用户密码 `git config --global credential.helper store`
 * 新增 tag `git tag -a <tag-name> <commit-hash> && git push origin <tag-name>`
 * 删除 tag `git tag -d <tag-name> && git push origin --delete <tag-name>`
+* git 子模块相关：
+  * 添加：`git submodule add -b <branch-name> <url-to-repo>` 然后 `git submodule init`。
+  * 取得：`git submodule update --init --recursive`。
+  * 更新：`git pull --recurse-submodules` 或者 `git submodule update --remote`。
 
 # 常用指令
 * 使用命令行进行文本查找：`grep 'target-pattern' ./* -R`。
