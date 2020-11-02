@@ -83,6 +83,7 @@ redux/mobox
   git rm -r --cached .
   git add .
   ```
+* 修改最近一次 commit 的信息 `git commit --amend`
 * 切换到远程分支 `git co --track origin/<branch-name>`
 * 切换分支 `git co <branch-name>`
 * 新建分支 `git co -b <branch-name>` + `git push origin <branch-name>`

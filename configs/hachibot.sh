@@ -1,5 +1,9 @@
 export HACHY_BUILD=/var/local/local-build/for-raisim
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HACHY_BUILD}/lib
+export NEW_RAISIM_BUILD=/var/local/local-build/for-new-raisim
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${NEW_RAISIM_BUILD}/lib
+raisim-cmake() {
+  cmake .. -DCMAKE_INSTALL_PREFIX=$NEW_RAISIM_BUILD -DCMAKE_PREFIX_PATH=$NEW_RAISIM_BUILD -DPYBIND11_TEST=OFF
+}
 hachy-cmake() {
   cmake .. -DCMAKE_PREFIX_PATH=$HACHY_BUILD -DCMAKE_INSTALL_PREFIX=$HACHY_BUILD -DPYBIND11_TEST=OFF
 }
