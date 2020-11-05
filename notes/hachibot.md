@@ -1,8 +1,49 @@
+按分支的 Owner 列一下分支（Owner 是用头部的更新来确定的，可能不准确）：
+张钰：
+- vw_command
+- yu.zhang
+梦婷：
+- mtchen2011-jump-velocity-and-torque-only
+- mtchen2011_mtchen2011_torque_control_test
+- mtchen2011_mtchen2011_torque_control
+- mtchen2011_trot
+- mtchen2011-jump-velocity
+- mtchen2011_mtchen2011_torque_control_40
+- mtchen2011-jump
+- ref_joint_output
+- mtchen2011_no_joint_direction
+- rasim_fineturn
+- mtchen2011_amazing_show
+- mtchen-exp-kpkd
+- mtchen2011-0829
+- mtchen2011
+- mtchen2011_0701
+毕箫：
+- arms_two_height
+- arms_amazing_show
+- arms_amazing_show_limit
+- ai-cpu2
+毕箫 & 博士：
+- arms_large_kp_kd
+- arms_amazing_show_lym
+陈晨：
+- cc/new-motor-model
+
+-------
+
+RL 团队量化周报 —— RL 算法针对不同目标的训练效率评估（草稿 v0.1）
+
+RL 算法特指 RL 团队目前依赖的基于 PPO 的模仿学习算法，并且以下所陈述的。
+
+训练效率的定义：
+
+针对训练目标：
+1. 
 
 -------
 以后的量化周报备选：
-- 仿真环境的“真实性”衡量，真实性依赖于对真实环境的建模，对于不同方面有不同模型，比如地面摩擦、空气摩擦、运动学、动力学等等。
 - RL 算法针对不同目标的训练效率评估。
+- 仿真环境的“真实性”衡量，真实性依赖于对真实环境的建模，对于不同方面有不同模型，比如地面摩擦、空气摩擦、运动学、动力学等等。
 - 评估不同 RL 算法的上限，通过模型能够达到的控制效果来评估。
 - 将仿真性能、仿真真实性、RL 算法效率、RL 算法效果这四个方面进行综合考虑，对训练项目做总体的量化评估。
 - 团队开发的工程化程度评估。从需求管理、任务追踪、代码开发、代码库管理、发布库管理、测试系统这些方面抽取更多细节，评估权重，设计数值计算方式。
