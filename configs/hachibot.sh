@@ -33,8 +33,11 @@ dacong-cmake() {
 }
 alias dc-cmake=dacong-cmake
 
-export ROS_IP=192.168.2.101
-export ROS_HOSTNAME=192.168.2.101
+local_ip_addr=`hostname -I`
+local_ip_addr=`echo $local_ip_addr | sed 's/ *$//g'`
+export ROS_IP=$local_ip_addr
+export ROS_HOSTNAME=$local_ip_addr
+export ROS_MASTER_URI=http://$local_ip_addr:11311
 # source /opt/ros/melodic/setup.bash
 
 # ======= ======= ======= ======= ======= ======= =======
@@ -51,11 +54,6 @@ to-mr(){
 # Below lines 'sw' is the abbreviation of 'switch'.
 sw-ros-car() {
   export ROS_MASTER_URI=http://192.168.2.131:11311
-}
-sw-ros-local() {
-  export ROS_MASTER_URI=http://192.168.2.100:11311
-  export ROS_IP=192.168.2.100
-  export ROS_HOSTNAME=192.168.2.100
 }
 sw-ros-ai5() {
   export ROS_MASTER_URI=http://192.168.100.5:11311
@@ -76,7 +74,6 @@ sw-ros-nuc() {
 sw-ros-radar-nuc() {
   export ROS_MASTER_URI=http://192.168.100.27:11311
 }
-sw-ros-local
 alias lock='gnome-screensaver-command -l'
 to-uinp(){
   cd ~/Documents/git-repos/uinp
