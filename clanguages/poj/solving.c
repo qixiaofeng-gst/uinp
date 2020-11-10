@@ -33,15 +33,15 @@ Sample output:
 2
 */
 
-#include "batch_read_number.c"
 #include <stdbool.h>
+#include <stdio.h>
 
 #ifdef ONLINE_JUDGE
-    #define debug_p //
+    #define debug_p(...) //
     #define debug_header //
 #else
     #include <time.h>
-    #define debug_p printf
+    #define debug_p(...) printf("==== debug >>>: " __VA_ARGS__)
     #define debug_header() printf("=== Below line is debug output. >>>>\n")
 #endif
 
@@ -109,13 +109,48 @@ void read_special_grids(Grid grids[]) {
     }
 }
 
-void play_game(Grid grids[], int dice_numbers[], int const dice_count, int const player_count) {
-    Player delay_mark[player_count];
-    for (int i = 0; i < player_count; ++i) {
-        delay_mark[i].grid_index = 1;
-        delay_mark[i].delay_mark = 0;
+int play_turn(Grid grids[], int dice_numbers[], Player * const player, int * const dice_index) {
+    return 100;  // TODO remove this line.
+    if (1 == player->delay_mark) {
+        player->delay_mark = 0;
+        return 0;
     }
-    printf("%d\n", 9999);
+    int const dice_number = dice_numbers[(*dice_index)++];
+    int stop_grid_index = player->grid_index + dice_number;
+    if (stop_grid_index >= GRID_COUNT) {
+        return 0;
+    }
+    int const end_mark = GRID_COUNT - 1;
+    if (stop_grid_index == end_mark) {
+        return end_mark;
+    }
+    int const target_grid_index = grids[stop_grid_index].target;
+    if (target_grid_index > 0) {
+        stop_grid_index = target_grid_index;
+    }
+    // TODO =======
+    return stop_grid_index;
+}
+
+void play_game(Grid grids[], int dice_numbers[], int const player_count) {
+    Player players[player_count];
+    for (int i = 0; i < player_count; ++i) {
+        players[i].grid_index = 1;
+        players[i].delay_mark = 0;
+    }
+    int dice_index = 0;
+    while (true) {
+        for (int i = 0; i < player_count; ++i) {
+            int const result = play_turn(grids, dice_numbers, &players[i], &dice_index);
+            if ((GRID_COUNT - 1) == result) {
+                // 游戏结束
+                printf("%d\n", i + 1);
+                return;
+            } else {
+                continue;
+            }
+        }
+    }
 }
 
 int main()
@@ -134,7 +169,7 @@ int main()
         initialize_grids(grids);
         read_channels(grids);
         read_special_grids(grids);
-        play_game(grids, dice_numbers, dice_count, player_count);
+        play_game(grids, dice_numbers, player_count);
     }
 
     debug_p("%ld clock used.\n", clock());
