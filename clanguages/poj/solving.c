@@ -45,7 +45,10 @@ Sample output:
     #define debug_header() printf("=== Below line is debug output. >>>>\n")
 #endif
 
-#define GRID_COUNT 100
+// 将格子数设置成 101，留出 0 位置，使角标从 1 开始。
+#define GRID_COUNT 101
+#define MARK_MORE 1
+#define MARK_STOP 2
 
 typedef struct {
     // 不论梯子或滑槽，目标格子只能有一个，否则违背了唯一性。
@@ -53,6 +56,11 @@ typedef struct {
     // 不论停一手或多一手，一个格子只能是其中之一。
     int mark;
 } Grid;
+
+typedef struct {
+    int grid_index;
+    int delay_mark;
+} Player;
 
 int read_dice_numbers(int dice_numbers[])
 {
@@ -70,19 +78,51 @@ int read_dice_numbers(int dice_numbers[])
 }
 
 void initialize_grids(Grid grids[]) {
-    // TODO
+    for (int i = 0; i < GRID_COUNT; ++i) {
+        grids[i].target = 0;
+        grids[i].mark = 0;
+    }
+}
+
+void read_channels(Grid grids[]) {
+    int start, end;
+    while (true) {
+        scanf("%d %d", &start, &end);
+        if ((0 == start) || (0 == end)) {
+            break;
+        }
+        grids[start].target = end;
+    }
+}
+
+void read_special_grids(Grid grids[]) {
+    int index;
+    while (true) {
+        scanf("%d", &index);
+        if (0 == index) {
+            break;
+        } else if (0 > index) {
+            grids[-index].mark = MARK_STOP;
+        } else {
+            grids[index].mark = MARK_MORE;
+        }
+    }
+}
+
+void play_game(Grid grids[], int dice_numbers[], int const dice_count, int const player_count) {
+    Player delay_mark[player_count];
+    for (int i = 0; i < player_count; ++i) {
+        delay_mark[i].grid_index = 1;
+        delay_mark[i].delay_mark = 0;
+    }
+    printf("%d\n", 9999);
 }
 
 int main()
 {
     int dice_numbers[1000];
+    Grid grids[GRID_COUNT];
     int const dice_count = read_dice_numbers(dice_numbers);
-
-    debug_header();
-    for (int i = 0; i < dice_count; ++i) {
-        printf("%d ", dice_numbers[i]);
-    }
-    printf("\n");
 
     int player_count = 0;
     while (true) {
@@ -90,9 +130,12 @@ int main()
         if (0 == player_count) {
             break;
         }
-    }
 
-    printf("%d\n", 2);
+        initialize_grids(grids);
+        read_channels(grids);
+        read_special_grids(grids);
+        play_game(grids, dice_numbers, dice_count, player_count);
+    }
 
     debug_p("%ld clock used.\n", clock());
     return 0;
