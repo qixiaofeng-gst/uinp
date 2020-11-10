@@ -2,3 +2,7 @@
 **/*.out
 input.txt
 **/*.exe
+
+test
+gen
+*.input

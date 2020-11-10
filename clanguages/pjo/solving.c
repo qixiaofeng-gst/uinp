@@ -1,5 +1,36 @@
-/*
-1088
+/* 1059 Chutes and Ladders
+Basic rules:
+1. Has: player_counter += dice_number.
+2. Jump to the end if stop at start.
+3. Throw-again grid and stop-one-turn grid. Call them special grid.
+4. Overflow ignorance.
+5. First reach end win.
+Input rules:
+1. The first line is less than 1000 dice_numbers, and 0 < dice_number < 7.
+2. The follow line is number of players.
+3. Chutes and ladders description end with a pair of 0.
+4. Special grids description end with a 0. The negative ones are stop-one-turn grid and positive ones are throw-again grid.
+5. Then following another game description with the number of players.
+6. The game descriptions end with a zero number of players.
+
+Sample input:
+3 6 3 2 5 1 3 4 2 3 1 2 0
+2
+6 95
+99 1
+0 0
+-3
+98
+0
+2
+3 99
+6 90
+0 0
+0
+0
+Sample output:
+2
+2
 */
 
 #include "batch_read_number.c"
