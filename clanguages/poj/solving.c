@@ -110,7 +110,7 @@ void read_special_grids(Grid grids[]) {
 }
 
 int play_turn(Grid grids[], int dice_numbers[], Player * const player, int * const dice_index) {
-    return 100;  // TODO remove this line.
+    debug_p("turn start: player %d\n", *dice_index);
     if (1 == player->delay_mark) {
         player->delay_mark = 0;
         return 0;
@@ -128,7 +128,15 @@ int play_turn(Grid grids[], int dice_numbers[], Player * const player, int * con
     if (target_grid_index > 0) {
         stop_grid_index = target_grid_index;
     }
-    // TODO =======
+    int const special_mark = grids[stop_grid_index].mark;
+    player->grid_index = stop_grid_index;
+    if (MARK_MORE == special_mark) {
+        return play_turn(grids, dice_numbers, player, dice_index);
+    }
+    if (MARK_STOP == special_mark) {
+        player->delay_mark = 1;
+        return stop_grid_index;
+    }
     return stop_grid_index;
 }
 
