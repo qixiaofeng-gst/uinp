@@ -62,6 +62,9 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 卡在 boot 界面进不去图形界面，可尝试更换 greeter，从默认 gdm3 换到 lightdm:
   * `apt install slick-greeter`。
   * 用 `dpkg-reconfigure lightdm/gdm3` 可以切换。
+* 在启动时显示日志而不是 splash screen：
+  * 修改 `/etc/default/grub` 文件中的 GRUB_CMDLINE_LINUX_DEFAULT 的值为空字符串或 "loglevel=0"。
+  * 然后使用 `sudo update-grub` 更新 grub 信息。
 
 ## 系统管理
 * 查看系统版本信息 `lsb_release -a`。
@@ -75,6 +78,11 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 使用 `apt install -y software-properties-common` 安装 `add-apt-repository` 指令；
   * 要移除使用 `add-apt-repository` 添加的个人仓库，使用 `apt-key list/del` 来完成。
 * 管理应用的名称/版本 `update-alternatives /path/to/symbolic-name /path/to/real/executable`。
+* 安装同一程序的多个不同版本之后：
+  * 注册不同版本 `sudo update-alternatives --install <bin-path> <bin-name> <specific-version-path> <priority>`。
+  * 例子 `sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 7`。
+  * 切换版本 `sudo update-alternatives --config <bin-name>`。
+  * 例子 `sudo update-alternatives --config gcc`。
 * 系统级环境变量设置在 `/etc/profile.d/*.sh` 或 `/etc/environment`，推荐前者。
 * 文件系统的挂载配置在 /etc/fstab 中。
 
@@ -158,7 +166,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 查看总体存储空间 `df`。
 * /etc/default/grub 包含了系统启停界面的配置。
 * qmake 可以通过传参 -qt=qt5 正确运行。
-* 解压 `tar xvf file-name.tar.gz`。
+* 解压 `tar xvf file-name.tar.gz`。批量解压 `for f in *.tar.gz; do tar xf "$f"; done`。
 * 查找命令相关 `updatedb/mlocate/whereis/find`。
 * 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`。
 * 录制屏幕 `ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+99,88 output.mp4`。
