@@ -96,6 +96,9 @@ ssh-ai5-server(){
 ssh-ai6-server(){
   ssh -X xiaofeng.qi@192.168.100.6
 }
+ssh-ai7-server(){
+  ssh -X xiaofeng.qi@192.168.100.7
+}
 ssh-dog-nuc(){
   ssh -X caihuan@192.168.100.25
 }
@@ -135,6 +138,9 @@ hcr-ctrl(){
 }
 count(){
   wc -l `find $1 -type f` | sort -n -
+}
+count-ext() {
+  find $1 -name "*.$2" | wc -w
 }
 
 #======= ======= =======
