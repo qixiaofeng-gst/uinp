@@ -136,7 +136,7 @@ lock-1h(){
 hcr-ctrl(){
   ~/Documents/hachy-repos/dacong/build/user/MIT_Controller/mit_ctrl m s
 }
-count(){
+count-lines(){
   wc -l `find $1 -type f` | sort -n -
 }
 count-ext() {
