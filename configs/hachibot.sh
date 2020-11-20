@@ -11,6 +11,10 @@ hachy-make() {
   pushd build && make -j4
   popd
 }
+kaldi-make() {
+  pushd ~/Documents/hachy-repos/kaldi-speaker-recognizer/src && make -j10
+  popd
+}
 hachy-calibrate() {
   python -m launcher.calibrator
 }
