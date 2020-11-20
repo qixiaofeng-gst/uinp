@@ -127,8 +127,10 @@ redux/mobox
 * 将命令行输出的内容存到文件的同时仍输出到命令行：`<some-command> 2>&1 | tee <some-file>`。如果不需要 stderr 则去掉 2。
 * 要将命令行的 stderr 和 stdout 重定向，可以使用 `2>&1` 或者 `&>`。重定向中用到的标识符：
   * `0` - stdin，`1` - stdout，`2` - stderr。
-  * `n>` 指重定向，`n` 被省略时默认为 `1`。
+  * `n>` 指重定向输出，`n` 被省略时默认为 `1`。
   * `>>` 指添加而非重写。
+  * `n<` 指重定向输入，`n` 省略时为 `0`。
+  * https://www.gnu.org/software/bash/manual/html_node/Redirections.html
 
 # Windows 中安装 MongoDB 服务
 * 创建数据文件和日志文件目录；
