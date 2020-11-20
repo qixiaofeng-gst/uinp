@@ -124,6 +124,11 @@ redux/mobox
   @rem Set system variables:
   setx VNAME "%VREF%\path\or\something" /M
   ```
+* 将命令行输出的内容存到文件的同时仍输出到命令行：`<some-command> 2>&1 | tee <some-file>`。如果不需要 stderr 则去掉 2。
+* 要将命令行的 stderr 和 stdout 重定向，可以使用 `2>&1` 或者 `&>`。重定向中用到的标识符：
+  * `0` - stdin，`1` - stdout，`2` - stderr。
+  * `n>` 指重定向，`n` 被省略时默认为 `1`。
+  * `>>` 指添加而非重写。
 
 # Windows 中安装 MongoDB 服务
 * 创建数据文件和日志文件目录；
