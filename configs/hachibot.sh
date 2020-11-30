@@ -321,6 +321,9 @@ dc-ctrl() {
 record-video() {
     ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+$1,$2 output.mp4
 }
+convert-audio() {
+    ffmpeg -i $1 -f s16le -acodec pcm_s16le audio/awake.pcm
+}
 dc-make-lcm() {
     /var/local/dependencies/for-dacong/lcm-1.4.0/build/lcmgen/lcm-gen $1 $2
 }

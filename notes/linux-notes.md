@@ -172,6 +172,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 录制屏幕 `ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+99,88 output.mp4`。
 * 录制摄像头 `ffmpeg -f v4l2 -framerate 25 -video_size 640x480 -i /dev/video0 output.mkv`。
   * 需要先使用 `v4l2-ctl --list-devices` 确认 v4l2 设备存在，不存在的按提示进行安装即可。
+* 转换音频格式 `ffmpeg -i input.flv -f s16le -acodec pcm_s16le output.raw`，使用 `ffmpeg -formats` 查看格式支持。
 * Under ubuntu use `cat /etc/X11/default-display-manager` to check using which display manager.
 * Under ubuntu use `nautilus /path/to/folder` to open folder with GUI file manager.
 * Under ubuntu use `eog <picture-path>` to view picture. Alternatives: `feh/xdg-open/display`.
