@@ -124,7 +124,7 @@ ssh-ai5-server() {
     ssh -X runner@$(lan-ai5)
 }
 scp-ai5() {
-    scp $3 runner@$(lan-ai5):$1 $2
+    sshpass -p $(cat ~/hc_pass) scp $3 runner@$(lan-ai5):$1 $2
 }
 ssh-ai6-server() {
     ssh -X xiaofeng.qi@$(lan-ai6)

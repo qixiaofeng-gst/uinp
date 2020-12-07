@@ -1,8 +1,153 @@
-* 每次 ROS 节点启动时，要重新抽取注册集数据，避免注册集和测试集抽取时所用的模型不一样导致识别率接近 0。
-* 真机再次测试 ivector 方案的识别性能。
-  * 讯飞的板子连续工作 20-30 分钟之间宕机了 2 次。
+conda_env_for_har.yaml
+    cython-bbox==0.1.3
+    detectron2==0.2.1+cu101
+    graphsurgeon==0.4.1
+    mmcv-full==1.1.1
+    pycuda==2019.1.2
+    python-graphviz==0.8.4
+    torch==1.6.0+cu101
+    pyaudio==0.2.11
+conda_env_for_seg.yaml
+    mmcv==1.1.1
+
+Detectron2 for har: install it with github repository.
+Models cache for har:
+~/.torch/fvcore_cache/detectron2/COCO-Detection
+~/.insightface/models
+scripts/fastreid/logs # download from 100.5, or fastreid throw runtime error
+
+
+ 7268  nvidia-smi
+ 7269  ll /usr/include/cuda.h
+ 7270  less /usr/include/cuda.h
+ 7271  ll
+ 7272  vim conda_env_for_seg.yaml
+ 7273  conda env create -f  conda_env_for_seg.yaml
+ 7274  ll
+ 7275  vim conda_env_for_seg.yaml
+ 7276  conda env list
+ 7277  conda env remove --name ai_motion_torch1_4
+ 7278  conda env create -f conda_env_for_seg.yaml
+ 7279* conda env create --name sandbox-py3.7
+ 7280* conda env list
+ 7281* conda create -n sandbox-py3.7 python==3.7
+ 7282* conda activate sandbox-py3.7
+ 7283* ll
+ 7284* pip install opencv-python==4.4.0.42
+ 7285  conda env list
+ 7286  conda env remove --name ai_motion_torch1_4
+ 7287  conda env create -f conda_env_for_seg.yaml
+ 7288* conda env list
+ 7289* pip install pycocotools==2.0.2
+ 7290* vim ~/.config/pip/pip.conf
+ 7291* vim ~/.pip/pip.conf
+ 7292* vim ~/.config/pip/pip.conf
+ 7293* pip install pycocotools==2.0.2
+ 7294* pip install cython==0.29.21
+ 7295* pip install pycocotools==2.0.2
+ 7296  conda env remove --name ai_motion_torch1_4
+ 7297  conda env create -f conda_env_for_seg.yaml
+ 7298* conda env remove --name ai_motion_tf_1.14
+ 7299* conda env create -f conda_env_for_har.yaml
+ 7300  ll
+ 7301  chmod +x run_server.sh
+ 7302  ./run_server.sh
+ 7303  conda activate ai_motion_torch1_4
+ 7304  ./run_server.sh
+ 7305  l
+ 7306  vim run_server.sh
+ 7307  python server.py
+ 7308  nvidia-smi
+ 7309  ll
+ 7310  python server.py
+ 7311  pip install mmdet
+ 7312  python server.py
+ 7313  pip install mmcv
+ 7314  python server.py
+ 7315  pip uninstall mmcv
+ 7316  python server.py
+ 7317  pip uninstall mmcv-full
+ 7318  pip install mmcv-full
+ 7319* conda env remove --name ai_motion_tf_1.14
+ 7320* conda env create -f conda_env_for_har.yaml
+ 7321* pip install gpustat==0.6.0
+ 7322* pip install pytest-runner
+ 7323* pip install gpustat==0.6.0
+ 7324* conda env remove --name ai_motion_tf_1.14
+ 7325* conda env export
+ 7326* conda env create -f conda_env_for_har.yaml
+ 7327* conda env remove --name ai_motion_tf_1.14
+ 7328* conda env create -f conda_env_for_har.yaml
+ 7329* conda env remove --name ai_motion_tf_1.14
+ 7330* conda env create -f conda_env_for_har.yaml
+ 7331  python server.py
+ 7332  pip uninstall mmcv-full
+ 7333  pip install mmcv-full==1.1.1
+ 7334* conda env remove --name ai_motion_tf_1.14
+ 7335* conda env create -f conda_env_for_har.yaml
+ 7336* conda env remove --name ai_motion_tf_1.14
+ 7337* conda env create -f conda_env_for_har.yaml
+ 7338* pip install python-graphviz==0.8.4
+ 7339* conda env remove --name ai_motion_tf_1.14
+ 7340* conda env create -f conda_env_for_har.yaml
+ 7341  python server.py
+ 7342  pip uninstall mmdet
+ 7343  pip install mmdet==0.6.0+unknown
+ 7344  pip install mmdet==0.6.0
+ 7345  python server.py
+ 7346  vim conda_env_for_seg.yaml
+ 7347  pip uninstall mmdet
+ 7348  python server.py
+ 7349  ll
+ 7350  cd mmdetection
+ 7351  ll
+ 7352  pip install -e .
+ 7353  cd ../
+ 7354  python server.py
+ 7355  cd mmdetection
+ 7356  pip uninstall mmdet
+ 7357  python setup.py install
+ 7358  cd ..
+ 7359  python server.py
+ 7360  cd mmdetection
+ 7361  ./compile.sh
+ 7362* pip install torch==1.6.0+cu101
+ 7363* pip install torch==1.6.0
+ 7364  python setup.py install
+ 7365  ll
+ 7366  cd ..
+ 7367  python server.py
+ 7368  ll
+ 7369* l
+ 7370* ll data
+ 7371  mkdir checkpoints
+ 7372  ll
+ 7373  scp-ai5 /hachi/ai_detect/human-segmentation/sota_imat_epoch_15.pth checkpoints
+ 7374  scp-ai5 /hachi/ai_detect/human-segmentation/checkpoints/sota_imat_epoch_15.pth checkpoints
+ 7375* pip install torch==1.6.0
+ 7376  python server.py
+ 7377* nvidia-smi
+ 7378* vim conda_env_for_seg.yaml
+ 7379* pip install torch==1.6.0
+ 7380  ll
+ 7381* pip install torch==1.6.0
+ 7382* conda env remove --name ai_motion_tf_1.14
+ 7383* conda env create -f conda_env_for_har.yaml
+ 7384  git co -b qxf/local-deploy
+ 7385  git st
 
 _______
+使用 cmake 设置 shared library 绝对路径的方法：   
+https://stackoverflow.com/questions/33165270/force-cmake-to-use-the-full-library-path   
+强制不绝对路径的办法：   
+https://stackoverflow.com/questions/24958967/cmake-link-to-shared-libraries-without-using-full-path
+
+使用 nvidia-smi 切换 GPU 的计算模式：`sudo nvidia-smi -c <n>`。n=0 时是默认模式，n=3 时是 exclusive 模式。
+
+_______
+可能的提议
+- 唤醒到声纹做成一体，如果都依赖 kaldi 库的话，正好。
+
 Kaldi - 继续改进方案
 - Shell 脚本去重，提取和抽象重复脚本。
 - 工具类的 python 脚本归拢到一处。
@@ -16,51 +161,12 @@ Kaldi - 继续改进方案
 - 声音采集完直接就在内存中处理掉，有调试的需要时才存储。
 
 _______
-本周量化周报 - 理解声纹
-
-声纹是什么？声纹是指声音的特征，音色、音调，音量是不能作为一个特征的，音色和音调对应到频率和分布。
-声音在计算机里的本质是时序采样的振幅值序列。
-
-我们基于传统声纹算法
-
-_______
 以后的量化周报备选：
 - RL 算法针对不同目标的训练效率评估。
 - 仿真环境的“真实性”衡量，真实性依赖于对真实环境的建模，对于不同方面有不同模型，比如地面摩擦、空气摩擦、运动学、动力学等等。
 - 评估不同 RL 算法的上限，通过模型能够达到的控制效果来评估。
 - 将仿真性能、仿真真实性、RL 算法效率、RL 算法效果这四个方面进行综合考虑，对训练项目做总体的量化评估。
 - 团队开发的工程化程度评估。从需求管理、任务追踪、代码开发、代码库管理、发布库管理、测试系统这些方面抽取更多细节，评估权重，设计数值计算方式。
-
-_______
-2020/12/10 分享，声纹识别
-AI 团队采用方案的沿革：
-声音采集方案：
-- Kinect 麦克风阵列 + ODAS
-- 指向性麦克风
-- 讯飞 6 麦克风阵列（当前方案）
-识别方案：
-- speaker-recognition
-- deep-speaker
-- ge2e
-- kaldi（当前方案）
-
-选用讯飞 6 麦克风阵列的主要原因是它的完成度比较高：API 完整，性能稳定，并且提供了相当准确的声源定位。
-所有历史的识别方案被抛弃的根本原因都是命中率太低。
-
-遇到的问题（皆针对当前方案）：
-* 真机上的安静模式（只有风扇噪音和环境噪音）的命中率非常不稳定，从 90% 到 0% 之间任意波动。   
-  初步找到了影响命中率的要素，识别率在一定情况下（距离、噪声受控的情况下）可控了。
-* 踏步噪声带来的两个问题：唤醒词的命中率下降严重，声纹识别的命中率下降严重。   
-  之前前尝试了去噪和添加噪声训练的方案，对声纹识别的命中率没有提升。   
-  目前我们在麦克板子和机身之间添加了海绵，通过这种方式变相提升了麦克采集到的声音的信噪比。   
-  在当前的方案下，使用配置合理的注册集（1、3、5 米安静和噪声都有注册语音），命中率可达 0.93。   
-  唤醒词的命中率目前还没有靠谱的解决方案。    
-  目前的唤醒词功能是讯飞的板子提供的，我们目前探索的主要方向是脱离对讯飞板子的依赖，使用其它更可控的方式实现唤醒功能。
-
-（背景知识）
-任何对声音的处理都会影响声纹识别的命中率。
-解决的方法：
-（背景知识）
 
 -------
 MeshLab 中模型简化的通常操作：
