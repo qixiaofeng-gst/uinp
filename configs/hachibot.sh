@@ -115,13 +115,13 @@ start-tf() {
     docker run -u $(id -u):$(id -g) --gpus all -it tensorflow/tensorflow:latest-gpu bash
 }
 ssh-dog-blue() {
-    ssh -X hachi@$(lan-server-prefix).103
+    sshpass -p $(cat ~/hc_pass) ssh -X hachi@$(lan-server-prefix).103
 }
 ssh-agx() {
-    ssh -X runner@$(lan-agx)
+    sshpass -p $(cat ~/hc_pass) ssh -X runner@$(lan-agx)
 }
 ssh-ai5-server() {
-    ssh -X runner@$(lan-ai5)
+    sshpass -p $(cat ~/hc_pass) ssh -X runner@$(lan-ai5)
 }
 scp-ai5() {
     sshpass -p $(cat ~/hc_pass) scp $3 runner@$(lan-ai5):$1 $2
@@ -132,14 +132,14 @@ ssh-ai6-server() {
 ssh-ai7-server() {
     ssh -X xiaofeng.qi@$(lan-ai7)
 }
-ssh-dog-nuc() {
-    ssh -X caihuan@$(lan-server-prefix).25
+ssh-caihuan-to() {
+    sshpass -p $(cat ~/hc_pass) ssh -X caihuan@$(lan-server-prefix).$1
 }
-ssh-radar-nuc() {
-    ssh -X runner@$(lan-server-prefix).27
+ssh-runner-to() {
+    sshpass -p $(cat ~/hc_pass) ssh -X runner@$(lan-server-prefix).$1
 }
 ssh-tv-nuc() {
-    ssh -X ai@$(lan-server-prefix).31
+    sshpass -p $(cat ~/hc_pass) ssh -X ai@$(lan-server-prefix).31
 }
 rdp-agx() {
     xfreerdp $(lan-agx)

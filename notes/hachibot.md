@@ -10,6 +10,11 @@ conda_env_for_har.yaml
 conda_env_for_seg.yaml
     mmcv==1.1.1
 
+======= trait
+/hachi/catkin_ws/src/hachi_msgs
+/hachi/projects/human-segmentation
+python: har
+
 Detectron2 for har: install it with github repository.
 Models cache for har:
 ~/.torch/fvcore_cache/detectron2/COCO-Detection
