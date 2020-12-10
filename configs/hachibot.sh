@@ -23,6 +23,9 @@ function lan-ai7() {
 function lan-agx() {
     echo "$(lan-server-prefix).20"
 }
+function hostname-bx() {
+    echo 'ai-bixiao.hachibot.com'
+}
 
 raisim-cmake() {
     cmake .. -DCMAKE_INSTALL_PREFIX=$NEW_RAISIM_BUILD -DCMAKE_PREFIX_PATH=$NEW_RAISIM_BUILD -DPYBIND11_TEST=OFF
@@ -127,7 +130,13 @@ scp-ai5() {
     sshpass -p $(cat ~/pass/hc) scp $3 runner@$(lan-ai5):$1 $2
 }
 ssh-bx() {
-    sshpass -p $(cat ~/pass/Hc) ssh runner@ai-bixiao.hachibot.com
+    sshpass -p $(cat ~/pass/Hc) ssh runner@$(hostname-bx)
+}
+scp-from-bx() {
+    sshpass -p $(cat ~/pass/Hc) scp $3 runner@$(hostname-bx):$1 $2
+}
+scp-to-bx() {
+    sshpass -p $(cat ~/pass/Hc) scp $3 $1 runner@$(hostname-bx):$2
 }
 ssh-ai6-server() {
     ssh -X xiaofeng.qi@$(lan-ai6)

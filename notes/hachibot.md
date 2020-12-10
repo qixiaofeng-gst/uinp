@@ -2,6 +2,8 @@ Next TODO:
 - Test depth to coord
 - Test Kaldi with CUDA 11
 
+淼神安利的三板斧：分解、量化、搜索。
+
 conda_env_for_har.yaml
     cython-bbox==0.1.3
     detectron2==0.2.1+cu101

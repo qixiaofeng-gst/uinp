@@ -19,6 +19,10 @@
   * https://download.jetbrains.com/cpp/CLion-2020.1.2.tar.gz
   * https://download.jetbrains.com/python/pycharm-professional-2020.1.2.tar.gz
 
+## 时间同步
+https://www.tecmint.com/synchronize-time-with-ntp-in-linux/
+* chrony： `sudo apt install chrony`，use `chronyc`.
+
 ## 网络
 * 代理。
   * https://github.com/Qv2ray/Qv2ray download AppImage from it.
