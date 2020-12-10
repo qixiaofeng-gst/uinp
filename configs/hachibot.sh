@@ -115,16 +115,19 @@ start-tf() {
     docker run -u $(id -u):$(id -g) --gpus all -it tensorflow/tensorflow:latest-gpu bash
 }
 ssh-dog-blue() {
-    sshpass -p $(cat ~/hc_pass) ssh -X hachi@$(lan-server-prefix).103
+    sshpass -p $(cat ~/pass/hc) ssh -X hachi@$(lan-server-prefix).103
 }
 ssh-agx() {
-    sshpass -p $(cat ~/hc_pass) ssh -X runner@$(lan-agx)
+    sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-agx)
 }
 ssh-ai5-server() {
-    sshpass -p $(cat ~/hc_pass) ssh -X runner@$(lan-ai5)
+    sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-ai5)
 }
 scp-ai5() {
-    sshpass -p $(cat ~/hc_pass) scp $3 runner@$(lan-ai5):$1 $2
+    sshpass -p $(cat ~/pass/hc) scp $3 runner@$(lan-ai5):$1 $2
+}
+ssh-bx() {
+    sshpass -p $(cat ~/pass/Hc) ssh runner@ai-bixiao.hachibot.com
 }
 ssh-ai6-server() {
     ssh -X xiaofeng.qi@$(lan-ai6)
@@ -133,13 +136,13 @@ ssh-ai7-server() {
     ssh -X xiaofeng.qi@$(lan-ai7)
 }
 ssh-caihuan-to() {
-    sshpass -p $(cat ~/hc_pass) ssh -X caihuan@$(lan-server-prefix).$1
+    sshpass -p $(cat ~/pass/hc) ssh -X caihuan@$(lan-server-prefix).$1
 }
 ssh-runner-to() {
-    sshpass -p $(cat ~/hc_pass) ssh -X runner@$(lan-server-prefix).$1
+    sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-server-prefix).$1
 }
 ssh-tv-nuc() {
-    sshpass -p $(cat ~/hc_pass) ssh -X ai@$(lan-server-prefix).31
+    sshpass -p $(cat ~/pass/hc) ssh -X ai@$(lan-server-prefix).31
 }
 rdp-agx() {
     xfreerdp $(lan-agx)
