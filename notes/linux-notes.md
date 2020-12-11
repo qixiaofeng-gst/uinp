@@ -29,7 +29,9 @@ https://www.tecmint.com/synchronize-time-with-ntp-in-linux/
   * https://github.com/v2ray/v2ray-core download the pre-built binary zip file.
   * v2rayL may replace Qv2ray + v2ray-core.
 * 检查网络 ifconfig, hostname, netstat, nslookup。
-* 查已占用端口 sudo lsof -i -P -n | grep LISTEN。
+* 更有效的 ping：`ping <ip> -s $((60 * 1024)) -D`。
+* 查已占用端口 `sudo lsof -i -P -n | grep LISTEN`。
+* 查看带宽占用 `sudo iftop -i <card-id> -P`。
 * 查看域名解析情况 `ping domain.name` 或者 `nslookup domain.name`。
 * wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
 ```

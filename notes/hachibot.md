@@ -1,6 +1,11 @@
 Next TODO:
 - Test depth to coord
 - Test Kaldi with CUDA 11
+http://gitlab.corp.hachibot.com/ai/xf6mic-ros-node/-/merge_requests/11
+http://gitlab.corp.hachibot.com/software/hachi_msgs/-/merge_requests/5
+http://gitlab.corp.hachibot.com/ai/deep-speaker/-/merge_requests/37
+
+ping 192.168.100.5 -s $((1024*32)) -D
 
 淼神安利的三板斧：分解、量化、搜索。
 
