@@ -21,7 +21,12 @@
 
 ## 时间同步
 https://www.tecmint.com/synchronize-time-with-ntp-in-linux/
+https://docs.fedoraproject.org/en-US/Fedora/18/html/System_Administrators_Guide/sect-Checking_if_chrony_is_synchronized.html
+https://chrony.tuxfamily.org/doc/devel/chrony.conf.html
 * chrony： `sudo apt install chrony`，use `chronyc`.
+* `chronyc tracking`, `chronyc sources`, `chronyc sourcestats`, `/etc/chrony/chrony.conf`.
+* Force resync: `sudo chronyc -a makestep`.
+* `sudo service chrony restart` or `sudo systemctl chronyd restart`.
 
 ## 网络
 * 代理。

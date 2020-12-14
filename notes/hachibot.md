@@ -1,11 +1,15 @@
 Next TODO:
-- Test depth to coord
 - Test Kaldi with CUDA 11
-http://gitlab.corp.hachibot.com/ai/xf6mic-ros-node/-/merge_requests/11
-http://gitlab.corp.hachibot.com/software/hachi_msgs/-/merge_requests/5
-http://gitlab.corp.hachibot.com/ai/deep-speaker/-/merge_requests/37
+- Test depth compression
+- Test wifi switch on 18.04
 
 ping 192.168.100.5 -s $((1024*32)) -D
+
+厕所附近 - FE:EC:DA:B5:24:7B
+办公区 - B6:FB:E4:2B:E6:D9
+茶水间 - 86:83:C2:C8:DC:56
+
+调试 tf 的指令：rosrun tf tf_echo base_link odom
 
 淼神安利的三板斧：分解、量化、搜索。
 
