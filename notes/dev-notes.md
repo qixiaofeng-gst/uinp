@@ -89,6 +89,7 @@ redux/mobox
 * 新建分支 `git co -b <branch-name>` + `git push origin <branch-name>`
 * 下载并合并到本地当前分支 `git pull`，仅下载 `git fetch`
 * 撤销上次提交并保留所有修改 `git reset --soft <revision-hash>`
+* 撤销所有进行中的修改（包括解决冲突的过程中） `git reset --hard HEAD`
 * 回退某个文件到历史版本 `git co <revision-hash> -- file/path`
 * 查看 head 与前一 commit 的差异 `git diff head~1 head`
 * 关闭自动行尾转换 `git config --global core.autocrlf false`

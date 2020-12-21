@@ -1,7 +1,10 @@
 Next TODO:
+- ***Restart mobvoihotword***.
 - Test Kaldi with CUDA 11
-- Test depth compression
-- Test wifi switch on 18.04
+- Test Wi-Fi switch on 18.04
+
+C array into c++ vecter:
+https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
 
 ping 192.168.100.5 -s $((1024*32)) -D
 
@@ -35,126 +38,6 @@ Models cache for har:
 ~/.torch/fvcore_cache/detectron2/COCO-Detection
 ~/.insightface/models
 scripts/fastreid/logs # download from 100.5, or fastreid throw runtime error
-
-
- 7268  nvidia-smi
- 7269  ll /usr/include/cuda.h
- 7270  less /usr/include/cuda.h
- 7271  ll
- 7272  vim conda_env_for_seg.yaml
- 7273  conda env create -f  conda_env_for_seg.yaml
- 7274  ll
- 7275  vim conda_env_for_seg.yaml
- 7276  conda env list
- 7277  conda env remove --name ai_motion_torch1_4
- 7278  conda env create -f conda_env_for_seg.yaml
- 7279* conda env create --name sandbox-py3.7
- 7280* conda env list
- 7281* conda create -n sandbox-py3.7 python==3.7
- 7282* conda activate sandbox-py3.7
- 7283* ll
- 7284* pip install opencv-python==4.4.0.42
- 7285  conda env list
- 7286  conda env remove --name ai_motion_torch1_4
- 7287  conda env create -f conda_env_for_seg.yaml
- 7288* conda env list
- 7289* pip install pycocotools==2.0.2
- 7290* vim ~/.config/pip/pip.conf
- 7291* vim ~/.pip/pip.conf
- 7292* vim ~/.config/pip/pip.conf
- 7293* pip install pycocotools==2.0.2
- 7294* pip install cython==0.29.21
- 7295* pip install pycocotools==2.0.2
- 7296  conda env remove --name ai_motion_torch1_4
- 7297  conda env create -f conda_env_for_seg.yaml
- 7298* conda env remove --name ai_motion_tf_1.14
- 7299* conda env create -f conda_env_for_har.yaml
- 7300  ll
- 7301  chmod +x run_server.sh
- 7302  ./run_server.sh
- 7303  conda activate ai_motion_torch1_4
- 7304  ./run_server.sh
- 7305  l
- 7306  vim run_server.sh
- 7307  python server.py
- 7308  nvidia-smi
- 7309  ll
- 7310  python server.py
- 7311  pip install mmdet
- 7312  python server.py
- 7313  pip install mmcv
- 7314  python server.py
- 7315  pip uninstall mmcv
- 7316  python server.py
- 7317  pip uninstall mmcv-full
- 7318  pip install mmcv-full
- 7319* conda env remove --name ai_motion_tf_1.14
- 7320* conda env create -f conda_env_for_har.yaml
- 7321* pip install gpustat==0.6.0
- 7322* pip install pytest-runner
- 7323* pip install gpustat==0.6.0
- 7324* conda env remove --name ai_motion_tf_1.14
- 7325* conda env export
- 7326* conda env create -f conda_env_for_har.yaml
- 7327* conda env remove --name ai_motion_tf_1.14
- 7328* conda env create -f conda_env_for_har.yaml
- 7329* conda env remove --name ai_motion_tf_1.14
- 7330* conda env create -f conda_env_for_har.yaml
- 7331  python server.py
- 7332  pip uninstall mmcv-full
- 7333  pip install mmcv-full==1.1.1
- 7334* conda env remove --name ai_motion_tf_1.14
- 7335* conda env create -f conda_env_for_har.yaml
- 7336* conda env remove --name ai_motion_tf_1.14
- 7337* conda env create -f conda_env_for_har.yaml
- 7338* pip install python-graphviz==0.8.4
- 7339* conda env remove --name ai_motion_tf_1.14
- 7340* conda env create -f conda_env_for_har.yaml
- 7341  python server.py
- 7342  pip uninstall mmdet
- 7343  pip install mmdet==0.6.0+unknown
- 7344  pip install mmdet==0.6.0
- 7345  python server.py
- 7346  vim conda_env_for_seg.yaml
- 7347  pip uninstall mmdet
- 7348  python server.py
- 7349  ll
- 7350  cd mmdetection
- 7351  ll
- 7352  pip install -e .
- 7353  cd ../
- 7354  python server.py
- 7355  cd mmdetection
- 7356  pip uninstall mmdet
- 7357  python setup.py install
- 7358  cd ..
- 7359  python server.py
- 7360  cd mmdetection
- 7361  ./compile.sh
- 7362* pip install torch==1.6.0+cu101
- 7363* pip install torch==1.6.0
- 7364  python setup.py install
- 7365  ll
- 7366  cd ..
- 7367  python server.py
- 7368  ll
- 7369* l
- 7370* ll data
- 7371  mkdir checkpoints
- 7372  ll
- 7373  scp-ai5 /hachi/ai_detect/human-segmentation/sota_imat_epoch_15.pth checkpoints
- 7374  scp-ai5 /hachi/ai_detect/human-segmentation/checkpoints/sota_imat_epoch_15.pth checkpoints
- 7375* pip install torch==1.6.0
- 7376  python server.py
- 7377* nvidia-smi
- 7378* vim conda_env_for_seg.yaml
- 7379* pip install torch==1.6.0
- 7380  ll
- 7381* pip install torch==1.6.0
- 7382* conda env remove --name ai_motion_tf_1.14
- 7383* conda env create -f conda_env_for_har.yaml
- 7384  git co -b qxf/local-deploy
- 7385  git st
 
 _______
 使用 cmake 设置 shared library 绝对路径的方法：   

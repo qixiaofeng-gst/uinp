@@ -10,6 +10,7 @@
 # 5. Write HTML with parse result and template.
 # 6. Use kindlegen to make mobi file.
 import re
+import os
 
 _TEMPLATE_START = (
     '<html lang="zh">'
@@ -103,7 +104,11 @@ def _make():
             print('Invalid file type. Expected "*.txt" files.')
             continue
         toc, text = _process_file(file_name)
-        _save_to_html('{}.html'.format(file_name[:-4]), toc, text)
+        html_name = '{}.html'.format(file_name[:-4])
+        _save_to_html(html_name, toc, text)
+        os.system('/var/local/app-binaries/kindlegen-2.9/kindlegen {}'.format(
+            html_name,
+        ))
 
 
 if __name__ == '__main__':
