@@ -65,11 +65,16 @@ redux/mobox
 # 编辑器
 ## Atom
 * 格式插件：atom-latex/latex, markdown-preview
+* 格式插件：atom-latex/latex, markdown-preview
 * 效率插件：cursor-history
 * https://www.sitepoint.com/10-essential-atom-add-ons/
 ## IntelliJ
 * Add Path for Python Project: `Settings(ctl+alt+s) -> Project Structure -> Add Content Root`.
 * Add Launcher：`Tools(menu) -> Create Desktop Entry`。
+## Emacs
+* 安装基于 el 语言的 helm 和 helm-gtags。需要先安装 emacs 的包管理工具 straight。
+* 使用 `sudo apt install global` 安装 GNU global。
+* 在 github 找到 zenburn-emacs 项目并配置好该主题。
 
 # 常用正则
 * 分节删除：` \r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n `。

@@ -169,6 +169,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`。
 * 检查文件属性指令 `file/wc`。
 * 文本文件内容相关 `more/less/cat/head/tail/sort/vi/vim/emacs/nano`。
+* 进入 emacs 的命令行模式 `emacs -nw`
 
 ## 其他
 * 两种使命令脱离 shell 执行的方法：

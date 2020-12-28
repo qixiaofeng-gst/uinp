@@ -11,6 +11,10 @@ list() { ## Used to list all commands available in .bash_profile.
   done < ~/Documents/git-repos/uinp/configs/shortcuts.sh
 }
 
+e() { ## Start emacs in terminal.
+  emacs -nw $@
+}
+
 svn_mkdir() { ## Make directory on gsegment svn trunk.
   svn mkdir "http://earth.bao.ac.cn/svn/gsegment/trunk/$1" -m "Make $1"
 }
