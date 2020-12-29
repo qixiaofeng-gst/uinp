@@ -240,6 +240,11 @@ dk-start-ubt16() { ## Start a docker container. Use kill/stop to stop a docker c
 dk-login-ubt16() { ## Login into a container with /bin/bash.
     docker exec -it ubuntu16 /bin/bash
 }
+dk-speaker() {
+    sudo docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it --net=host \
+        -v /hachi/catkin_ws/src/kaldi-speaker-recognizer:/hachi/catkin_ws/src/kaldi-speaker-recognizer \
+        docker.corp.hachibot.com/ai-speaker:20.12 zsh
+}
 
 #======= ======= =======
 # Belows for ODAS stuff.

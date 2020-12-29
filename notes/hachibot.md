@@ -1,7 +1,6 @@
 Next TODO:
+- Disable xunfei6mic's raw pcm saving.
 - ***Restart mobvoihotword***.
-- Test Kaldi with CUDA 11
-- Test Wi-Fi switch on 18.04
 
 C array into c++ vecter:
 https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping

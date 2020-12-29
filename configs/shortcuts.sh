@@ -27,7 +27,7 @@ qxf-done() { ## Notify a task is done.
   notify-send "Work done notification" "======= =======\nOne task is done.\n======= =======" -t 5000 -u normal
 }
 
-gst() { ## Connect me to gsegment server.
+ssh-gst() { ## Connect me to gsegment server.
   ssh -o ServerAliveInterval=60 qixiaofeng@112.126.73.197
 }
 
