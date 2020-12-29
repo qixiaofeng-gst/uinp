@@ -192,6 +192,13 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   1. `sudo groupadd docker`。
   1. `sudo usermod -aG docker $USER`。
   1. `newgrp docker`。
+* docker 的 image 存储目录：`/var/lib/docker/overlay2`
+* docker 常用指令：
+  * 获取镜像：`docker pull <image-name>`
+  * 查看镜像列表：`docker image ls`
+  * 查看进程：`docker ls`
+  * 查看进程详情：`docker inspect <container-name>`
+  * 查看日志：`docker logs <container-name>`
 
 ## 应急恢复
 * 恢复被 rm 删除的文件。使用 extundelete 工具。入口命令：`extundelete <disk-path.e.g./dev/sd0> --inode <node-id:number>`。
