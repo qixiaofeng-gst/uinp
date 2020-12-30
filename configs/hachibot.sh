@@ -63,7 +63,7 @@ dacong-cmake() {
 }
 alias dc-cmake=dacong-cmake
 
-local_ip_addr=$(hostname -I)
+local_ip_addr=$(hostname -I | awk '{print $1}')
 local_ip_addr=$(echo $local_ip_addr | sed 's/ *$//g')
 export ROS_IP=$local_ip_addr
 export ROS_HOSTNAME=$local_ip_addr
@@ -243,6 +243,8 @@ dk-login-ubt16() { ## Login into a container with /bin/bash.
 dk-speaker() {
     sudo docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it --net=host \
         -v /hachi/catkin_ws/src/kaldi-speaker-recognizer:/hachi/catkin_ws/src/kaldi-speaker-recognizer \
+        -v /hachi/catkin_ws/src/hachi_msgs:/hachi/catkin_ws/src/hachi_msgs \
+        -v /hachi/catkin_ws/src/xf6mic-ros-node:/hachi/catkin_ws/src/xf6mic-ros-node \
         docker.corp.hachibot.com/ai-speaker:20.12 zsh
 }
 

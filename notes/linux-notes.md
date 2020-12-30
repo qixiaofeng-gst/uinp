@@ -143,28 +143,6 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 针对当前登录的域用户，`getent passwd $(id -un) | sudo tee -a /etc/passwd`
 * 密码的密文在 `/etc/shadow` 中，参见 https://www.cyberciti.biz/faq/where-are-the-passwords-of-the-users-located-in-linux/
 
-## 开发
-* 检查 RPATH： `objdump -p <binary> | egrep 'RPATH|RUNPATH'` 或 `readelf -d <binary-or-library> | head -20`
-* 查看程序崩溃后的 coredump 调用栈 `coredumpctl gdb _PID_`：
-  * coredumpctl 使用 `apt install systemd-coredump` 安装。
-  * gdb 中输入 `bt` 查看完整 backtrace。
-  * gdb 中输入 `frame <number>` 查看 backtrace 中对应行的 stack frame。
-  * gdb 中输入 `list` 可查看改方法附近的代码。
-  * gdb 中输入 `info locals` 可查看局部变量。
-  * gdb 中输入 `print <variable-name>` 查看变量值。
-* 查看程序运行时消息 `perf record -e _EVENTNAME_ -a -g _EXEPATH_`。
-* 查看 include path：`echo | gcc -E -Wp,-v -`。
-* 查看 so 版本 `ldconfig -v`，`ldconfig` 指令本身可以更新操作系统的 so 数据库。
-* `#include<errno.h>` 然后 `printf("ERROR: %s\n", strerror(errno));` 可查看如 `fopen` 之类的调用出错的信息。
-* `nm --demangle path/to/{*.a,*.so}` 可查看符号表。
-* `ps huH p <PID_OF_U_PROCESS> | wc -l` 打印线程数目。
-* 监控 GPU 状态 `watch -n 3 nvidia-smi`。
-* 查 GPU 核数 `nvidia-settings -q CUDACores -t`。
-### Python
-* 多版本依赖共存时，需要虚拟环境 venv：`python -m venv --help`。
-* `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`。
-* 使用隐藏的方式解决 ‘declared with greater visibility than the type of its field’ 的问题将导致 so 文件报 ‘undefined referece’ 错误。
-
 ## 文件
 * 查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`。
 * 检查文件属性指令 `file/wc`。
