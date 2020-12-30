@@ -85,6 +85,12 @@ redux/mobox
 * `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`。
 * 使用隐藏的方式解决 ‘declared with greater visibility than the type of its field’ 的问题将导致 so 文件报 ‘undefined referece’ 错误。
 
+# cmake
+## RPATH vs RUNPATH
+* RUNPATH 只管当前二进制文件的依赖，不管级联依赖（依赖的文件的依赖，以及更深层的依赖）。
+* RPATH 管全部的依赖。使用 `set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags")` 可启用。
+* 如果 RUNPATH 和 RPATH 在依赖链中混合存在，可能会出现运行时找不到 so 文件的错误，一般将入口可执行文件的 RPATH 启用就好。
+
 # 编辑器
 ## Atom
 * 格式插件：atom-latex/latex, markdown-preview
