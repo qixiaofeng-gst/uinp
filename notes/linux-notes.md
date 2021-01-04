@@ -95,7 +95,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 切换版本 `sudo update-alternatives --config <bin-name>`。
   * 例子 `sudo update-alternatives --config gcc`。
 * 系统级环境变量设置在 `/etc/profile.d/*.sh` 或 `/etc/environment`，推荐前者。
-* 文件系统的挂载配置在 /etc/fstab 中。
+* 文件系统的挂载配置在 /etc/fstab 中。修改后重新载入：`mount -a`。
 
 ## 应用程序
 * 通过 deb 文件安装 `sudo dpkg -i /path/to/deb/file && sudo apt install -f`。
@@ -170,6 +170,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   1. `sudo groupadd docker`。
   1. `sudo usermod -aG docker $USER`。
   1. `newgrp docker`。
+  1. 重启。
 * docker 的 image 存储目录：`/var/lib/docker/overlay2`
 * docker 常用指令：
   * 获取镜像：`docker pull <image-name>`
