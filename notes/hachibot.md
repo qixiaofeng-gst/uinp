@@ -1,5 +1,4 @@
 Next TODO:
-- Initialize the lisp project on GitHub.
 - Configure the C-IDE in emacs.
 - Start OpenGL playground with emacs.
 - ***Restart mobvoihotword***.

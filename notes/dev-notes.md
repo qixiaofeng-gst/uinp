@@ -104,6 +104,11 @@ redux/mobox
 * 安装基于 el 语言的 helm 和 helm-gtags。需要先安装 emacs 的包管理工具 straight。
 * 使用 `sudo apt install global` 安装 GNU global。
 * 在 github 找到 zenburn-emacs 项目并配置好该主题。
+* 快捷键备忘：
+  * 文件内容浏览：`C-n/p/f/b/v/l, M-v/>/<`
+  * 缓存操作：`C-x b, C-x C-b`
+  * 文件操作：`C-x C-f, C-x C-s, C-x C-c`
+  * 跳转：`M-.`
 
 # 常用正则
 * 分节删除：` \r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n `。
@@ -131,8 +136,8 @@ redux/mobox
 * 回退一个 commit `git revert <commit-hash>`
 * 推送本地工程到远程空工程
   ```
-  git pull origin master --allow-unrelated-histories
   git remote add origin git@blablabla:url
+  git pull origin master --allow-unrelated-histories
   git push -u origin master
   ```
 * 切换远程 URL `git remote set-url origin <url>`
