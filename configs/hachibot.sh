@@ -11,6 +11,9 @@ function lan-iot-prefix() {
 function lan-server-prefix() {
     echo "$(lan-ip-prefix).100"
 }
+function lan-200-prefix() {
+    echo "$(lan-ip-prefix).200"
+}
 function lan-ai5() {
     echo "$(lan-server-prefix).5"
 }
@@ -149,6 +152,9 @@ ssh-caihuan-to() {
 }
 ssh-runner-to() {
     sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-server-prefix).$1
+}
+ssh-200-to() {
+    sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-200-prefix).$1
 }
 ssh-tv-nuc() {
     sshpass -p $(cat ~/pass/hc) ssh -X ai@$(lan-server-prefix).31

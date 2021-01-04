@@ -107,7 +107,7 @@ redux/mobox
 * 快捷键备忘：
   * 文件内容浏览：`C-n/p/f/b/v/l, M-v/>/<`
   * 缓存操作：`C-x b, C-x C-b`
-  * 文件操作：`C-x C-f, C-x C-s, C-x C-c`
+  * 文件操作：`C-x C-f, C-x C-s, C-x C-c, C-x C-q`
   * 跳转：`M-.`
 
 # 常用正则
