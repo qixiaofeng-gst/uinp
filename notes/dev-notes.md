@@ -20,45 +20,7 @@ RGB颜色红：199，绿：237，蓝：204；
 redux/mobox
 
 # 开发信息
-* 清华开源 https://mirror.tuna.tsinghua.edu.cn/help/ubuntu/
-  * 设置 pip 镜像：`pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`
 * 图解开源协议 https://www.cnblogs.com/KruceCoder/p/7991052.html
-* 安装 tensorflow 成功的前提是安装 python3.5.2，然后
-  `pip install --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.0.0-cp35-cp35m-win_amd64.whl`
-升级的方法：
-  ```
-  pip search --version tensorflow
-  pip install --upgrade tensorflow==1.1.0rc1
-  ```
-* 检查 tensorflow 版本 `python3 -c 'import tensorflow as tf; print(tf.__version__)'`
-* WebStorm 编辑器批量处理行尾：选中一目录后，菜单 File -> LineSeparators 选择一个行尾格式即可。
-* C on linux, `struct S a = *b;`, b pointed struct S is copied to a.
-* C on linux, public struct should be put in header file, private one put in .c file.
-* 查看系统中已经安装的 python 模块：`pydoc modules`/`pip list/freeze`/`help("modules")`
-* python 的依赖管理工具的配置文件位置：
-  * setuptools、easy_install: `~/.pydistutils.cfg`
-  ```cfg
-  [easy_install]
-  index-url=<the-url>
-  ```
-  * pip: `~/.pip/pip.conf` 或者 `~/.config/pip/pip.conf`
-  ```cfg
-  [global]
-  index-url = <the-url>
-  ```
-  * 阿里云的源： https://mirrors.aliyun.com/pypi/simple/
-  * 临时改源 `pip install -i <mirror-url> --trusted-host <domain-name> <module-name>==<version>`
-* Duck-typing 其实是无类型，执行任何运算时只看对象是否拥有所需的操作符或方法。
-* C/C++ 当中，程序抛出异常退出前的打印，如果是 printf，要加 '\n'，不加则可能没有输出。
-* Anaconda Usage:
-  ```bash
-  conda env export > environment.yaml
-  conda env create -f environment.yaml
-  conda env remove --name <env-name>
-  
-  conda create -n <env-name> <package-spec>
-  # eg. conda create -n tf-py3.7 python=3.7
-  ```
 * 查看可执行文件汇编信息：`objdump -S -d/--disassemble <file-path>`，`-S` 用于显示混在可执行文件中的源码（如果有）。
 * 检查 RPATH：
   * `objdump -p <binary> | egrep 'RPATH|RUNPATH'`
@@ -80,10 +42,51 @@ redux/mobox
 * `ps huH p <PID_OF_U_PROCESS> | wc -l` 打印线程数目。
 * 监控 GPU 状态 `watch -n 3 nvidia-smi`。
 * 查 GPU 核数 `nvidia-settings -q CUDACores -t`。
+## C/C++
+* C/C++ 当中，程序抛出异常退出前的打印，如果是 printf，要加 '\n'，不加则可能没有输出。
+* C on linux, `struct S a = *b;`, `b` pointed struct `S` is copied to `a`.
+* C on linux, public struct should be put in header file, private one put in .c file.
+* C 的 `volatile` 关键字，指示访问变量值时访问内存，不访问寄存器或缓存的值。
+* 当 ld (linker) 程序不是直接被调用时，比如通过 gcc 调用，传给它的参数都需要用 `-Wl,` 作为前缀。
+* 在 compiler 的参数中 `-W` 开头的参数都是针对 warning 的。
 ## Python
 * 多版本依赖共存时，需要虚拟环境 venv：`python -m venv --help`。
-* `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`。
+* Anaconda Usage:
+  ```bash
+  conda env export > environment.yaml
+  conda env create -f environment.yaml
+  conda env remove --name <env-name>
+  
+  conda create -n <env-name> <package-spec>
+  # eg. conda create -n tf-py3.7 python=3.7
+  ```
+* 清华开源 https://mirror.tuna.tsinghua.edu.cn/help/ubuntu/
+  * 设置 pip 镜像：`pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`
+* 安装 tensorflow 成功的前提是安装 python3.5.2，然后
+  `pip install --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.0.0-cp35-cp35m-win_amd64.whl`
+升级的方法：
+  ```
+  pip search --version tensorflow
+  pip install --upgrade tensorflow==1.1.0rc1
+  ```
+* 检查 tensorflow 版本 `python3 -c 'import tensorflow as tf; print(tf.__version__)'`
+* WebStorm 编辑器批量处理行尾：选中一目录后，菜单 File -> LineSeparators 选择一个行尾格式即可。
+* 查看系统中已经安装的 python 模块：`pydoc modules`/`pip list/freeze`/`help("modules")`
+* python 的依赖管理工具的配置文件位置：
+  * setuptools、easy_install: `~/.pydistutils.cfg`
+  ```cfg
+  [easy_install]
+  index-url=<the-url>
+  ```
+  * pip: `~/.pip/pip.conf` 或者 `~/.config/pip/pip.conf`
+  ```cfg
+  [global]
+  index-url = <the-url>
+  ```
+  * 阿里云的源： https://mirrors.aliyun.com/pypi/simple/
+  * 临时改源 `pip install -i <mirror-url> --trusted-host <domain-name> <module-name>==<version>`
 * 使用隐藏的方式解决 ‘declared with greater visibility than the type of its field’ 的问题将导致 so 文件报 ‘undefined referece’ 错误。
+* Duck-typing 其实是无类型，执行任何运算时只看对象是否拥有所需的操作符或方法。
 
 # cmake
 ## RPATH vs RUNPATH
@@ -108,7 +111,9 @@ redux/mobox
   * 文件内容浏览：`C-n/p/f/b/v/l, M-v/>/<`
   * 缓存操作：`C-x b, C-x C-b`
   * 文件操作：`C-x C-f, C-x C-s, C-x C-c, C-x C-q`
+  * 窗口操作：`C-x 0/1/2/3`
   * 跳转：`M-.`
+  * 代码操作：`C-M-q, C-M-x`
 
 # 常用正则
 * 分节删除：` \r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n `。

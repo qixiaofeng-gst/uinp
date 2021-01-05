@@ -3,6 +3,15 @@ Next TODO:
 - Start OpenGL playground with emacs.
 - ***Restart mobvoihotword***.
 
+BSP: Architecture(I guess Board) Support Package.
+FPIOA: Field Programmable I/O Array. Map 256 functions to 48 free I/Os on the chip(K210).
+GPIOHS: GPIO stands for General Purpose Input Output, HS stands for High Speed.
+I2C bus: Inter-Integrated Circuit bus. Used to communicate with multiple external I2C devices.
+I2S bus: I2C Sound bus. A serial bus interface standard used for connecting digital audio devices together. Three types of signals:
+    1. BCK, the clock signal.
+    1. WS, the channael selection signal.
+    1. SD, the serial data signal.
+
 C array into c++ vecter:
 https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping
 
