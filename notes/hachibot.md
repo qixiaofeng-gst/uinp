@@ -3,6 +3,13 @@ Next TODO:
 - Start OpenGL playground with emacs.
 - ***Restart mobvoihotword***.
 
+基于 sipeed 板子弄的话，转接的芯片不太好找：
+- 串口，串口没有时钟，靠约定波特率通信，不适用
+- SPI，MOSI/MISO/CLK，双向通信的，不适用
+- I2C，不适用
+
+我们需要的是 I2S，目前能淘宝搜索到的转接芯片只支持 2 声道转一个 USB，不经济。
+
 BSP: Architecture(I guess Board) Support Package.
 FPIOA: Field Programmable I/O Array. Map 256 functions to 48 free I/Os on the chip(K210).
 GPIOHS: GPIO stands for General Purpose Input Output, HS stands for High Speed.
@@ -11,6 +18,9 @@ I2S bus: I2C Sound bus. A serial bus interface standard used for connecting digi
     1. BCK, the clock signal.
     1. WS, the channael selection signal.
     1. SD, the serial data signal.
+PLL: Phase Lock Loop. A control system that generates an output signal whose phase related to the phase of an input signal.
+UARTHS: UART stands for Universal Asynchronous Receiver/Transmitter, HS stands for High Speed.
+
 
 C array into c++ vecter:
 https://stackoverflow.com/questions/259297/how-do-you-copy-the-contents-of-an-array-to-a-stdvector-in-c-without-looping

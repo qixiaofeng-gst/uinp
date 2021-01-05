@@ -114,6 +114,7 @@ redux/mobox
   * 窗口操作：`C-x 0/1/2/3`
   * 跳转：`M-.`
   * 代码操作：`C-M-q, C-M-x`
+  * 保存特殊 buffer 的内容：`C-x h` 全选，然后 `M-x write-region`
   * 搜索：
     * 文件内：`C-s, C-r`
     * 通过文件名搜索：有 helm 时使用 `C-x C-f`
