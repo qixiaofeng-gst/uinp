@@ -160,6 +160,7 @@ redux/mobox
   * 添加：`git submodule add -b <branch-name> <url-to-repo>` 然后 `git submodule init`。
   * 取得：`git submodule update --init --recursive`。
   * 更新：`git pull --recurse-submodules` 或者 `git submodule update --remote`。
+* 查看库中所有文件：`git ls-tree --full-tree -r --name-only HEAD`
 
 # 常用指令
 * 使用命令行进行文本查找：`grep 'target-pattern' ./* -R`。
