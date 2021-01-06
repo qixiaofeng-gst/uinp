@@ -80,6 +80,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 ## 系统管理
 * 查看系统版本信息 `lsb_release -a`。
 * 查看已安装软件包 `dpkg -l`。
+* 查看已安装的包的相关文件路径 `dpkg -L <package-name>`。
 * 查看硬件信息 `lscpu/lshw/hwinfo/lspci/lsscsi/lsusb/lnxi/lsblk/df/fdisk/mount/free/dmidecode/hdparm`，
 可以在 /proc 目录下找到一些系统硬件和配置信息。
 * 查看 kernel ring buffer：`dmesg`。

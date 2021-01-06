@@ -47,6 +47,7 @@ redux/mobox
 * C on linux, `struct S a = *b;`, `b` pointed struct `S` is copied to `a`.
 * C on linux, public struct should be put in header file, private one put in .c file.
 * C 的 `volatile` 关键字，指示访问变量值时访问内存，不访问寄存器或缓存的值。
+* 当 `static` 关键字用在 C 的方法上时，表明该方法只能在当前文件中使用。
 * 当 ld (linker) 程序不是直接被调用时，比如通过 gcc 调用，传给它的参数都需要用 `-Wl,` 作为前缀。
 * 在 compiler 的参数中 `-W` 开头的参数都是针对 warning 的。
 ## Python
