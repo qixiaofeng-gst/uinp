@@ -127,7 +127,7 @@ ssh-agx() {
     sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-agx)
 }
 ssh-ai5-server() {
-    sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-ai5)
+    sshpass -p $(cat ~/pass/hc) ssh -X runner@gpu1.dl.hachibot.com
 }
 scp-ai5() {
     sshpass -p $(cat ~/pass/hc) scp $3 runner@$(lan-ai5):$1 $2
@@ -141,11 +141,8 @@ scp-from-bx() {
 scp-to-bx() {
     sshpass -p $(cat ~/pass/Hc) scp $3 $1 runner@$(hostname-bx):$2
 }
-ssh-ai6-server() {
-    ssh -X xiaofeng.qi@$(lan-ai6)
-}
 ssh-ai7-server() {
-    ssh -X xiaofeng.qi@$(lan-ai7)
+    ssh -X xiaofeng.qi@cpu1.dl.hachibot.com
 }
 ssh-caihuan-to() {
     sshpass -p $(cat ~/pass/hc) ssh -X caihuan@$(lan-server-prefix).$1
