@@ -123,6 +123,7 @@ redux/mobox
   * 撤销：`C-/`, `M-x revert-buffer`
   * 自动补完：`M-/`
   * 重载 el 文件：`M-x load-file`，如果当前文件打开着，`M-x eval-buffer`
+  * 替换：`M-%`，询问时按 `!` 即可替换所有。
 
 # 常用正则
 * 分节删除：` \r\n-+\r\n\r\n分节阅读\s.+\r\n\r\n `。
