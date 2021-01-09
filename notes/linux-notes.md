@@ -38,6 +38,13 @@ https://chrony.tuxfamily.org/doc/devel/chrony.conf.html
 * 查已占用端口 `sudo lsof -i -P -n | grep LISTEN`。
 * 查看带宽占用 `sudo iftop -i <card-id> -P`。
 * 查看域名解析情况 `ping domain.name` 或者 `nslookup domain.name`。
+* 查看 IP：`hostname -I`。
+* 网络管理命令行工具 nmcli：
+  * 18.04 重新扫描 wifi：`nmcli device wifi rescan`。
+  * 20.04 列出 wifi：`nmcli device wifi list`。
+  * 连接 wifi：`nmcli device wifi connect <SSID> password <password>`。
+  * 列出网络链接：`nmcli connection show`。
+  * 删除某链接历史记录（删除密码）：`nmcli connection delete <name/SSID/BSSID>`。
 * wget download mirror of website: wget -m -p http://www.xxx.com，more details blow:
 ```
 wget --recursive --level=inf --page-requisites --convert-links --adjust-extension --span-hosts --domains=domainA,domainB domainA
