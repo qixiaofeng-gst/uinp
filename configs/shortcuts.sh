@@ -114,6 +114,7 @@ enhance_git() { ## Used to set several convenient alias for git.
   git config --global alias.plom 'pull origin master'
   git config --global alias.psom 'push origin master'
   git config --global alias.r 'rev-parse HEAD'
+  git config --global alias.d 'diff --stat'
 }
 
 breakpoint() { ## Used to prompt work progress.
