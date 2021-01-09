@@ -137,6 +137,8 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 
 ## 用户
 * 列出用户 `cat /etc/passwd`，格式：username:password:UID:GID:Comment:HomeDirectory:ShellUsed。
+* 切换 root 用户：`sudo -s`。
+* 给 sudo 传密码：`echo <password> | sudo -S <command>`，`-S` 参数表明从 stdin 读取密码。
 * `cat /etc/passwd | cut -d: -f1` 或 `cat /etc/passwd | awk -F: '{print $1}'`。
 * `getent passwd`。
 * `who`。

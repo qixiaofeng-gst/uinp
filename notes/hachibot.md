@@ -1,4 +1,5 @@
 Next TODO:
+- 橙狗：200.50.
 - Configure the C-IDE in emacs.
 - Start OpenGL playground with emacs.
 - ***Restart mobvoihotword***.
