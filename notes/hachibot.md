@@ -4,6 +4,8 @@ Next TODO:
 - Start OpenGL playground with emacs.
 - ***Restart mobvoihotword***.
 
+滤波算法的本质是基于某种模型预估未来信号，并用于修正真实信号。
+
 基于 sipeed 板子弄的话，转接的芯片不太好找：
 - 串口，串口没有时钟，靠约定波特率通信，不适用。
 - SPI，MOSI/MISO/CLK，双向通信的，不适用。
