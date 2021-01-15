@@ -24,10 +24,10 @@ function hostname-suffix() {
     echo "dl.hachibot.com"
 }
 function hostname-gpu1() {
-    echo "gpu1.$(hostname-suffix)"
+    echo "ai-gpu1.$(hostname-suffix)"
 }
 function hostname-cpu1() {
-    echo "cpu1.$(hostname-suffix)"
+    echo "ai-cpu1.$(hostname-suffix)"
 }
 function hostname-bx() {
     echo "ai-bixiao.$(hostname-suffix)"
