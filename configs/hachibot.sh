@@ -14,20 +14,26 @@ function lan-server-prefix() {
 function lan-200-prefix() {
     echo "$(lan-ip-prefix).200"
 }
-function lan-ai5() {
-    echo "gpu1.dl.hachibot.com"
-}
 function lan-ai6() {
     echo "$(lan-server-prefix).6"
-}
-function lan-ai7() {
-    echo "cpu1.dl.hachibot.com"
 }
 function lan-agx() {
     echo "$(lan-server-prefix).20"
 }
+function hostname-suffix() {
+    echo "dl.hachibot.com"
+}
+function hostname-gpu1() {
+    echo "gpu1.$(hostname-suffix)"
+}
+function hostname-cpu1() {
+    echo "cpu1.$(hostname-suffix)"
+}
 function hostname-bx() {
-    echo 'ai-bixiao.hachibot.com'
+    echo "ai-bixiao.$(hostname-suffix)"
+}
+function hostname-zy() {
+    echo "ai-zhangyu.$(hostname-suffix)"
 }
 
 raisim-cmake() {
@@ -88,9 +94,6 @@ to-mr() {
 sw-ros-car() {
     export ROS_MASTER_URI=http://192.168.2.131:11311
 }
-sw-ros-ai5() {
-    export ROS_MASTER_URI=http://$(lan-ai5):11311
-}
 sw-ros-pure-local() {
     # 下面一行针对 roscore 运行的机器。
     export ROS_MASTER_URI=http://127.0.0.1:11311
@@ -129,26 +132,41 @@ ssh-dog-blue() {
 ssh-agx() {
     sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-agx)
 }
-ssh-ai5-server() {
-    sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-ai5)
+ssh-gpu1-server() {
+    sshpass -p $(cat ~/pass/hc) ssh -X runner@$(hostname-gpu1)
 }
-scp-ai5() {
-    sshpass -p $(cat ~/pass/hc) scp $3 runner@$(lan-ai5):$1 $2
+scp-from-gpu1() {
+    sshpass -p $(cat ~/pass/hc) scp $3 runner@$(hostname-gpu1):$1 $2
+}
+scp-to-gpu1() {
+    sshpass -p $(cat ~/pass/hc) scp $3 $2 runner@$(hostname-gpu1):$1
+}
+ssh-zy() {
+    ssh xiaofeng.qi@$(hostname-zy)
+}
+scp-from-zy() {
+    scp $3 xiaofeng.qi@$(hostname-zy):$1 $2
+}
+scp-to-zy() {
+    scp $3 $1 xiaofeng.qi@$(hostname-zy):$2
 }
 ssh-bx() {
-    sshpass -p $(cat ~/pass/Hc) ssh runner@$(hostname-bx)
+    ssh xiaofeng.qi@$(hostname-bx)
 }
 scp-from-bx() {
-    sshpass -p $(cat ~/pass/Hc) scp $3 runner@$(hostname-bx):$1 $2
+    scp $3 xiaofeng.qi@$(hostname-bx):$1 $2
 }
 scp-to-bx() {
-    sshpass -p $(cat ~/pass/Hc) scp $3 $1 runner@$(hostname-bx):$2
+    scp $3 $1 xiaofeng.qi@$(hostname-bx):$2
 }
-ssh-ai7-server() {
-    ssh -X xiaofeng.qi@$(lan-ai7)
+ssh-cpu1-server() {
+    ssh -X xiaofeng.qi@$(hostname-cpu1)
 }
-scp-ai7() {
-    scp $3 xiaofeng.qi@$(lan-ai7):$1 $2
+scp-from-cpu1() {
+    scp $3 xiaofeng.qi@$(hostname-cpu1):$1 $2
+}
+scp-to-cpu1() {
+    scp $3 $1 xiaofeng.qi@$(hostname-cpu1):$2
 }
 ssh-caihuan-to() {
     sshpass -p $(cat ~/pass/hc) ssh -X caihuan@$(lan-server-prefix).$1

@@ -60,7 +60,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 -np = --no-parent
 -U <agent-string> = --user-agent=<agent-string>
 ```
-* axel multithread download: `axel -a -n 12 http://url.to.download`, `-a` shows a progress bar.
+* qaxel multithread download: `axel -a -n 12 http://url.to.download`, `-a` shows a progress bar.
 
 ## 驱动
 * 如果 nvidia-smi 突然说连不上显卡驱动了，可使用 `sudo apt install nvidia-driver-440` 来尝试重新安装。   
