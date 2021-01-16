@@ -195,6 +195,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 查看进程详情：`docker inspect <container-name>`
   * 查看日志：`docker logs -f <container-name/hash>`
   * 移除所有停止的容器：`docker container prune`
+  * 移除所有 TAG=none 的镜像：`docker rmi $(docker images -f "dangling=true" -q)`
   * 登陆：`docker login <url>`
 
 ## 应急恢复
