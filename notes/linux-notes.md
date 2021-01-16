@@ -175,6 +175,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * /etc/default/grub 包含了系统启停界面的配置。
 * qmake 可以通过传参 -qt=qt5 正确运行。
 * 解压 `tar xvf file-name.tar.gz`。批量解压 `for f in *.tar.gz; do tar xf "$f"; done`。
+  * 可以指定目录 `tar -C <target-directory> xvf <tar-file>`。
 * 查找命令相关 `updatedb/mlocate/whereis/find`。
 * 查看窗口信息 `xwininfo -id $(xdotool getactivewindow)`。
 * 录制屏幕 `ffmpeg -video_size 1280x720 -framerate 25 -f x11grab -i :1.0+99,88 output.mp4`。
