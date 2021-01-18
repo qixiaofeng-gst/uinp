@@ -26,6 +26,11 @@
   * https://download.jetbrains.com/cpp/CLion-2020.1.2.tar.gz
   * https://download.jetbrains.com/python/pycharm-professional-2020.1.2.tar.gz
 
+## 输入法
+中文输入法安装：
+* 可以 `sudo apt install ibus-pinyin` 或者 `sudo apt install ibus-sunpinyin`。
+* 安装完毕后可以 `ibus restart` 启用。
+
 ## 时间同步
 https://www.tecmint.com/synchronize-time-with-ntp-in-linux/
 https://docs.fedoraproject.org/en-US/Fedora/18/html/System_Administrators_Guide/sect-Checking_if_chrony_is_synchronized.html
