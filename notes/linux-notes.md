@@ -30,6 +30,10 @@
 中文输入法安装：
 * 可以 `sudo apt install ibus-pinyin` 或者 `sudo apt install ibus-sunpinyin`。
 * 安装完毕后可以 `ibus restart` 启用。
+* 中文输入法有几项很好用的配置（Preferences -> General -> Candidates）：
+  * Dynamic adjust the candidates order.
+  * Remember every input as a phrase.
+  * Show suggestions.
 
 ## 时间同步
 https://www.tecmint.com/synchronize-time-with-ntp-in-linux/
