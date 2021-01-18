@@ -175,6 +175,9 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 文本文件内容相关 `more/less/cat/head/tail/sort/vi/vim/emacs/nano`。
 * 进入 emacs 的命令行模式 `emacs -nw`。
 * 查看读写的性能 `dd if=/dev/input.file  of=/path/to/output.file  bs=block-size  count=number-of-blocks  oflag=dsync`。
+* 有时候 `du -sh` 命令非常慢，尤其是在文件数量特别多的情况下，可以使用这个命令来迂回： `ls -d */ | parallel du -s`。
+  * 想要求和可以使用 `ls -d */ | parallel du -s | awk '{s+=$1}END{print s}'` 来达成。
+  * 也可以使用 `ls -d */ | parallel du -s | awk '{print $1}' | paste -sd+ | bc -l` 来求和。
 
 ## 其他
 * 两种使命令脱离 shell 执行的方法：
