@@ -105,9 +105,10 @@ redux/mobox
 * Add Path for Python Project: `Settings(ctl+alt+s) -> Project Structure -> Add Content Root`.
 * Add Launcher：`Tools(menu) -> Create Desktop Entry`。
 ## Emacs
+* 在 github 找到 zenburn-emacs 项目并配置好该主题。
+* Windows 中需要设置 HOME 环境变量用于设置指定 “~” 路径。
 * 安装基于 el 语言的 helm 和 helm-gtags。需要先安装 emacs 的包管理工具 straight。
 * 使用 `sudo apt install global` 安装 GNU global。
-* 在 github 找到 zenburn-emacs 项目并配置好该主题。
 * 快捷键备忘：
   * 文件内容浏览：`C-n/p/f/b/v/l, M-v/>/<`
   * 缓存操作：`C-x b, C-x C-b`
