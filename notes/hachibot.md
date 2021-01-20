@@ -1,10 +1,10 @@
 Next TODO:
 - A tiny program for passward handling (mask it).
 - 橙狗：200.50.
-- Configure the C-IDE in emacs.
 - Start OpenGL playground with emacs.
-- ***Restart mobvoihotword***.
+- 看看 python multiprocessing Pool 中有进程出错会导致什么。
 
+ANN, CNN, RNN, GAN.
 滤波算法的本质是基于某种模型预估未来信号，并用于修正真实信号。
 
 基于 sipeed 板子弄的话，转接的芯片不太好找：

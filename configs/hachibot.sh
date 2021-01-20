@@ -26,6 +26,9 @@ function hostname-suffix() {
 function hostname-gpu1() {
     echo "ai-gpu1.$(hostname-suffix)"
 }
+function hostname-gpu2() {
+    echo "ai-gpu2.$(hostname-suffix)"
+}
 function hostname-cpu1() {
     echo "ai-cpu1.$(hostname-suffix)"
 }
@@ -140,6 +143,15 @@ scp-from-gpu1() {
 }
 scp-to-gpu1() {
     sshpass -p $(cat ~/pass/hc) scp $3 $2 runner@$(hostname-gpu1):$1
+}
+ssh-gpu2-server() {
+    sshpass -p $(cat ~/pass/hc) ssh -X runner@$(hostname-gpu2)
+}
+scp-from-gpu2() {
+    sshpass -p $(cat ~/pass/hc) scp $3 runner@$(hostname-gpu2):$1 $2
+}
+scp-to-gpu2() {
+    sshpass -p $(cat ~/pass/hc) scp $3 $2 runner@$(hostname-gpu2):$1
 }
 ssh-zy() {
     ssh xiaofeng.qi@$(hostname-zy)
