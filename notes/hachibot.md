@@ -1,8 +1,9 @@
 Next TODO:
-- A tiny program for passward handling (mask it).
-- 橙狗：200.50.
+- 如果要自动部署某版本的脚本，数据和代码的部署都不可少，现在的直接挂载网络磁盘的方式至少不适用于小黄机器带走演示的场景。
+- 橙狗：200.50. 切换到 HachiDev 之后 80.58：HachiBot.dev2020
 - Start OpenGL playground with emacs.
 - 看看 python multiprocessing Pool 中有进程出错会导致什么。
+- A tiny program for passward handling (mask it).
 
 ANN, CNN, RNN, GAN.
 滤波算法的本质是基于某种模型预估未来信号，并用于修正真实信号。
