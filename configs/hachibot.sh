@@ -123,9 +123,6 @@ to-uinp() {
 to-lt() {
     cd /home/qixiaofeng/Documents/git-repos/uinp/clanguages/learn-tensorflow2
 }
-start-tf() {
-    docker run -u $(id -u):$(id -g) --gpus all -it tensorflow/tensorflow:latest-gpu bash
-}
 ssh-yellow() {
     sshpass -p $(cat ~/pass/hc) ssh runner@192.168.1.80 -p 2222
 }
@@ -284,6 +281,9 @@ dk-speaker() {
         -v /hachi/public/data:/hachi/workspace/public-data \
         -v /hachi/catkin_ws/src/kaldi-speaker-recognizer:/hachi/workspace \
         docker.corp.hachibot.com/ai-speaker:1.0
+}
+dk-clear() {
+    docker rmi $(docker images -f "dangling=true" -q)
 }
 
 #======= ======= =======
