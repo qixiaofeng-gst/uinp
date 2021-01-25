@@ -127,6 +127,9 @@ ssh-yellow() {
     # sshpass -p $(cat ~/pass/hc) ssh runner@192.168.1.80 -p 2222
     sshpass -p $(cat ~/pass/hc) ssh runner@192.168.80.59
 }
+ssh-dog-orange-II() {
+    sshpass -p $(cat ~/pass/hc) ssh runner@192.168.80.248
+}
 ssh-dog-blue() {
     sshpass -p $(cat ~/pass/hc) ssh -X hachi@$(lan-server-prefix).103
 }
