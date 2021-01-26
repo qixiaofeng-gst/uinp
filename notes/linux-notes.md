@@ -204,6 +204,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   1. `newgrp docker`。
   1. 重启。
 * docker 的 image 存储目录：`/var/lib/docker/overlay2`
+* docker 服务重启：`sudo systemctl restart docker`
 * docker 常用指令：
   * 获取镜像：`docker pull <image-name>`
   * 查看镜像列表：`docker image ls`
