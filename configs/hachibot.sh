@@ -114,7 +114,7 @@ sw-ros-radar-nuc() {
     export ROS_MASTER_URI=http://$(lan-server-prefix).27:11311
 }
 sw-ros-to() {
-    export ROS_MASTER_URI=http://$(lan-server-prefix).$1:11311
+    export ROS_MASTER_URI=http://$(lan-ip-prefix).$1:11311
 }
 alias lock='gnome-screensaver-command -l'
 to-uinp() {
