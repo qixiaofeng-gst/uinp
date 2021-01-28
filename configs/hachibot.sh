@@ -123,9 +123,9 @@ to-uinp() {
 to-lt() {
     cd /home/qixiaofeng/Documents/git-repos/uinp/clanguages/learn-tensorflow2
 }
-ssh-yellow() {
+ssh-pod1() {
     # sshpass -p $(cat ~/pass/hc) ssh runner@192.168.1.80 -p 2222
-    sshpass -p $(cat ~/pass/hc) ssh runner@192.168.80.59
+    sshpass -p $(cat ~/pass/hc) ssh runner@192.168.80.50
 }
 ssh-dog-orange-II() {
     sshpass -p $(cat ~/pass/hc) ssh runner@192.168.80.248

@@ -12,6 +12,9 @@
 * 命令行输出出了问题之后有两种方式可以重置：
   * `echo -e "\033c"`
   * `reset`
+* 剪贴板工具：
+  * clipboard-cli, based on nodejs
+  * xclip/xsel, xsel is more friendly with scripting, xclip is better on prompt.
 
 ### 配置开发工具
 * 为 git 设置 ssh 密钥。

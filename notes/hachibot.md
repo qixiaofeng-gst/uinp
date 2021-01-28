@@ -1,4 +1,9 @@
 Next TODO:
+- c1,c2,c3,c4,c6: supporting systems. a1: control system.
+- Docker logging:
+  - https://jaxenter.com/docker-logging-gotchas-137049.html
+  - https://superuser.com/questions/1482221/docker-logs-is-missing-log-entires-which-are-showing-in-docker-attach
+- Docker auto-start: https://stackoverflow.com/questions/30449313/how-do-i-make-a-docker-container-start-automatically-on-system-boot
 - 队长队长。
 - 如果要自动部署某版本的脚本，数据和代码的部署都不可少，现在的直接挂载网络磁盘的方式至少不适用于小黄机器带走演示的场景。
 - 橙II：80.248
