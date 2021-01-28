@@ -12,6 +12,82 @@ Next TODO:
 - 看看 python multiprocessing Pool 中有进程出错会导致什么。
 - A tiny program for passward handling (mask it).
 
+WARNING:tensorflow:5 out of the last 5 calls to <function AVSR.train.<locals>.distributed_train_step at 0x7fab2f298820>
+ triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to
+  (1) creating @tf.function repeatedly in a loop,
+  (2) passing tensors with different shapes,
+  (3) passing Python objects instead of tensors.
+For (1), please define your @tf.function outside of the loop.
+For (2), @tf.function has experimental_relax_shapes=True option that relaxes argument shapes that can avoid unnecessary retracing.
+For (3), please refer to https://www.tensorflow.org/tutorials/customization/performance#python_or_tensor_args
+ and https://www.tensorflow.org/api_docs/python/tf/function for  more details. 
+(
+    (<tf.Tensor 'inputs:0' shape=(2, 231, 36, 36, 3) dtype=float32>,
+     <tf.Tensor 'inputs_1:0' shape=(2, 231, 2) dtype=float32>,
+     <tf.Tensor 'inputs_2:0' shape=(2,) dtype=int64>,
+     <tf.Tensor 'inputs_3:0' shape=(2,) dtype=string>),
+    (<tf.Tensor 'inputs_4:0' shape=(2, 258, 240) dtype=float32>,
+     <tf.Tensor 'inputs_5:0' shape=(2,) dtype=int64>,
+     <tf.Tensor 'inputs_6:0' shape=(2,) dtype=string>),
+    (<tf.Tensor 'inputs_7:0' shape=(2, 112) dtype=int64>,
+     <tf.Tensor 'inputs_8:0' shape=(2,) dtype=int64>,
+     <tf.Tensor 'inputs_9:0' shape=(2,) dtype=string>,
+     <tf.Tensor 'inputs_10:0' shape=(2,) dtype=string>)
+)
+(
+    (<tf.Tensor 'inputs:0' shape=(2, 143, 36, 36, 3) dtype=float32>,
+     <tf.Tensor 'inputs_1:0' shape=(2, 143, 2) dtype=float32>,
+     <tf.Tensor 'inputs_2:0' shape=(2,) dtype=int64>,
+     <tf.Tensor 'inputs_3:0' shape=(2,) dtype=string>),
+    (<tf.Tensor 'inputs_4:0' shape=(2, 177, 240) dtype=float32>,
+     <tf.Tensor 'inputs_5:0' shape=(2,) dtype=int64>,
+     <tf.Tensor 'inputs_6:0' shape=(2,) dtype=string>),
+    (<tf.Tensor 'inputs_7:0' shape=(2, 116) dtype=int64>,
+     <tf.Tensor 'inputs_8:0' shape=(2,) dtype=int64>,
+     <tf.Tensor 'inputs_9:0' shape=(2,) dtype=string>,
+     <tf.Tensor 'inputs_10:0' shape=(2,) dtype=string>)
+)
+
+(
+    (
+        TensorSpec(shape=(None, None, 36, 36, 3), dtype=tf.float32, name=None),
+        TensorSpec(shape=(None, None, 2), dtype=tf.float32, name=None),
+        TensorSpec(shape=(None,), dtype=tf.int64, name=None),
+        TensorSpec(shape=(None,), dtype=tf.string, name=None)
+    ),
+    (
+        TensorSpec(shape=(None, None, 240), dtype=tf.float32, name=None),
+        TensorSpec(shape=(None,), dtype=tf.int64, name=None),
+        TensorSpec(shape=(None,), dtype=tf.string, name=None)
+    ),
+    (
+        TensorSpec(shape=(None, None), dtype=tf.int64, name=None),
+        TensorSpec(shape=(None,), dtype=tf.int64, name=None),
+        TensorSpec(shape=(None,), dtype=tf.string, name=None),
+        TensorSpec(shape=(None,), dtype=tf.string, name=None)
+    )
+)
+
+(
+    (
+        TensorSpec(shape=(2, None, 36, 36, 3), dtype=tf.float32, name=None),
+        TensorSpec(shape=(2, None, 2), dtype=tf.float32, name=None),
+        TensorSpec(shape=(2,), dtype=tf.int64, name=None),
+        TensorSpec(shape=(2,), dtype=tf.string, name=None)
+    ),
+    (
+        TensorSpec(shape=(2, None, 240), dtype=tf.float32, name=None),
+        TensorSpec(shape=(2,), dtype=tf.int64, name=None),
+        TensorSpec(shape=(2,), dtype=tf.string, name=None)
+    ),
+    (
+        TensorSpec(shape=(2, None), dtype=tf.int64, name=None),
+        TensorSpec(shape=(2,), dtype=tf.int64, name=None),
+        TensorSpec(shape=(2,), dtype=tf.string, name=None),
+        TensorSpec(shape=(2,), dtype=tf.string, name=None)
+    )
+)
+
 ANN, CNN, RNN, GAN.
 滤波算法的本质是基于某种模型预估未来信号，并用于修正真实信号。
 
