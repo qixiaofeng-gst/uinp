@@ -7,7 +7,7 @@ Next TODO:
 - 队长队长。
 - 如果要自动部署某版本的脚本，数据和代码的部署都不可少，现在的直接挂载网络磁盘的方式至少不适用于小黄机器带走演示的场景。
 - 橙II：80.248
-- 橙狗：200.50. 切换到 HachiDev 之后 80.58：HachiBot.dev2020
+- 橙狗：200.50. 切换到 HachiDev 之后 80.58：HachiBot.dev2020, HachiBot.robot
 - Start OpenGL playground with emacs.
 - 看看 python multiprocessing Pool 中有进程出错会导致什么。
 - A tiny program for passward handling (mask it).
@@ -50,41 +50,41 @@ For (3), please refer to https://www.tensorflow.org/tutorials/customization/perf
 
 (
     (
-        TensorSpec(shape=(None, None, 36, 36, 3), dtype=tf.float32, name=None),
-        TensorSpec(shape=(None, None, 2), dtype=tf.float32, name=None),
-        TensorSpec(shape=(None,), dtype=tf.int64, name=None),
-        TensorSpec(shape=(None,), dtype=tf.string, name=None)
+        tf.TensorSpec(shape=(None, None, 36, 36, 3), dtype=tf.float32, name=None),
+        tf.TensorSpec(shape=(None, None, 2), dtype=tf.float32, name=None),
+        tf.TensorSpec(shape=(None,), dtype=tf.int64, name=None),
+        tf.TensorSpec(shape=(None,), dtype=tf.string, name=None)
     ),
     (
-        TensorSpec(shape=(None, None, 240), dtype=tf.float32, name=None),
-        TensorSpec(shape=(None,), dtype=tf.int64, name=None),
-        TensorSpec(shape=(None,), dtype=tf.string, name=None)
+        tf.TensorSpec(shape=(None, None, 240), dtype=tf.float32, name=None),
+        tf.TensorSpec(shape=(None,), dtype=tf.int64, name=None),
+        tf.TensorSpec(shape=(None,), dtype=tf.string, name=None)
     ),
     (
-        TensorSpec(shape=(None, None), dtype=tf.int64, name=None),
-        TensorSpec(shape=(None,), dtype=tf.int64, name=None),
-        TensorSpec(shape=(None,), dtype=tf.string, name=None),
-        TensorSpec(shape=(None,), dtype=tf.string, name=None)
+        tf.TensorSpec(shape=(None, None), dtype=tf.int64, name=None),
+        tf.TensorSpec(shape=(None,), dtype=tf.int64, name=None),
+        tf.TensorSpec(shape=(None,), dtype=tf.string, name=None),
+        tf.TensorSpec(shape=(None,), dtype=tf.string, name=None)
     )
 )
 
 (
     (
-        TensorSpec(shape=(2, None, 36, 36, 3), dtype=tf.float32, name=None),
-        TensorSpec(shape=(2, None, 2), dtype=tf.float32, name=None),
-        TensorSpec(shape=(2,), dtype=tf.int64, name=None),
-        TensorSpec(shape=(2,), dtype=tf.string, name=None)
+        tf.TensorSpec(shape=(2, None, 36, 36, 3), dtype=tf.float32, name=None),
+        tf.TensorSpec(shape=(2, None, 2), dtype=tf.float32, name=None),
+        tf.TensorSpec(shape=(2,), dtype=tf.int64, name=None),
+        tf.TensorSpec(shape=(2,), dtype=tf.string, name=None)
     ),
     (
-        TensorSpec(shape=(2, None, 240), dtype=tf.float32, name=None),
-        TensorSpec(shape=(2,), dtype=tf.int64, name=None),
-        TensorSpec(shape=(2,), dtype=tf.string, name=None)
+        tf.TensorSpec(shape=(2, None, 240), dtype=tf.float32, name=None),
+        tf.TensorSpec(shape=(2,), dtype=tf.int64, name=None),
+        tf.TensorSpec(shape=(2,), dtype=tf.string, name=None)
     ),
     (
-        TensorSpec(shape=(2, None), dtype=tf.int64, name=None),
-        TensorSpec(shape=(2,), dtype=tf.int64, name=None),
-        TensorSpec(shape=(2,), dtype=tf.string, name=None),
-        TensorSpec(shape=(2,), dtype=tf.string, name=None)
+        tf.TensorSpec(shape=(2, None), dtype=tf.int64, name=None),
+        tf.TensorSpec(shape=(2,), dtype=tf.int64, name=None),
+        tf.TensorSpec(shape=(2,), dtype=tf.string, name=None),
+        tf.TensorSpec(shape=(2,), dtype=tf.string, name=None)
     )
 )
 
