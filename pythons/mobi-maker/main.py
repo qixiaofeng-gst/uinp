@@ -49,7 +49,7 @@ def _get_file_names():
 
 def _process_file(file_name):
     # 'GB2312' 'UTF-8' 'GBK'
-    with open(file_name, 'r', encoding='UTF-8') as file:
+    with open(file_name, 'r', encoding='GBK') as file:
         lines_limit = 1000000
 
         processed_lines_count = 0
@@ -75,7 +75,9 @@ def _process_file(file_name):
                 chapter_id = 'c{}'.format(chapters_count)
                 head_and_toc.append('<p><a href="#{}">{}</a></p>'.format(chapter_id, chapter_name))
                 text.append('<h1 id="{}">{}</h1>'.format(chapter_id, chapter_name))
-                text.append('<p><a href="#content">回目录</a></p>')
+                text.append('<p><a href="#content">回目录</a>'
+                            '| | | |<a href="#c{}">上一章</a>'
+                            '| | | |<a href="#c{}">下一章</a></p>'.format(chapters_count - 1, chapters_count + 1))
             else:
                 words_count += line_len
                 text.append('<p>{}</p>'.format(line[:-1]))
