@@ -389,6 +389,9 @@ record-video() {
 convert-audio() {
     ffmpeg -i $1 -f s16le -acodec pcm_s16le audio/awake.pcm
 }
+play-deno-pcm() {
+    ffplay -autoexit -f s16le -ar 16000 -ac 1 $1
+}
 dc-make-lcm() {
     /var/local/dependencies/for-dacong/lcm-1.4.0/build/lcmgen/lcm-gen $1 $2
 }
