@@ -1,5 +1,5 @@
 Next TODO:
-- c1,c2,c3,c4,c6: supporting systems. a1: control system.
+- a1: control system. c1,c2,c3,c4,c5,c6: supporting systems.
 - Docker logging:
   - https://jaxenter.com/docker-logging-gotchas-137049.html
   - https://superuser.com/questions/1482221/docker-logs-is-missing-log-entires-which-are-showing-in-docker-attach
