@@ -42,6 +42,24 @@ redux/mobox
 * `ps huH p <PID_OF_U_PROCESS> | wc -l` 打印线程数目。
 * 监控 GPU 状态 `watch -n 3 nvidia-smi`。
 * 查 GPU 核数 `nvidia-settings -q CUDACores -t`。
+## Docker
+* 解决 docker 权限问题：
+  1. `sudo groupadd docker`。
+  1. `sudo usermod -aG docker $USER`。
+  1. `newgrp docker`。
+  1. 重启。
+* docker 的 image 存储目录：`/var/lib/docker/overlay2`
+* docker 服务重启：`sudo systemctl restart docker`
+* docker 常用指令：
+  * 获取镜像：`docker pull <image-name>`
+  * 查看镜像列表：`docker image ls`
+  * 查看进程：`docker ls`
+  * 查看进程详情：`docker inspect <container-name>`
+  * 查看日志：`docker logs -f <container-name/hash>`
+  * 移除所有停止的容器：`docker container prune`
+  * 移除所有 TAG=none 的镜像：`docker rmi $(docker images -f "dangling=true" -q)`
+  * 登陆：`docker login <url>`
+  * 查看完整容器 entry 命令：`docker ps --no-trunc`
 ## C/C++
 * C/C++ 当中，程序抛出异常退出前的打印，如果是 printf，要加 '\n'，不加则可能没有输出。
 * C on linux, `struct S a = *b;`, `b` pointed struct `S` is copied to `a`.

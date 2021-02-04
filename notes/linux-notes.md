@@ -207,22 +207,6 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * Under ubuntu use `cat /etc/X11/default-display-manager` to check using which display manager.
 * Under ubuntu use `nautilus /path/to/folder` to open folder with GUI file manager.
 * Under ubuntu use `eog <picture-path>` to view picture. Alternatives: `feh/xdg-open/display`.
-* 解决 docker 权限问题：
-  1. `sudo groupadd docker`。
-  1. `sudo usermod -aG docker $USER`。
-  1. `newgrp docker`。
-  1. 重启。
-* docker 的 image 存储目录：`/var/lib/docker/overlay2`
-* docker 服务重启：`sudo systemctl restart docker`
-* docker 常用指令：
-  * 获取镜像：`docker pull <image-name>`
-  * 查看镜像列表：`docker image ls`
-  * 查看进程：`docker ls`
-  * 查看进程详情：`docker inspect <container-name>`
-  * 查看日志：`docker logs -f <container-name/hash>`
-  * 移除所有停止的容器：`docker container prune`
-  * 移除所有 TAG=none 的镜像：`docker rmi $(docker images -f "dangling=true" -q)`
-  * 登陆：`docker login <url>`
 
 ## 应急恢复
 * 恢复被 rm 删除的文件。使用 extundelete 工具。入口命令：`extundelete <disk-path.e.g./dev/sd0> --inode <node-id:number>`。
