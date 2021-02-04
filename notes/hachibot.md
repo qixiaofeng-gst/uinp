@@ -1,4 +1,7 @@
 Next TODO:
+- UDP stuff:
+  - https://stackoverflow.com/questions/15734219/simple-python-udp-server-trouble-receiving-packets-from-clients-other-than-loca/36185759
+  - https://stackoverflow.com/questions/10692956/what-does-it-mean-to-bind-a-multicast-udp-socket
 - a1: control system. c1,c2,c3,c4,c5,c6: supporting systems.
 - Docker logging:
   - https://jaxenter.com/docker-logging-gotchas-137049.html
