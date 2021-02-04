@@ -15,6 +15,12 @@
 * 剪贴板工具：
   * clipboard-cli, based on nodejs
   * xclip/xsel, xsel is more friendly with scripting, xclip is better on prompt.
+* 三个 bash 的 builtins 用于检查命令或程序：
+  * `command -v <cmd>`
+  * `hash <cmd>`
+  * `type <cmd>`
+  * https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
+  * `command -v foo >/dev/null 2>&1 || { echo 'Requiring foo but missing it.'; exit 1; }`
 
 ### 配置开发工具
 * 为 git 设置 ssh 密钥。
