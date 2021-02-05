@@ -1,6 +1,8 @@
 export HACHY_BUILD=/var/local/local-build/for-raisim
 export NEW_RAISIM_BUILD=/var/local/local-build/for-new-raisim
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${NEW_RAISIM_BUILD}/lib
+export JAVA_HOME=/hachi/lib/jvm/jdk1.8.0_241
+export PATH=$PATH:/hachi/tools/apache-maven-3.6.3/bin
 
 function lan-ip-prefix() {
     echo '192.168'
