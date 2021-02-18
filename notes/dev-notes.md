@@ -232,6 +232,7 @@ Windows 下可创建快捷方式并添加参数
 * ffplay 播放字幕 ffplay path/to/video -vf subtitles=path/to/text
 * Java 执行指定 jar 包中的指定 class 和 library path 的命令行：
 `java -Djava.library.path=dir/path -cp xxx.jar xxx.xxx.ClassName`
+* 安装 sdkman：`curl -s "https://get.sdkman.io" | bash`，安装指定版本的 gradle：`sdk install gradle 6.7`。
 * eclipse 中配置 ${user} 变量的方法：在 eclipse.ini 中的 -vmargs 之后一行添加 -Duser.name=XXX
 * SQL 拷贝表数据语句：insert into table_1 (column_1, colum_2) select column_a, column_b from table_2;
 * 如果 select column_names from table; 的 column_names 中有常量值，比如数值或字符串，则在返回结果中该列是该常量值
