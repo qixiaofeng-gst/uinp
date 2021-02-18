@@ -1,4 +1,8 @@
 Next TODO:
+- https://www.javatpoint.com/spring-boot-tutorial
+- 自研麦克风阵列给本体组建立 Issue。
+- IntelliJ IDEA 相关：
+  - POM 错误 “找不到插件”： https://stackoverflow.com/questions/20496239/maven-plugins-can-not-be-found-in-intellij
 - UDP stuff:
   - https://stackoverflow.com/questions/15734219/simple-python-udp-server-trouble-receiving-packets-from-clients-other-than-loca/36185759
   - https://stackoverflow.com/questions/10692956/what-does-it-mean-to-bind-a-multicast-udp-socket
@@ -14,6 +18,40 @@ Next TODO:
 - Start OpenGL playground with emacs.
 - 看看 python multiprocessing Pool 中有进程出错会导致什么。
 - A tiny program for passward handling (mask it).
+
+Begin Packet
+------------
+Message ID: 7
+Packet Size: 394
+Begin MoCap Frame
+-----------------
+Frame #: 3838
+Marker Set Count: 1
+Model Name: all
+Marker Count: 0
+Unlabeled Markers Count: 4
+        Marker 0 : -0.3645332455635071 , 0.7287006974220276 , 1.4096826314926147
+        Marker 1 : -0.12072987854480743 , 0.7251772284507751 , 1.4182041883468628
+        Marker 2 : -0.439276784658432 , 0.672813355922699 , 1.3586702346801758
+        Marker 3 : -0.03738488256931305 , 0.6613466739654541 , 1.3952510356903076
+Rigid Body Count: 0
+Skeleton Count: 0
+Labeled Marker Count: 10
+marker_id:67600, pos:(-0.4167289137840271, 0.10561717301607132, 1.4084266424179077), size:(0.012000000104308128,)
+occluded:False, point_cloud_solved:True, model_solved:False
+Residual: 0.0
+marker_id:67612, pos:(-0.10640587657690048, 0.18492943048477173, 0.5021811723709106), size:(0.012000000104308128,)
+occluded:False, point_cloud_solved:True, model_solved:False
+Residual: 0.0
+...
+marker_id:1591611883, pos:(-0.4227224290370941, 0.24622248113155365, 0.40662679076194763), size:(0.012000000104308128,)
+occluded:False, point_cloud_solved:True, model_solved:False
+Residual: 0.0
+Force Plate Count: 0
+Device Count: 0
+stamp_camera_exposure:0, stamp_data_received:126919183750, stamp_transmit:126919186959
+End Packet
+----------
 
 WARNING:tensorflow:5 out of the last 5 calls to <function AVSR.train.<locals>.distributed_train_step at 0x7fab2f298820>
  triggered tf.function retracing. Tracing is expensive and the excessive number of tracings could be due to
