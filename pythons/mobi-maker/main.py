@@ -11,6 +11,7 @@
 # 6. Use kindlegen to make mobi file.
 import re
 import os
+import time
 
 _TEMPLATE_START = (
     '<html lang="zh">'
@@ -37,9 +38,13 @@ def _search_chapter_name(line):
     return None
 
 
-def _get_file_names():
+def _get_arguments():
     import argparse
     parser = argparse.ArgumentParser(description='Parse file name.')
+    parser.add_argument(
+        '--encoding', '-c', type=str, default='UTF-8',
+        help='The encoding of the given files. Support GB2312, UTF-8 and GBK',
+    )
     parser.add_argument(
         'file_names', metavar='file_name', type=str,
         nargs='+', help='file name',
@@ -47,9 +52,8 @@ def _get_file_names():
     return parser.parse_args()
 
 
-def _process_file(file_name):
-    # 'GB2312' 'UTF-8' 'GBK'
-    with open(file_name, 'r', encoding='GBK') as file:
+def _process_file(file_name, encoding):
+    with open(file_name, 'r', encoding=encoding) as file:
         lines_limit = 1000000
 
         processed_lines_count = 0
@@ -100,17 +104,21 @@ def _save_to_html(file_name, head_and_toc, text):
 
 
 def _make():
-    file_names = _get_file_names().file_names
+    start_time = time.time()
+    arguments = _get_arguments()
+    encoding = arguments.encoding
+    file_names = arguments.file_names
     for file_name in file_names:
         if not file_name.endswith('.txt'):
             print('Invalid file type. Expected "*.txt" files.')
             continue
-        toc, text = _process_file(file_name)
+        toc, text = _process_file(file_name, encoding)
         html_name = '{}.html'.format(file_name[:-4])
         _save_to_html(html_name, toc, text)
         os.system('/var/local/app-binaries/kindlegen-2.9/kindlegen {}'.format(
             html_name,
         ))
+    print('Totally cost {:.4f} seconds.'.format(time.time() - start_time))
 
 
 if __name__ == '__main__':
