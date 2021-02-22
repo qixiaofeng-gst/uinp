@@ -157,6 +157,10 @@ redux/mobox
   git add .
   ```
 * 修改最近一次 commit 的信息 `git commit --amend`
+* 修改分支名称：
+  - `git branch -m <new-name>`
+  - `git push origin -u <new-name>`
+  - `git push origin --delete <old-name>`
 * 切换到远程分支 `git co --track origin/<branch-name>`
 * 切换分支 `git co <branch-name>`
 * 新建分支 `git co -b <branch-name>` + `git push origin <branch-name>`
