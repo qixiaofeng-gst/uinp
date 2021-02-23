@@ -1,7 +1,10 @@
+# coding: utf-8
 import re
 import datetime
 import decimal
 from pdf.generic import PdfObject
+# FIXME Warning below
+# noinspection PyUnresolvedReferences
 from xml.dom.minidom import parseString
 
 RDF_NAMESPACE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -54,26 +57,27 @@ iso8601 = re.compile("""
 class XmpInformation(PdfObject):
 
     def __init__(self, stream):
+        self._custom_properties = {}
         self.stream = stream
-        docRoot = parseString(self.stream.getData())
-        self.rdfRoot = docRoot.getElementsByTagNameNS(RDF_NAMESPACE, "RDF")[0]
+        doc_root = parseString(self.stream.get_data())
+        self.rdfRoot = doc_root.getElementsByTagNameNS(RDF_NAMESPACE, "RDF")[0]
         self.cache = {}
 
-    def writeToStream(self, stream, encryption_key):
-        self.stream.writeToStream(stream, encryption_key)
+    def write_to_stream(self, stream, encryption_key):
+        self.stream.write_to_stream(stream, encryption_key)
 
-    def getElement(self, aboutUri, namespace, name):
+    def get_element(self, about_uri, namespace, name):
         for desc in self.rdfRoot.getElementsByTagNameNS(RDF_NAMESPACE, "Description"):
-            if desc.getAttributeNS(RDF_NAMESPACE, "about") == aboutUri:
+            if desc.getAttributeNS(RDF_NAMESPACE, "about") == about_uri:
                 attr = desc.getAttributeNodeNS(namespace, name)
-                if attr != None:
+                if attr is not None:
                     yield attr
                 for element in desc.getElementsByTagNameNS(namespace, name):
                     yield element
 
-    def getNodesInNamespace(self, aboutUri, namespace):
+    def get_nodes_in_namespace(self, about_uri, namespace):
         for desc in self.rdfRoot.getElementsByTagNameNS(RDF_NAMESPACE, "Description"):
-            if desc.getAttributeNS(RDF_NAMESPACE, "about") == aboutUri:
+            if desc.getAttributeNS(RDF_NAMESPACE, "about") == about_uri:
                 for i in range(desc.attributes.length):
                     attr = desc.attributes.item(i)
                     if attr.namespaceURI == namespace:
@@ -82,16 +86,19 @@ class XmpInformation(PdfObject):
                     if child.namespaceURI == namespace:
                         yield child
 
-    def _getText(self, element):
+    @staticmethod
+    def _get_text(element):
         text = ""
         for child in element.childNodes:
             if child.nodeType == child.TEXT_NODE:
                 text += child.data
         return text
 
+    @staticmethod
     def _converter_string(value):
         return value
 
+    @staticmethod
     def _converter_date(value):
         m = iso8601.match(value)
         year = int(m.group("year"))
@@ -100,7 +107,7 @@ class XmpInformation(PdfObject):
         hour = int(m.group("hour") or "0")
         minute = int(m.group("minute") or "0")
         second = decimal.Decimal(m.group("second") or "0")
-        seconds = second.to_integral(decimal.ROUND_FLOOR)
+        seconds = int(second.to_integral(decimal.ROUND_FLOOR))
         milliseconds = (second - seconds) * 1000000
         tzd = m.group("tzd") or "Z"
         dt = datetime.datetime(year, month, day, hour, minute, seconds, milliseconds)
@@ -112,20 +119,19 @@ class XmpInformation(PdfObject):
             dt = dt + datetime.timedelta(hours=tzd_hours, minutes=tzd_minutes)
         return dt
 
-    _test_converter_date = staticmethod(_converter_date)
-
+    @staticmethod
     def _getter_bag(namespace, name, converter):
         def get(self):
             cached = self.cache.get(namespace, {}).get(name)
             if cached:
                 return cached
             retval = []
-            for element in self.getElement("", namespace, name):
+            for element in self.get_element("", namespace, name):
                 bags = element.getElementsByTagNameNS(RDF_NAMESPACE, "Bag")
                 if len(bags):
                     for bag in bags:
                         for item in bag.getElementsByTagNameNS(RDF_NAMESPACE, "li"):
-                            value = self._getText(item)
+                            value = self._get_text(item)
                             value = converter(value)
                             retval.append(value)
             ns_cache = self.cache.setdefault(namespace, {})
@@ -134,22 +140,23 @@ class XmpInformation(PdfObject):
 
         return get
 
+    @staticmethod
     def _getter_seq(namespace, name, converter):
         def get(self):
             cached = self.cache.get(namespace, {}).get(name)
             if cached:
                 return cached
             retval = []
-            for element in self.getElement("", namespace, name):
+            for element in self.get_element("", namespace, name):
                 seqs = element.getElementsByTagNameNS(RDF_NAMESPACE, "Seq")
                 if len(seqs):
                     for seq in seqs:
                         for item in seq.getElementsByTagNameNS(RDF_NAMESPACE, "li"):
-                            value = self._getText(item)
+                            value = self._get_text(item)
                             value = converter(value)
                             retval.append(value)
                 else:
-                    value = converter(self._getText(element))
+                    value = converter(self._get_text(element))
                     retval.append(value)
             ns_cache = self.cache.setdefault(namespace, {})
             ns_cache[name] = retval
@@ -157,41 +164,43 @@ class XmpInformation(PdfObject):
 
         return get
 
+    @staticmethod
     def _getter_langalt(namespace, name, converter):
         def get(self):
             cached = self.cache.get(namespace, {}).get(name)
             if cached:
                 return cached
             retval = {}
-            for element in self.getElement("", namespace, name):
+            for element in self.get_element("", namespace, name):
                 alts = element.getElementsByTagNameNS(RDF_NAMESPACE, "Alt")
                 if len(alts):
                     for alt in alts:
                         for item in alt.getElementsByTagNameNS(RDF_NAMESPACE, "li"):
-                            value = self._getText(item)
+                            value = self._get_text(item)
                             value = converter(value)
                             retval[item.getAttribute("xml:lang")] = value
                 else:
-                    retval["x-default"] = converter(self._getText(element))
+                    retval["x-default"] = converter(self._get_text(element))
             ns_cache = self.cache.setdefault(namespace, {})
             ns_cache[name] = retval
             return retval
 
         return get
 
+    @staticmethod
     def _getter_single(namespace, name, converter):
         def get(self):
             cached = self.cache.get(namespace, {}).get(name)
             if cached:
                 return cached
             value = None
-            for element in self.getElement("", namespace, name):
+            for element in self.get_element("", namespace, name):
                 if element.nodeType == element.ATTRIBUTE_NODE:
                     value = element.nodeValue
                 else:
-                    value = self._getText(element)
+                    value = self._get_text(element)
                 break
-            if value != None:
+            if value is not None:
                 value = converter(value)
             ns_cache = self.cache.setdefault(namespace, {})
             ns_cache[name] = value
@@ -334,7 +343,7 @@ class XmpInformation(PdfObject):
     def custom_properties(self):
         if not hasattr(self, "_custom_properties"):
             self._custom_properties = {}
-            for node in self.getNodesInNamespace("", PDFX_NAMESPACE):
+            for node in self.get_nodes_in_namespace("", PDFX_NAMESPACE):
                 key = node.localName
                 while True:
                     # see documentation about PDFX_NAMESPACE earlier in file
@@ -345,7 +354,7 @@ class XmpInformation(PdfObject):
                 if node.nodeType == node.ATTRIBUTE_NODE:
                     value = node.nodeValue
                 else:
-                    value = self._getText(node)
+                    value = self._get_text(node)
                 self._custom_properties[key] = value
         return self._custom_properties
 
