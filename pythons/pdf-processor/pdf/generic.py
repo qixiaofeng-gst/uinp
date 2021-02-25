@@ -395,7 +395,7 @@ class TextStringObject(str, PdfObject):
 
 
 class NameObject(str, PdfObject):
-    delimiterCharacters = "(", ")", "<", ">", "[", "]", "{", "}", "/", "%"
+    delimiter_characters = "(", ")", "<", ">", "[", "]", "{", "}", "/", "%"
 
     def __init__(self, data):
         str.__init__(data)
@@ -410,7 +410,7 @@ class NameObject(str, PdfObject):
             raise utils.PdfReadError("name read error")
         while True:
             tok = stream.read(1)
-            if tok.isspace() or tok in NameObject.delimiterCharacters:
+            if tok.isspace() or tok in NameObject.delimiter_characters:
                 stream.seek(-1, 1)
                 break
             name += tok

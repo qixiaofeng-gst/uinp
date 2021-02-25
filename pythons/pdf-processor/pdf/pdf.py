@@ -1439,7 +1439,7 @@ class ContentStream(DecodedStreamObject):
                 operator = ""
                 while True:
                     tok = stream.read(1)
-                    if tok.isspace() or tok in NameObject.delimiterCharacters:
+                    if tok.isspace() or tok in NameObject.delimiter_characters:
                         stream.seek(-1, 1)
                         break
                     elif tok == '':
@@ -1837,23 +1837,3 @@ def _create_rotation_scaling_matrix(rotation, scale):
                [0, 0, 1]]
     ctm = utils.matrix_multiply(rotating, scaling)
     return ctm
-
-# if __name__ == "__main__":
-#    output = PdfFileWriter()
-#
-#    input1 = PdfFileReader(file("test\\5000-s1-05e.pdf", "rb"))
-#    page1 = input1.getPage(0)
-#
-#    input2 = PdfFileReader(file("test\\PDFReference16.pdf", "rb"))
-#    page2 = input2.getPage(0)
-#    page3 = input2.getPage(1)
-#    page1.mergePage(page2)
-#    page1.mergePage(page3)
-#
-#    input3 = PdfFileReader(file("test\\cc-cc.pdf", "rb"))
-#    page1.mergePage(input3.getPage(0))
-#
-#    page1.compressContentStreams()
-#
-#    output.addPage(page1)
-#    output.write(file("test\\merge-test.pdf", "wb"))
