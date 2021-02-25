@@ -2,7 +2,7 @@
 import re
 import datetime
 import decimal
-from pdf.generic import PdfObject
+from PyPDF.generic import PdfObject
 # FIXME Warning below
 # noinspection PyUnresolvedReferences
 from xml.dom.minidom import parseString

@@ -1,4 +1,4 @@
-from pdf.pdf import PdfFileReader, PdfFileWriter
+from PyPDF.pdf import PdfFileReader, PdfFileWriter
 
 if __name__ == "__main__":
     output = PdfFileWriter()
@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     page1 = input1.get_page(0)
 
-    with open("test_input_b.pdf.pdf", "rb") as file:
+    with open("test_input_b.PyPDF.PyPDF", "rb") as file:
         input2 = PdfFileReader(file)
 
     page2 = input2.get_page(0)
@@ -18,5 +18,5 @@ if __name__ == "__main__":
     page1.mergePage(page3)
 
     output.add_page(page1)
-    with open("test_output.pdf", "wb") as file:
+    with open("test_output.PyPDF", "wb") as file:
         output.write(file)

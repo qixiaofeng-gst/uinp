@@ -6,9 +6,9 @@ __author__ = "Mathieu Fenniak"
 __author_email__ = "biziqe@mathieu.fenniak.net"
 
 import re
-from pdf.utils import read_non_whitespace, rc4_encrypt
-import pdf.filters as filters
-import pdf.utils as utils
+from PyPDF.utils import read_non_whitespace, rc4_encrypt
+import PyPDF.filters as filters
+import PyPDF.utils as utils
 import decimal
 import codecs
 
@@ -473,7 +473,7 @@ class DictionaryObject(dict, PdfObject):
         if metadata is None:
             return None
         metadata = metadata.getObject()
-        import pdf.xmp as xmp
+        import PyPDF.xmp as xmp
         if not isinstance(metadata, xmp.XmpInformation):
             metadata = xmp.XmpInformation(metadata)
             self[NameObject("/Metadata")] = metadata

@@ -12,10 +12,10 @@ import struct
 from hashlib import md5
 from io import StringIO
 
-import pdf.filters
-import pdf.utils as utils
-from pdf.generic import *
-from pdf.utils import read_non_whitespace, read_until_whitespace, ConvertFunctionsToVirtualList
+import PyPDF.filters
+import PyPDF.utils as utils
+from PyPDF.generic import *
+from PyPDF.utils import read_non_whitespace, read_until_whitespace, ConvertFunctionsToVirtualList
 
 
 ##
@@ -61,7 +61,7 @@ class PdfFileWriter(object):
 
     def get_object(self, ido):
         if ido.pdf != self:
-            raise ValueError("pdf must be self")
+            raise ValueError("PyPDF must be self")
         return self._objects[ido.idnum - 1]
 
     ##
@@ -537,7 +537,7 @@ class PdfFileReader(object):
                 outline = self._namedDests[dest]
                 outline[NameObject("/Title")] = title
             else:
-                raise pdf.utils.PdfReadError("Unexpected destination %r" % dest)
+                raise PyPDF.utils.PdfReadError("Unexpected destination %r" % dest)
         return outline
 
     ##
@@ -967,7 +967,7 @@ def create_rectangle_accessor(name, fallback):
 # function of the {@link #PdfFileReader PdfFileReader} class, but it is
 # also possible to create an empty page with the createBlankPage static
 # method.
-# @param pdf PDF file the page belongs to (optional, defaults to None).
+# @param PyPDF PDF file the page belongs to (optional, defaults to None).
 class PageObject(DictionaryObject):
     def __init__(self, _pdf=None, indirect_ref=None):
         DictionaryObject.__init__(self)
@@ -978,15 +978,15 @@ class PageObject(DictionaryObject):
     ##
     # Returns a new blank page.
     # If width or height is None, try to get the page size from the
-    # last page of pdf. If pdf is None or contains no page, a
+    # last page of PyPDF. If PyPDF is None or contains no page, a
     # PageSizeNotDefinedError is raised.
-    # @param pdf    PDF file the page belongs to
+    # @param PyPDF    PDF file the page belongs to
     # @param width  The width of the new page expressed in default user
     #               space units.
     # @param height The height of the new page expressed in default user
     #               space units.
     def create_blank_page(_pdf=None, width=None, height=None):
-        page = PageObject(pdf)
+        page = PageObject(PyPDF)
 
         # Creates a new page (cf PDF Reference  7.7.3.3)
         page.__setitem__(NameObject('/Type'), NameObject('/Page'))
