@@ -610,13 +610,15 @@ class StreamObject(DictionaryObject):
         retval._data = filters.FlateDecode.encode(self._data)
         return retval
 
-
-class DecodedStreamObject(StreamObject):
     def get_data(self):
         return self._data
 
     def set_data(self, data):
         self._data = data
+
+
+class DecodedStreamObject(StreamObject):
+    pass
 
 
 class EncodedStreamObject(StreamObject):
@@ -778,9 +780,9 @@ _pdfDocEncoding = (
 assert len(_pdfDocEncoding) == 256
 
 _pdfDocEncoding_rev = {}
-for i in range(256):
-    char = _pdfDocEncoding[i]
+for __idx in range(256):
+    char = _pdfDocEncoding[__idx]
     if char == u"\u0000":
         continue
     assert char not in _pdfDocEncoding_rev
-    _pdfDocEncoding_rev[char] = i
+    _pdfDocEncoding_rev[char] = __idx
