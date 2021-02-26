@@ -5,14 +5,14 @@ Implementation of generic PDF objects (dictionary, number, string, and so on)
 
 import io
 import re
-from PyPDF.utils import read_non_whitespace, rc4_encrypt
+from PyPDF.utils import read_non_whitespace, seek_token, rc4_encrypt
 import PyPDF.filters as filters
 import PyPDF.utils as utils
 import decimal
 import codecs
 
 
-def read_object(stream, pdf):
+def read_object(stream: io.BufferedReader, pdf_reader):
     tok = stream.read(1)
     stream.seek(-1, io.SEEK_CUR)  # reset to start
     if tok in b'tf':
@@ -26,7 +26,7 @@ def read_object(stream, pdf):
         return NameObject.read_from_stream(stream)
     elif tok in b'[':
         # array object
-        return ArrayObject.read_from_stream(stream, pdf)
+        return ArrayObject.read_from_stream(stream, pdf_reader)
     elif tok in b'n':
         # null object
         return NullObject.read_from_stream(stream)
@@ -35,16 +35,15 @@ def read_object(stream, pdf):
         peek = stream.read(2)
         stream.seek(-2, io.SEEK_CUR)  # reset to start
         if peek == b'<<':
-            return DictionaryObject.read_from_stream(stream, pdf)
+            return DictionaryObject.read_from_stream(stream, pdf_reader)
         else:
             return read_hex_string_from_stream(stream)
     elif tok in b'%':
         # comment
-        while tok not in ('\r', '\n'):
+        while tok not in b'\r\n':
             tok = stream.read(1)
-        _tok = read_non_whitespace(stream)
-        stream.seek(-1, io.SEEK_CUR)
-        return read_object(stream, pdf)
+        seek_token(stream)
+        return read_object(stream, pdf_reader)
     else:
         # number object OR indirect reference
         if tok in b'+-':
@@ -53,7 +52,7 @@ def read_object(stream, pdf):
         peek = stream.read(20)
         stream.seek(-len(peek), io.SEEK_CUR)  # reset to start
         if re.match(br'(\d+)\s(\d+)\sR[^a-zA-Z]', peek) is not None:
-            return IndirectObject.read_from_stream(stream, pdf)
+            return IndirectObject.read_from_stream(stream, pdf_reader)
         else:
             return NumberObject.read_from_stream(stream)
 
@@ -140,16 +139,14 @@ class IndirectObject(PdfObject):
         return self.pdf.get_object(self).get_object()
 
     def __repr__(self):
-        return "IndirectObject(%r, %r)" % (self.idnum, self.generation)
+        return "IndirectObject(%r, %r, %s)" % (self.idnum, self.generation, type(self.pdf))
 
     def __eq__(self, other):
-        return (
-                other is not None and
+        return (other is not None and
                 isinstance(other, IndirectObject) and
                 self.idnum == other.idnum and
                 self.generation == other.generation and
-                self.pdf is other.pdf
-        )
+                self.pdf is other.pdf)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -206,115 +203,15 @@ class NumberObject(int, PdfObject):
         name = b''
         while True:
             tok = stream.read(1)
-            utils.debug(tok)
             if not (tok in b'+-.' or tok.isdigit()):
                 stream.seek(-1, io.SEEK_CUR)
                 break
             name += tok
+        utils.debug(name)
         if name.find(b'.') > -1:
             return FloatObject(name.decode(utils.ENCODING_UTF8))
         else:
             return NumberObject(name)
-
-
-##
-# Given a string (either a "str" or "unicode"), create a ByteStringObject or a
-# TextStringObject to represent the string.
-def create_string_object(string: bytes):
-    if isinstance(string, bytes):
-        if string.startswith(codecs.BOM_UTF16_BE):
-            retval = TextStringObject(string.decode(utils.ENCODING_UTF16))
-            retval.autodetect_utf16 = True
-            return retval
-        else:
-            # This is probably a big performance hit here, but we need to
-            # convert string objects into the text/unicode-aware version if
-            # possible... and the only way to check if that's possible is
-            # to try.  Some strings are strings, some are just byte arrays.
-            try:
-                retval = TextStringObject(decode_pdfdocencoding(string))
-                retval.autodetect_pdfdocencoding = True
-                return retval
-            except UnicodeDecodeError:
-                return ByteStringObject(string)
-    elif isinstance(string, str):
-        return TextStringObject(string)
-    else:
-        raise TypeError("createStringObject should have str or unicode arg")
-
-
-def read_hex_string_from_stream(stream):
-    stream.read(1)
-    txt = b''
-    x = b''
-    while True:
-        tok = read_non_whitespace(stream)
-        if tok == b'>':
-            break
-        x += tok
-        if len(x) == 2:
-            txt += utils.s2b(chr(int(x, base=16)))
-            x = b''
-    if len(x) == 1:
-        x += b'0'
-    if len(x) == 2:
-        txt += utils.s2b(chr(int(x, base=16)))
-    return create_string_object(txt)
-
-
-def read_string_from_stream(stream):
-    _tok = stream.read(1)
-    parens = 1
-    txt = b''
-    while True:
-        tok = stream.read(1)
-        if tok in b'(':
-            parens += 1
-        elif tok in b')':
-            parens -= 1
-            if parens == 0:
-                break
-        elif tok in b'\\':
-            tok = stream.read(1)
-            if tok in b'n':
-                tok = b'\n'
-            elif tok in b'r':
-                tok = b'\r'
-            elif tok in b't':
-                tok = b'\t'
-            elif tok in b'b':
-                tok = b'\b'
-            elif tok in b'f':
-                tok = b'\f'
-            elif tok in b'()\\':
-                pass
-            elif tok.isdigit():
-                # "The number ddd may consist of one, two, or three
-                # octal digits; high-order overflow shall be ignored.
-                # Three octal digits shall be used, with leading zeros
-                # as needed, if the next character of the string is also
-                # a digit." (PDF reference 7.3.4.2, p 16)
-                for _i in range(2):
-                    ntok = stream.read(1)
-                    if ntok.isdigit():
-                        tok += ntok
-                    else:
-                        break
-                tok = utils.s2b(chr(int(tok, base=8)))
-            elif tok in b'\n\r':
-                # This case is  hit when a backslash followed by a line
-                # break occurs.  If it's a multi-char EOL, consume the
-                # second character:
-                tok = stream.read(1)
-                if tok not in b'\n\r':
-                    stream.seek(-1, io.SEEK_CUR)
-                # Then don't add anything to the actual string, since this
-                # line break was escaped:
-                tok = b''
-            else:
-                raise utils.PdfReadError("Unexpected escaped string")
-        txt += tok
-    return create_string_object(txt)
 
 
 ##
@@ -451,6 +348,7 @@ class DictionaryObject(dict, PdfObject):
         return dict.setdefault(self, key, value)
 
     def __getitem__(self, key):
+        utils.debug(key, dict.__getitem__(self, key))
         return dict.__getitem__(self, key).get_object()
 
     ##
@@ -501,8 +399,7 @@ class DictionaryObject(dict, PdfObject):
                 break
             stream.seek(-1, io.SEEK_CUR)
             key = read_object(stream, pdf_object)
-            _tok = read_non_whitespace(stream)
-            stream.seek(-1, io.SEEK_CUR)
+            seek_token(stream)
             value = read_object(stream, pdf_object)
             if key in data:
                 # multiple definitions of key not permitted
@@ -705,6 +602,106 @@ class RectangleObject(ArrayObject):
 
     def get_height(self):
         return self.get_upper_right_y() - self.get_lower_left_x()
+
+
+##
+# Given a string (either a "str" or "unicode"), create a ByteStringObject or a
+# TextStringObject to represent the string.
+def create_string_object(string: bytes):
+    if isinstance(string, bytes):
+        if string.startswith(codecs.BOM_UTF16_BE):
+            retval = TextStringObject(string.decode(utils.ENCODING_UTF16))
+            retval.autodetect_utf16 = True
+            return retval
+        else:
+            # This is probably a big performance hit here, but we need to
+            # convert string objects into the text/unicode-aware version if
+            # possible... and the only way to check if that's possible is
+            # to try.  Some strings are strings, some are just byte arrays.
+            try:
+                retval = TextStringObject(decode_pdfdocencoding(string))
+                retval.autodetect_pdfdocencoding = True
+                return retval
+            except UnicodeDecodeError:
+                return ByteStringObject(string)
+    elif isinstance(string, str):
+        return TextStringObject(string)
+    else:
+        raise TypeError("createStringObject should have str or unicode arg")
+
+
+def read_hex_string_from_stream(stream):
+    stream.read(1)
+    txt = b''
+    x = b''
+    while True:
+        tok = read_non_whitespace(stream)
+        if tok == b'>':
+            break
+        x += tok
+        if len(x) == 2:
+            txt += utils.s2b(chr(int(x, base=16)))
+            x = b''
+    if len(x) == 1:
+        x += b'0'
+    if len(x) == 2:
+        txt += utils.s2b(chr(int(x, base=16)))
+    return create_string_object(txt)
+
+
+def read_string_from_stream(stream):
+    _tok = stream.read(1)
+    parens = 1
+    txt = b''
+    while True:
+        tok = stream.read(1)
+        if tok in b'(':
+            parens += 1
+        elif tok in b')':
+            parens -= 1
+            if parens == 0:
+                break
+        elif tok in b'\\':
+            tok = stream.read(1)
+            if tok in b'n':
+                tok = b'\n'
+            elif tok in b'r':
+                tok = b'\r'
+            elif tok in b't':
+                tok = b'\t'
+            elif tok in b'b':
+                tok = b'\b'
+            elif tok in b'f':
+                tok = b'\f'
+            elif tok in b'()\\':
+                pass
+            elif tok.isdigit():
+                # "The number ddd may consist of one, two, or three
+                # octal digits; high-order overflow shall be ignored.
+                # Three octal digits shall be used, with leading zeros
+                # as needed, if the next character of the string is also
+                # a digit." (PDF reference 7.3.4.2, p 16)
+                for _i in range(2):
+                    ntok = stream.read(1)
+                    if ntok.isdigit():
+                        tok += ntok
+                    else:
+                        break
+                tok = utils.s2b(chr(int(tok, base=8)))
+            elif tok in b'\n\r':
+                # This case is  hit when a backslash followed by a line
+                # break occurs.  If it's a multi-char EOL, consume the
+                # second character:
+                tok = stream.read(1)
+                if tok not in b'\n\r':
+                    stream.seek(-1, io.SEEK_CUR)
+                # Then don't add anything to the actual string, since this
+                # line break was escaped:
+                tok = b''
+            else:
+                raise utils.PdfReadError("Unexpected escaped string")
+        txt += tok
+    return create_string_object(txt)
 
 
 def encode_pdfdocencoding(unicode_string):

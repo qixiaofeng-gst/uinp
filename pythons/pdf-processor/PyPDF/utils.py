@@ -3,6 +3,7 @@
 Utility functions for PDF library.
 """
 import os as _os
+import io as _io
 import inspect as _insp
 
 
@@ -41,11 +42,17 @@ def read_until_whitespace(stream, maxchars=None):
     return txt
 
 
-def read_non_whitespace(stream):
+def read_non_whitespace(stream: _io.BufferedReader, seek_back: bool = False):
     tok = b' '
     while tok in b'\n\r\t ':
         tok = stream.read(1)
+    if seek_back:
+        stream.seek(-1, _io.SEEK_CUR)
     return tok
+
+
+def seek_token(stream):
+    return read_non_whitespace(stream, True)
 
 
 class ConvertFunctionsToVirtualList(object):
