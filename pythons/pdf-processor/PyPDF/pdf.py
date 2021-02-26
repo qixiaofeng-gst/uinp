@@ -173,8 +173,8 @@ class PdfFileWriter(object):
         # permit everything:
         p = -1
         o = ByteStringObject(_alg33(owner_pwd, user_pwd, rev, keylen))
-        id_1 = md5(bytes(repr(time.time()), 'utf-8')).digest()
-        id_2 = md5(bytes(repr(random.random()), 'utf-8')).digest()
+        id_1 = md5(bytes(repr(time.time()), utils.BYTES_ENCODING)).digest()
+        id_2 = md5(bytes(repr(random.random()), utils.BYTES_ENCODING)).digest()
         self._ID = ArrayObject((ByteStringObject(id_1), ByteStringObject(id_2)))
         if rev == 2:
             u, key = _alg34(user_pwd, o, p, id_1)
@@ -666,14 +666,14 @@ class PdfFileReader(object):
         line = ''
         while not line:
             line = self.read_next_end_line(stream)
-        if line[:5] != "%%EOF":
+        if line[:5] != b'%%EOF':
             raise utils.PdfReadError("EOF marker not found")
 
         # find startxref entry - the location of the xref table
         line = self.read_next_end_line(stream)
         startxref = int(line)
         line = self.read_next_end_line(stream)
-        if line[:9] != "startxref":
+        if line[:9] != b'startxref':
             raise utils.PdfReadError("startxref not found")
 
         # read all cross reference tables and their trailers
@@ -684,10 +684,10 @@ class PdfFileReader(object):
             # load the xref table
             stream.seek(startxref, 0)
             x = stream.read(1)
-            if x == "x":
+            if x == b'x':
                 # standard cross-reference table
                 ref = stream.read(4)
-                if ref[:3] != "ref":
+                if ref[:3] != b'ref':
                     raise utils.PdfReadError("xref table read error")
                 read_non_whitespace(stream)
                 stream.seek(-1, 1)
@@ -824,12 +824,14 @@ class PdfFileReader(object):
 
     @staticmethod
     def read_next_end_line(stream):
-        line = ""
+        print(type(stream), '=' * 32)
+        line = b''
         while True:
             x = stream.read(1)
+            print(type(x), type(b'\n'), '=' * 16)
             stream.seek(-2, 1)
-            if x == '\n' or x == '\r':
-                while x == '\n' or x == '\r':
+            if x in b'\n\r':
+                while x == b'\n' or x == b'\r':
                     x = stream.read(1)
                     stream.seek(-2, 1)
                 stream.seek(1, 1)
@@ -1789,7 +1791,7 @@ def _alg35(password, rev, keylen, owner_entry, p_entry, id1_entry, _metadata_enc
     # 2. Initialize the MD5 hash function and pass the 32-byte padding string
     # shown in step 1 of Algorithm 3.2 as input to this function. 
     m = md5()
-    m.update(bytes(_encryption_padding, 'utf-8'))
+    m.update(bytes(_encryption_padding, utils.BYTES_ENCODING))
     # 3. Pass the first element of the file's file identifier array (the value
     # of the ID entry in the document's trailer dictionary; see Table 3.13 on
     # page 73) to the hash function and finish the hash.  (See implementation

@@ -16,30 +16,30 @@ import codecs
 def read_object(stream, pdf):
     tok = stream.read(1)
     stream.seek(-1, 1)  # reset to start
-    if tok == 't' or tok == 'f':
+    if tok in b'tf':
         # boolean object
         return BooleanObject.read_from_stream(stream)
-    elif tok == '(':
+    elif tok in b'(':
         # string object
         return read_string_from_stream(stream)
-    elif tok == '/':
+    elif tok in b'/':
         # name object
         return NameObject.read_from_stream(stream)
-    elif tok == '[':
+    elif tok in b'[':
         # array object
         return ArrayObject.read_from_stream(stream, pdf)
-    elif tok == 'n':
+    elif tok in b'n':
         # null object
         return NullObject.read_from_stream(stream)
-    elif tok == '<':
+    elif tok in b'<':
         # hexadecimal string OR dictionary
         peek = stream.read(2)
         stream.seek(-2, 1)  # reset to start
-        if peek == '<<':
+        if peek == b'<<':
             return DictionaryObject.read_from_stream(stream, pdf)
         else:
             return read_hex_string_from_stream(stream)
-    elif tok == '%':
+    elif tok in b'%':
         # comment
         while tok not in ('\r', '\n'):
             tok = stream.read(1)
@@ -48,12 +48,12 @@ def read_object(stream, pdf):
         return read_object(stream, pdf)
     else:
         # number object OR indirect reference
-        if tok == '+' or tok == '-':
+        if tok in b'+-':
             # number
             return NumberObject.read_from_stream(stream)
         peek = stream.read(20)
         stream.seek(-len(peek), 1)  # reset to start
-        if re.match(r"(\d+)\s(\d+)\sR[^a-zA-Z]", peek) is not None:
+        if re.match(br'(\d+)\s(\d+)\sR[^a-zA-Z]', peek) is not None:
             return IndirectObject.read_from_stream(stream, pdf)
         else:
             return NumberObject.read_from_stream(stream)
@@ -66,17 +66,16 @@ class PdfObject(object):
 
 
 class NullObject(PdfObject):
-    def write_to_stream(self, stream):
-        assert self
-        stream.write("null")
+    @staticmethod
+    def write_to_stream(stream):
+        stream.write(b'null')
 
+    @staticmethod
     def read_from_stream(stream):
         nulltxt = stream.read(4)
-        if nulltxt != "null":
+        if not nulltxt == b'null':
             raise utils.PdfReadError("error reading null object")
         return NullObject()
-
-    read_from_stream = staticmethod(read_from_stream)
 
 
 class BooleanObject(PdfObject):
@@ -85,16 +84,16 @@ class BooleanObject(PdfObject):
 
     def write_to_stream(self, stream):
         if self.value:
-            stream.write("true")
+            stream.write(b'true')
         else:
-            stream.write("false")
+            stream.write(b'false')
 
     @staticmethod
     def read_from_stream(stream):
         word = stream.read(4)
-        if word == "true":
+        if word == b'true':
             return BooleanObject(True)
-        elif word == "fals":
+        elif word == b'fals':
             stream.read(1)
             return BooleanObject(False)
         assert False
@@ -102,17 +101,17 @@ class BooleanObject(PdfObject):
 
 class ArrayObject(list, PdfObject):
     def write_to_stream(self, stream, encryption_key):
-        stream.write("[")
+        stream.write(b'[')
         for data in self:
-            stream.write(" ")
+            stream.write(b' ')
             data.write_to_stream(stream, encryption_key)
-        stream.write(" ]")
+        stream.write(b' ]')
 
     @staticmethod
     def read_from_stream(stream, pdf):
         arr = ArrayObject()
         tmp = stream.read(1)
-        if tmp != "[":
+        if tmp not in b'[':
             raise utils.PdfReadError("error reading array")
         while True:
             # skip leading whitespace
@@ -122,7 +121,7 @@ class ArrayObject(list, PdfObject):
             stream.seek(-1, 1)
             # check for array ending
             peekahead = stream.read(1)
-            if peekahead == "]":
+            if peekahead in b']':
                 break
             stream.seek(-1, 1)
             # read and append obj
@@ -155,40 +154,40 @@ class IndirectObject(PdfObject):
         return not self.__eq__(other)
 
     def write_to_stream(self, stream):
-        stream.write("%s %s R" % (self.idnum, self.generation))
+        stream.write(bytes('%s %s R' % (self.idnum, self.generation), utils.BYTES_ENCODING))
 
     @staticmethod
     def read_from_stream(stream, pdf):
-        idnum = ""
+        idnum = b''
         while True:
             tok = stream.read(1)
             if tok.isspace():
                 break
             idnum += tok
-        generation = ""
+        generation = b''
         while True:
             tok = stream.read(1)
             if tok.isspace():
                 break
             generation += tok
         r = stream.read(1)
-        if r != "R":
+        if r not in b'R':
             raise utils.PdfReadError("error reading indirect object reference")
         return IndirectObject(int(idnum), int(generation), pdf)
 
 
 class FloatObject(decimal.Decimal, PdfObject):
-    def __new__(cls, value="0", context=None):
+    def __new__(cls, value='0', context=None):
         # FIXME Warning here.
         # noinspection PyTypeChecker
-        return decimal.Decimal.__new__(cls, str(value), context)
+        return decimal.Decimal.__new__(cls, value, context)
 
     def __repr__(self):
         if self == self.to_integral():
-            return str(self.quantize(decimal.Decimal(1)))
+            return bytes(str(self.quantize(decimal.Decimal(1))), utils.BYTES_ENCODING)
         else:
             # XXX: this adds useless extraneous zeros.
-            return "%.5f" % self
+            return bytes("%.5f" % self, utils.BYTES_ENCODING)
 
     def write_to_stream(self, stream):
         stream.write(repr(self))
@@ -202,15 +201,15 @@ class NumberObject(int, PdfObject):
         stream.write(repr(self))
 
     def read_from_stream(stream):
-        name = ""
+        name = b''
         while True:
             tok = stream.read(1)
-            if tok != '+' and tok != '-' and tok != '.' and not tok.isdigit():
+            if not (tok in b'+' or tok in b'-' or tok in b'.' or not tok.isdigit()):
                 stream.seek(-1, 1)
                 break
             name += tok
-        if name.find(".") != -1:
-            return FloatObject(name)
+        if not name.find(b'.') == -1:
+            return FloatObject(name.decode(utils.BYTES_ENCODING))
         else:
             return NumberObject(name)
 
@@ -714,11 +713,6 @@ class RectangleObject(ArrayObject):
     def get_height(self):
         return self.get_upper_right_y() - self.get_lower_left_x()
 
-    lower_left = property(get_lower_left, set_lower_left, None, "None")
-    lower_right = property(get_lower_right, set_lower_right, None, "None")
-    upper_left = property(get_upper_left, set_upper_left, None, "None")
-    upper_right = property(get_upper_right, set_upper_right, None, "None")
-
 
 def encode_pdfdocencoding(unicode_string):
     retval = ''
@@ -736,8 +730,7 @@ def decode_pdfdocencoding(byte_array):
     for b in byte_array:
         c = _pdfDocEncoding[ord(b)]
         if c == u'\u0000':
-            raise UnicodeDecodeError("pdfdocencoding", b, -1, -1,
-                                     "does not exist in translation table")
+            raise UnicodeDecodeError("pdfdocencoding", b, -1, -1, "does not exist in translation table")
         retval += c
     return retval
 
