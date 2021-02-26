@@ -2,6 +2,19 @@
 """
 Utility functions for PDF library.
 """
+import os as _os
+import inspect as _insp
+
+
+def debug(*args):
+    info = _insp.getframeinfo(_insp.stack()[1][0])
+    dirname, basename = _os.path.split(info.filename)
+    dirname = _os.path.basename(dirname)
+    print('[{}] {} [{}]'.format(_os.path.join(dirname, basename), info.function, info.lineno), *args)
+
+
+def s2b(s: str):
+    return bytes(s, ENCODING_UTF8)
 
 
 # ENABLE_PSYCO = False
@@ -17,7 +30,7 @@ Utility functions for PDF library.
 #            return func
 #        proxy = staticmethod(proxy)
 def read_until_whitespace(stream, maxchars=None):
-    txt = ""
+    txt = b''
     while True:
         tok = stream.read(1)
         if tok.isspace() or not tok:
@@ -29,8 +42,8 @@ def read_until_whitespace(stream, maxchars=None):
 
 
 def read_non_whitespace(stream):
-    tok = ' '
-    while tok == '\n' or tok == '\r' or tok == ' ' or tok == '\t':
+    tok = b' '
+    while tok in b'\n\r\t ':
         tok = stream.read(1)
     return tok
 
@@ -91,8 +104,10 @@ class PageSizeNotDefinedError(PyPdfError):
     pass
 
 
-BYTES_ENCODING = 'utf-8'
-
+ENCODING_UTF8 = 'utf-8'
+ENCODING_UTF16 = 'utf-16'
+ENCODING_UTF16BE = 'utf-16be'
+DELIMITERS = b'()<>[]{}/%'
 
 if __name__ == "__main__":
     # test RC4
