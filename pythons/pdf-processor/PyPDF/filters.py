@@ -7,7 +7,6 @@ __author_email__ = "biziqe@mathieu.fenniak.net"
 
 from io import StringIO
 from PyPDF.utils import PdfReadError
-from PyPDF.generic import NameObject
 from zlib import decompress, compress
 
 
@@ -56,13 +55,14 @@ class FlateDecode(object):
 
 
 class ASCIIHexDecode(object):
+    @staticmethod
     def decode(data):
         retval = ""
-        char = ""
+        char = b''
         x = 0
         while True:
-            c = data[x]
-            if c == ">":
+            c = data[x:x+1]
+            if c in b'>':
                 break
             elif c.isspace():
                 x += 1
@@ -70,36 +70,35 @@ class ASCIIHexDecode(object):
             char += c
             if len(char) == 2:
                 retval += chr(int(char, base=16))
-                char = ""
+                char = b''
             x += 1
-        assert char == ""
+        assert char == b''
         return retval
-
-    decode = staticmethod(decode)
 
 
 class ASCII85Decode(object):
-    def decode(data):
+    @staticmethod
+    def decode(data: bytes):
         retval = ""
         group = []
         x = 0
         hit_eod = False
         # remove all whitespace from data
-        data = [y for y in data if not (y in ' \n\r\t')]
+        data = bytes(y for y in data if not (y in b' \n\r\t'))
         while not hit_eod:
-            c = data[x]
-            if len(retval) == 0 and c == "<" and data[x + 1] == "~":
+            c = data[x:x+1]
+            if len(retval) == 0 and c in b'<' and data[x+1:x+2] in b'~':
                 x += 2
                 continue
-            # elif c.isspace():
-            #    x += 1
-            #    continue
-            elif c == 'z':
+            elif c.isspace():
+                x += 1
+                continue
+            elif c in b'z':
                 assert len(group) == 0
                 retval += '\x00\x00\x00\x00'
                 continue
-            elif c == "~" and data[x + 1] == ">":
-                if len(group) != 0:
+            elif c in b'~' and data[x+1:x+2] in b'>':
+                if len(group) > 0:
                     # cannot have a final group of just 1 char
                     assert len(group) > 1
                     cnt = len(group) - 1
@@ -129,15 +128,14 @@ class ASCII85Decode(object):
             x += 1
         return retval
 
-    decode = staticmethod(decode)
-
 
 def decode_stream_data(stream):
+    from PyPDF.generic import NameObject
     filters = stream.get(b'/Filter', ())
     if len(filters) and not isinstance(filters[0], NameObject):
         # we have a single filter instance
         filters = (filters,)
-    data = stream.raw_data
+    data = stream.bytes_data
     for filterType in filters:
         if filterType == b'/FlateDecode':
             data = FlateDecode.decode(data, stream.get(b'/DecodeParms'))
@@ -152,24 +150,23 @@ def decode_stream_data(stream):
             else:
                 raise NotImplementedError("/Crypt filter with /Name or /Type not supported yet")
         else:
-            # unsupported filter
             raise NotImplementedError("unsupported filter %s" % filterType)
     return data
 
 
 if __name__ == "__main__":
-    assert "abc" == ASCIIHexDecode.decode('61\n626\n3>')
+    assert "abc" == ASCIIHexDecode.decode(b'61\n626\n3>')
 
-    ascii85Test = """
+    ascii85Test = b'''
      <~9jqo^BlbD-BleB1DJ+*+F(f,q/0JhKF<GL>Cj@.4Gp$d7F!,L7@<6@)/0JDEF<G%<+EV:2F!,
      O<DJ+*.@<*K0@<6L(Df-\\0Ec5e;DffZ(EZee.Bl.9pF"AGXBPCsi+DGm>@3BB/F*&OCAfu2/AKY
      i(DIb:@FD,*)+C]U=@3BN#EcYf8ATD3s@q?d$AftVqCh[NqF<G:8+EV:.+Cf>-FD5W8ARlolDIa
      l(DId<j@<?3r@:F%a+D58'ATD4$Bl@l3De:,-DJs`8ARoFb/0JMK@qB4^F!,R<AKZ&-DfTqBG%G
      >uD.RTpAKYo'+CT/5+Cei#DII?(E,9)oF*2M7/c~>
-    """
-    ascii85_originalText = ('Man is distinguished, not only by his reason, '
-                            'but by this singular passion from other animals, '
-                            'which is a lust of the mind, that by a perseverance of delight in the continued '
-                            'and indefatigable generation of knowledge, '
-                            'exceeds the short vehemence of any carnal pleasure.')
+    '''
+    ascii85_originalText = ("Man is distinguished, not only by his reason, "
+                            "but by this singular passion from other animals, "
+                            "which is a lust of the mind, that by a perseverance of delight in the continued "
+                            "and indefatigable generation of knowledge, "
+                            "exceeds the short vehemence of any carnal pleasure.")
     assert ASCII85Decode.decode(ascii85Test) == ascii85_originalText

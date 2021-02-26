@@ -13,7 +13,7 @@ import codecs
 _STREAM_KEY = "__streamdata__"
 
 
-def read_object(stream: io.BufferedReader, pdf_reader):
+def read_object(stream, pdf_reader):
     tok = stream.read(1)
     stream.seek(-1, io.SEEK_CUR)  # reset to start
     if tok in b'tf':
@@ -89,8 +89,6 @@ class BooleanObject(PdfObject):
 
     @staticmethod
     def read_from_stream(stream):
-        utils.debug(stream.read(10))
-        stream.seek(-10, io.SEEK_CUR)
         word = stream.read(4)
         if word == b'true':
             return BooleanObject(True)
@@ -105,8 +103,7 @@ class ArrayObject(list, PdfObject):
         stream.write(b'[')
         for data in self:
             stream.write(b' ')
-            utils.debug(data, type(data))
-            if isinstance(data, _PLAIN_OBJECTS):
+            if is_plain_object(data):
                 data.write_to_stream(stream)
             else:
                 data.write_to_stream(stream, encryption_key)
@@ -212,7 +209,6 @@ class NumberObject(int, PdfObject):
                 stream.seek(-1, io.SEEK_CUR)
                 break
             name += tok
-        utils.debug(name)
         if name.find(b'.') > -1:
             return FloatObject(name.decode(utils.ENCODING_UTF8))
         else:
@@ -265,7 +261,7 @@ class TextStringObject(str, PdfObject):
         if self.autodetect_utf16:
             return codecs.BOM_UTF16_BE + self.encode(utils.ENCODING_UTF16BE)
         elif self.autodetect_pdfdocencoding:
-            return encode_pdfdocencoding(self)
+            return encode_pdf_doc_encoding(self)
         else:
             raise Exception("no information about original bytes")
 
@@ -274,7 +270,7 @@ class TextStringObject(str, PdfObject):
         # nicer to look at in the PDF file.  Sadly, we take a performance hit
         # here for trying...
         try:
-            bytearr = encode_pdfdocencoding(self)
+            bytearr = encode_pdf_doc_encoding(self)
         except UnicodeEncodeError:
             bytearr = codecs.BOM_UTF16_BE + self.encode(utils.ENCODING_UTF16BE)
         if encryption_key:
@@ -386,7 +382,7 @@ class DictionaryObject(dict, PdfObject):
         for key, value in self.items():
             key.write_to_stream(stream)
             stream.write(b' ')
-            if isinstance(value, _PLAIN_OBJECTS):
+            if is_plain_object(value):
                 value.write_to_stream(stream)
             else:
                 value.write_to_stream(stream, encryption_key)
@@ -523,11 +519,10 @@ class EncodedStreamObject(StreamObject):
         self.decodedSelf = None
 
     @property
-    def raw_data(self):
+    def bytes_data(self):
         return self._data
 
     def get_data(self):
-        utils.debug(self.decodedSelf)
         if self.decodedSelf is not None:
             # cached version of decoded object
             return self.decodedSelf.get_data()
@@ -632,7 +627,7 @@ def create_string_object(string: bytes):
             # possible... and the only way to check if that's possible is
             # to try.  Some strings are strings, some are just byte arrays.
             try:
-                retval = TextStringObject(decode_pdfdocencoding(string))
+                retval = TextStringObject(decode_pdf_doc_encoding(string))
                 retval.autodetect_pdfdocencoding = True
                 return retval
             except UnicodeDecodeError:
@@ -717,28 +712,31 @@ def read_string_from_stream(stream):
     return create_string_object(txt)
 
 
-def encode_pdfdocencoding(unicode_string):
+def is_plain_object(obj):
+    return isinstance(obj, _PLAIN_OBJECTS)
+
+
+def encode_pdf_doc_encoding(unicode_string):
     retval = ''
     for c in unicode_string:
         try:
-            retval += chr(_pdfDocEncoding_rev[c])
+            retval += chr(_PDF_DOC_ENCODING_REVERSED[c])
         except KeyError:
             raise UnicodeEncodeError("pdfdocencoding", c, -1, -1, "does not exist in translation table")
     return retval
 
 
-def decode_pdfdocencoding(byte_array: bytes):
+def decode_pdf_doc_encoding(byte_array: bytes):
     retval = u''
     for b in byte_array:
-        c = _pdfDocEncoding[b]
+        c = _PDF_DOC_ENCODING[b]
         if c == u'\u0000':
             raise UnicodeDecodeError("pdfdocencoding", bytes([b]), -1, -1, "does not exist in translation table")
         retval += c
-    utils.debug(retval)
     return retval
 
 
-_pdfDocEncoding = (
+_PDF_DOC_ENCODING = (
     u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000',
     u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000',
     u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000',
@@ -773,13 +771,13 @@ _pdfDocEncoding = (
     u'\u00f8', u'\u00f9', u'\u00fa', u'\u00fb', u'\u00fc', u'\u00fd', u'\u00fe', u'\u00ff'
 )
 
-assert len(_pdfDocEncoding) == 256
+assert len(_PDF_DOC_ENCODING) == 256
 
-_pdfDocEncoding_rev = {}
+_PDF_DOC_ENCODING_REVERSED = {}
 for __idx in range(256):
-    char = _pdfDocEncoding[__idx]
+    char = _PDF_DOC_ENCODING[__idx]
     if char == u"\u0000":
         continue
-    assert char not in _pdfDocEncoding_rev
-    _pdfDocEncoding_rev[char] = __idx
+    assert char not in _PDF_DOC_ENCODING_REVERSED
+    _PDF_DOC_ENCODING_REVERSED[char] = __idx
 _PLAIN_OBJECTS = (IndirectObject, NumberObject, NameObject, FloatObject, BooleanObject)

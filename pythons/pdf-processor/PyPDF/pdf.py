@@ -4,7 +4,7 @@ A pure-Python PDF library with very minimal capabilities.  It was designed to
 be able to split and merge PDF files by page, and that's about all it can do.
 It may be a solid base for future PDF file work in Python.
 """
-# XXX Replacing: "([a-zA-Z/]+)"
+import io
 import math
 import struct
 from hashlib import md5
@@ -12,7 +12,11 @@ from io import StringIO, BufferedReader, BytesIO
 
 import PyPDF.filters
 import PyPDF.utils as utils
-from PyPDF.generic import *
+from PyPDF.generic import (
+    NameObject, DictionaryObject, NumberObject, ArrayObject, BooleanObject, FloatObject, NullObject,
+    IndirectObject, ByteStringObject, StreamObject, TextStringObject, RectangleObject, DecodedStreamObject,
+    create_string_object, read_object, is_plain_object,
+)
 from PyPDF.utils import (
     read_non_whitespace, seek_token,
     read_until_whitespace, ConvertFunctionsToVirtualList
@@ -112,7 +116,7 @@ class PdfFileWriter(object):
     ##
     # Return the number of pages.
     # @return The number of pages.
-    def get_num_pages(self):
+    def get_pages_count(self):
         pages = self.get_object(self._pages)
         return int(pages[NameObject(b'/Count')])
 
@@ -139,7 +143,7 @@ class PdfFileWriter(object):
     #               space units.
     # @param index  Position to add the page.
     def insert_blank_page(self, width=None, height=None, index=0):
-        if width is None or height is None and (self.get_num_pages() - 1) >= index:
+        if width is None or height is None and (self.get_pages_count() - 1) >= index:
             oldpage = self.get_page(index)
             width = oldpage.mediaBox.get_width()
             height = oldpage.mediaBox.get_height()
@@ -235,11 +239,14 @@ class PdfFileWriter(object):
             object_positions.append(stream.tell())
             stream.write(utils.s2b(str(idnum) + " 0 obj\n"))
             key = None
-            if self._encrypt is not None and idnum != self._encrypt.idnum:
+            if (self._encrypt is not None) and (not (idnum == self._encrypt.idnum)):
                 pack1 = struct.pack("<i", i + 1)[:3]
                 pack2 = struct.pack("<i", 0)[:2]
                 key = _encrypt(self._encrypt_key, pack1, pack2)
-            obj.write_to_stream(stream, key)
+            if is_plain_object(obj):
+                obj.write_to_stream(stream)
+            else:
+                obj.write_to_stream(stream, key)
             stream.write(b'\nendobj\n')
 
         # xref table
@@ -327,14 +334,14 @@ class PdfFileWriter(object):
 # @param stream An object that supports the standard read and seek methods
 #               similar to a file object.
 class PdfFileReader(object):
-    def __init__(self, stream: io.BufferedReader):
+    def __init__(self, stream):
         utils.debug(type(stream), '>' * 32)
         self.xref = {}
-        self.xref_objStm = {}
+        self._xref_obj_stream = {}
         self.trailer = None
         self._namedDests = None
-        self.flattenedPages = None
-        self.resolvedObjects = {}
+        self._flattened_pages = None
+        self._resolved_objects = {}
         self.read(stream)
         self.stream: BufferedReader = stream
         self._override_encryption = False
@@ -390,17 +397,17 @@ class PdfFileReader(object):
     # <p>
     # Stability: Added in v1.0, will exist for all v1.x releases.
     # @return Returns an integer.
-    def get_num_pages(self):
-        if self.flattenedPages is None:
+    def get_pages_count(self):
+        if self._flattened_pages is None:
             self._flatten()
-        return len(self.flattenedPages)
+        return len(self._flattened_pages)
 
     ##
     # Read-only property that accesses the {@link #PdfFileReader.getNumPages
     # getNumPages} function.
     # <p>
     # Stability: Added in v1.7, will exist for all future v1.x releases.
-    numPages = property(lambda self: self.get_num_pages(), None, None)
+    numPages = property(lambda self: self.get_pages_count(), None, None)
 
     ##
     # Retrieves a page by number from this PDF file.
@@ -410,9 +417,9 @@ class PdfFileReader(object):
     def get_page(self, page_number):
         # ensure that we're not trying to access an encrypted PDF
         # assert not self.trailer.has_key("/Encrypt")
-        if self.flattenedPages is None:
+        if self._flattened_pages is None:
             self._flatten()
-        return self.flattenedPages[page_number]
+        return self._flattened_pages[page_number]
 
     ##
     # Read-only property that accesses the 
@@ -546,7 +553,7 @@ class PdfFileReader(object):
     # getPage} functions.
     # <p>
     # Stability: Added in v1.7, and will exist for all future v1.x releases.
-    pages = property(lambda self: ConvertFunctionsToVirtualList(self.get_num_pages, self.get_page),
+    pages = property(lambda self: ConvertFunctionsToVirtualList(self.get_pages_count, self.get_page),
                      None, None)
 
     def _flatten(self, pages=None, inherit=None, indirect_ref=None):
@@ -557,7 +564,7 @@ class PdfFileReader(object):
         if inherit is None:
             inherit = dict()
         if pages is None:
-            self.flattenedPages = []
+            self._flattened_pages = []
             catalog = self.trailer[b'/Root'].get_object()
             pages = catalog[b'/Pages'].get_object()
         t = pages[b'/Type']
@@ -578,21 +585,20 @@ class PdfFileReader(object):
                     pages[attr] = value
             page_obj = PageObject(self, indirect_ref)
             page_obj.update(pages)
-            self.flattenedPages.append(page_obj)
+            self._flattened_pages.append(page_obj)
 
     def get_object(self, indirect_reference):
-        utils.debug(self.xref_objStm)
-        retval = self.resolvedObjects.get(indirect_reference.generation, {}).get(indirect_reference.idnum, None)
+        retval = self._resolved_objects.get(indirect_reference.generation, {}).get(indirect_reference.idnum, None)
         if retval is not None:
             return retval
-        if indirect_reference.generation == 0 and indirect_reference.idnum in self.xref_objStm:
+        if indirect_reference.generation == 0 and indirect_reference.idnum in self._xref_obj_stream:
             # indirect reference to object in object stream
             # read the entire object stream into memory
-            stmnum, idx = self.xref_objStm[indirect_reference.idnum]
+            stmnum, idx = self._xref_obj_stream[indirect_reference.idnum]
             obj_stm = IndirectObject(stmnum, 0, self).get_object()
             assert obj_stm[b'/Type'] == b'/ObjStm'
             assert idx < obj_stm[b'/N']
-            stream_data = StringIO(obj_stm.get_data())
+            stream_data = BytesIO(obj_stm.get_data())
             for i in range(obj_stm[b'/N']):
                 objnum = NumberObject.read_from_stream(stream_data)
                 seek_token(stream_data)
@@ -601,12 +607,10 @@ class PdfFileReader(object):
                 t = stream_data.tell()
                 stream_data.seek(obj_stm[b'/First'] + offset, io.SEEK_SET)
                 obj = read_object(stream_data, self)
-                self.resolvedObjects[0][objnum] = obj
+                self._resolved_objects[0][objnum] = obj
                 stream_data.seek(t, io.SEEK_SET)
-            return self.resolvedObjects[0][indirect_reference.idnum]
+            return self._resolved_objects[0][indirect_reference.idnum]
         start = self.xref[indirect_reference.generation][indirect_reference.idnum]
-        utils.debug(start, self.stream.read(1))
-        self.stream.seek(-1, io.SEEK_CUR)
         self.stream.seek(start, io.SEEK_SET)
         idnum, generation = self.read_object_header(self.stream)
         assert idnum == indirect_reference.idnum
@@ -614,7 +618,7 @@ class PdfFileReader(object):
         retval = read_object(self.stream, self)
 
         # override encryption is used for the /Encrypt dictionary
-        if not self._override_encryption and self.isEncrypted:
+        if not self._override_encryption and self._is_encrypted:
             # if we don't have the encryption key:
             if self._decryption_key is None:
                 raise Exception("file has not been decrypted")
@@ -655,9 +659,9 @@ class PdfFileReader(object):
         return int(idnum), int(generation)
 
     def cache_indirect_object(self, generation, idnum, obj):
-        if generation not in self.resolvedObjects:
-            self.resolvedObjects[generation] = {}
-        self.resolvedObjects[generation][idnum] = obj
+        if generation not in self._resolved_objects:
+            self._resolved_objects[generation] = {}
+        self._resolved_objects[generation][idnum] = obj
 
     def read(self, stream):
         # start at the end:
@@ -677,13 +681,12 @@ class PdfFileReader(object):
 
         # read all cross reference tables and their trailers
         self.xref = {}
-        self.xref_objStm = {}
+        self._xref_obj_stream = {}
         self.trailer = DictionaryObject()
         while 1:
             # load the xref table
             stream.seek(startxref, io.SEEK_SET)
             x = stream.read(1)
-            utils.debug('-' * 7, x)
             if x in b'x':
                 startxref = parse_standard_cross_reference_table(stream, self)
                 if startxref is None:
@@ -733,8 +736,8 @@ class PdfFileReader(object):
                             if num not in self.xref[generation]:
                                 self.xref[generation][num] = byte_offset
                         elif xref_type == 2:
-                            if num not in self.xref_objStm:
-                                self.xref_objStm[num] = [objstr_num, obstr_idx]
+                            if num not in self._xref_obj_stream:
+                                self._xref_obj_stream[num] = [objstr_num, obstr_idx]
                         cnt += 1
                         num += 1
                 trailer_keys = b'/Root', b'/Encrypt', b'/Info', b'/ID'
@@ -770,7 +773,6 @@ class PdfFileReader(object):
 
     @staticmethod
     def read_next_end_line(stream: BufferedReader):
-        utils.debug('=' * 32)
         line = b''
         while True:
             x = stream.read(1)
@@ -871,7 +873,7 @@ class PdfFileReader(object):
     # Read-only boolean property showing whether this PDF file is encrypted.
     # Note that this property, if true, will remain true even after the {@link
     # #PdfFileReader.decrypt decrypt} function is called.
-    isEncrypted = property(lambda self: self.get_is_encrypted(), None, None)
+    _is_encrypted = property(lambda self: self.get_is_encrypted(), None, None)
 
 
 def get_rectangle(self, name, defaults):
@@ -941,8 +943,8 @@ class PageObject(DictionaryObject):
         page.__setitem__(NameObject(b'/Parent'), NullObject())
         page.__setitem__(NameObject(b'/Resources'), DictionaryObject())
         if width is None or height is None:
-            if _pdf is not None and _pdf.get_num_pages() > 0:
-                lastpage = _pdf.get_page(_pdf.get_num_pages() - 1)
+            if _pdf is not None and _pdf.get_pages_count() > 0:
+                lastpage = _pdf.get_page(_pdf.get_pages_count() - 1)
                 width = lastpage.mediaBox.get_width()
                 height = lastpage.mediaBox.get_height()
             else:
@@ -1367,7 +1369,6 @@ class ContentStream(DecodedStreamObject):
         if isinstance(stream, ArrayObject):
             data = b''
             for s in stream:
-                utils.debug(s)
                 data += s.get_object().get_data()
             stream = BytesIO(data)
         else:
@@ -1378,7 +1379,6 @@ class ContentStream(DecodedStreamObject):
     def __parse_content_stream(self, stream):
         stream.seek(0, io.SEEK_SET)
         operands = []
-        utils.debug('peek')
         while True:
             peek = read_non_whitespace(stream)
             if peek == b'':
@@ -1458,7 +1458,6 @@ class ContentStream(DecodedStreamObject):
                 newdata.write(b'EI')
             else:
                 for op in operands:
-                    utils.debug(op, type(op))
                     op.write_to_stream(newdata)
                     newdata.write(b' ')
                 newdata.write(operator)
@@ -1466,7 +1465,6 @@ class ContentStream(DecodedStreamObject):
         return newdata.getvalue()
 
     def _set_data(self, value):
-        utils.debug(value)
         self.__parse_content_stream(BytesIO(value))
 
     _data = property(_get_data, _set_data)
