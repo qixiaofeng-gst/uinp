@@ -2,10 +2,7 @@
 """
 Implementation of generic PDF objects (dictionary, number, string, and so on)
 """
-__author__ = "Mathieu Fenniak"
-__author_email__ = "biziqe@mathieu.fenniak.net"
 
-import sys
 import io
 import re
 from PyPDF.utils import read_non_whitespace, rc4_encrypt

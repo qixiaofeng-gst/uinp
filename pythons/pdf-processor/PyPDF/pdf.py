@@ -4,7 +4,7 @@ A pure-Python PDF library with very minimal capabilities.  It was designed to
 be able to split and merge PDF files by page, and that's about all it can do.
 It may be a solid base for future PDF file work in Python.
 """
-
+# XXX Replacing: "([a-zA-Z/]+)"
 import math
 import struct
 from hashlib import md5
@@ -70,12 +70,12 @@ class PdfFileWriter(object):
     # @param action The function which will insert the page in the dictionnary.
     #               Takes: page list, page to add.
     def _add_page(self, page, action):
-        assert page["/Type"] == "/Page"
+        assert page[b'/Type'] == b'/Page'
         page[NameObject(b'/Parent')] = self._pages
         page = self._add_object(page)
         pages = self.get_object(self._pages)
-        action(pages["/Kids"], page)
-        pages[NameObject(b'/Count')] = NumberObject(pages["/Count"] + 1)
+        action(pages[b'/Kids'], page)
+        pages[NameObject(b'/Count')] = NumberObject(pages[b'/Count'] + 1)
 
     ##
     # Adds a page to this PDF file.  The page is usually acquired from a
@@ -104,7 +104,7 @@ class PdfFileWriter(object):
     def get_page(self, page_number):
         pages = self.get_object(self._pages)
         # XXX: crude hack
-        return pages["/Kids"][page_number].get_object()
+        return pages[b'/Kids'][page_number].get_object()
 
     ##
     # Return the number of pages.
@@ -348,7 +348,7 @@ class PdfFileReader(object):
     def get_document_info(self):
         if "/Info" not in self.trailer:
             return None
-        obj = self.trailer['/Info']
+        obj = self.trailer[b'/Info']
         retval = DocumentInformation()
         retval.update(obj)
         return retval
@@ -371,7 +371,7 @@ class PdfFileReader(object):
     def get_xmp_metadata(self):
         try:
             self._override_encryption = True
-            return self.trailer["/Root"].get_xmp_metadata()
+            return self.trailer[b'/Root'].get_xmp_metadata()
         finally:
             self._override_encryption = False
 
@@ -417,8 +417,7 @@ class PdfFileReader(object):
     # getNamedDestinations} function.
     # <p>
     # Stability: Added in v1.10, will exist for all future v1.x releases.
-    namedDestinations = property(lambda self:
-                                 self.get_named_destinations(), None, None)
+    namedDestinations = property(lambda self: self.get_named_destinations(), None, None)
 
     ##
     # Retrieves the named destinations present in the document.
@@ -429,31 +428,31 @@ class PdfFileReader(object):
     def get_named_destinations(self, tree=None, retval=None):
         if retval is None:
             retval = {}
-            catalog = self.trailer["/Root"]
+            catalog = self.trailer[b'/Root']
 
             # get the name tree
-            if "/Dests" in catalog:
-                tree = catalog["/Dests"]
-            elif "/Names" in catalog:
-                names = catalog['/Names']
-                if "/Dests" in names:
-                    tree = names['/Dests']
+            if b'/Dests' in catalog:
+                tree = catalog[b'/Dests']
+            elif b'/Names' in catalog:
+                names = catalog[b'/Names']
+                if b'/Dests' in names:
+                    tree = names[b'/Dests']
 
         if tree is None:
             return retval
 
-        if "/Kids" in tree:
+        if b'/Kids' in tree:
             # recurse down the tree
-            for kid in tree["/Kids"]:
+            for kid in tree[b'/Kids']:
                 self.get_named_destinations(kid.get_object(), retval)
 
-        if "/Names" in tree:
-            names = tree["/Names"]
+        if b'/Names' in tree:
+            names = tree[b'/Names']
             for i in range(0, len(names), 2):
                 key = names[i].get_object()
                 val = names[i + 1].get_object()
                 if isinstance(val, DictionaryObject) and '/D' in val:
-                    val = val['/D']
+                    val = val[b'/D']
                 dest = self._build_destination(key, val)
                 if dest is not None:
                     retval[key] = dest
@@ -475,13 +474,13 @@ class PdfFileReader(object):
     def get_outlines(self, node=None, outlines=None):
         if outlines is None:
             outlines = []
-            catalog = self.trailer["/Root"]
+            catalog = self.trailer[b'/Root']
 
             # get the outline dictionary and named destinations
-            if "/Outlines" in catalog:
-                lines = catalog["/Outlines"]
-                if "/First" in lines:
-                    node = lines["/First"]
+            if b'/Outlines' in catalog:
+                lines = catalog[b'/Outlines']
+                if b'/First' in lines:
+                    node = lines[b'/First']
             self._namedDests = self.get_named_destinations()
 
         if node is None:
@@ -494,15 +493,15 @@ class PdfFileReader(object):
                 outlines.append(outline)
 
             # check for sub-outlines
-            if "/First" in node:
+            if b'/First' in node:
                 sub_outlines = []
-                self.get_outlines(node["/First"], sub_outlines)
+                self.get_outlines(node[b'/First'], sub_outlines)
                 if sub_outlines:
                     outlines.append(sub_outlines)
 
             if "/Next" not in node:
                 break
-            node = node["/Next"]
+            node = node[b'/Next']
 
         return outlines
 
@@ -515,16 +514,16 @@ class PdfFileReader(object):
     def _build_outline(self, node):
         dest, title, outline = None, None, None
 
-        if "/A" in node and "/Title" in node:
+        if b'/A' in node and b'/Title' in node:
             # Action, section 8.5 (only type GoTo supported)
-            title = node["/Title"]
-            action = node["/A"]
-            if action["/S"] == "/GoTo":
-                dest = action["/D"]
-        elif "/Dest" in node and "/Title" in node:
+            title = node[b'/Title']
+            action = node[b'/A']
+            if action[b'/S'] == b'/GoTo':
+                dest = action[b'/D']
+        elif b'/Dest' in node and b'/Title' in node:
             # Destination, section 8.2.1
-            title = node["/Title"]
-            dest = node["/Dest"]
+            title = node[b'/Title']
+            dest = node[b'/Dest']
 
         # if destination found, then create outline
         if dest:
@@ -556,19 +555,19 @@ class PdfFileReader(object):
             inherit = dict()
         if pages is None:
             self.flattenedPages = []
-            catalog = self.trailer["/Root"].get_object()
-            pages = catalog["/Pages"].get_object()
-        t = pages["/Type"]
-        if t == "/Pages":
+            catalog = self.trailer[b'/Root'].get_object()
+            pages = catalog[b'/Pages'].get_object()
+        t = pages[b'/Type']
+        if t == b'/Pages':
             for attr in inheritable_page_attributes:
                 if attr in pages:
                     inherit[attr] = pages[attr]
-            for page in pages["/Kids"]:
+            for page in pages[b'/Kids']:
                 addt = {}
                 if isinstance(page, IndirectObject):
-                    addt["indirectRef"] = page
+                    addt[b'indirectRef'] = page
                 self._flatten(page.get_object(), inherit, **addt)
-        elif t == "/Page":
+        elif t == b'/Page':
             for attr, value in inherit.items():
                 # if the page has it's own value, it does not inherit the
                 # parent's value:
@@ -587,10 +586,10 @@ class PdfFileReader(object):
             # read the entire object stream into memory
             stmnum, idx = self.xref_objStm[indirect_reference.idnum]
             obj_stm = IndirectObject(stmnum, 0, self).get_object()
-            assert obj_stm['/Type'] == '/ObjStm'
-            assert idx < obj_stm['/N']
+            assert obj_stm[b'/Type'] == '/ObjStm'
+            assert idx < obj_stm[b'/N']
             stream_data = StringIO(obj_stm.get_data())
-            for i in range(obj_stm['/N']):
+            for i in range(obj_stm[b'/N']):
                 objnum = NumberObject.read_from_stream(stream_data)
                 read_non_whitespace(stream_data)
                 stream_data.seek(-1, io.SEEK_CUR)
@@ -598,7 +597,7 @@ class PdfFileReader(object):
                 read_non_whitespace(stream_data)
                 stream_data.seek(-1, io.SEEK_CUR)
                 t = stream_data.tell()
-                stream_data.seek(obj_stm['/First'] + offset, io.SEEK_SET)
+                stream_data.seek(obj_stm[b'/First'] + offset, io.SEEK_SET)
                 obj = read_object(stream_data, self)
                 self.resolvedObjects[0][objnum] = obj
                 stream_data.seek(t, io.SEEK_SET)
@@ -737,8 +736,8 @@ class PdfFileReader(object):
                 for key, value in new_trailer.items():
                     if key not in self.trailer:
                         self.trailer[key] = value
-                if "/Prev" in new_trailer:
-                    startxref = new_trailer["/Prev"]
+                if b'/Prev' in new_trailer:
+                    startxref = new_trailer[b'/Prev']
                 else:
                     break
             elif x.isdigit():
@@ -746,7 +745,7 @@ class PdfFileReader(object):
                 stream.seek(-1, io.SEEK_CUR)
                 idnum, generation = self.read_object_header(stream)
                 xrefstream = read_object(stream, self)
-                assert xrefstream["/Type"] == "/XRef"
+                assert xrefstream[b'/Type'] == b'/XRef'
                 self.cache_indirect_object(generation, idnum, xrefstream)
                 stream_data = StringIO(xrefstream.get_data())
                 idx_pairs = xrefstream.get("/Index", [0, xrefstream.get("/Size")])
@@ -793,8 +792,8 @@ class PdfFileReader(object):
                 for key in trailer_keys:
                     if key in xrefstream and key not in self.trailer:
                         self.trailer[NameObject(key)] = xrefstream.raw_get(key)
-                if "/Prev" in xrefstream:
-                    startxref = xrefstream["/Prev"]
+                if b'/Prev' in xrefstream:
+                    startxref = xrefstream[b'/Prev']
                 else:
                     break
             else:
@@ -865,23 +864,23 @@ class PdfFileReader(object):
             self._override_encryption = False
 
     def _decrypt(self, password):
-        encrypt = self.trailer['/Encrypt'].get_object()
-        if encrypt['/Filter'] != '/Standard':
+        encrypt = self.trailer[b'/Encrypt'].get_object()
+        if encrypt[b'/Filter'] != '/Standard':
             raise NotImplementedError("only Standard PDF encryption handler is available")
-        if not (encrypt['/V'] in (1, 2)):
+        if not (encrypt[b'/V'] in (1, 2)):
             raise NotImplementedError("only algorithm code 1 and 2 are supported")
         user_password, key = self._authenticate_user_password(password)
         if user_password:
             self._decryption_key = key
             return 1
         else:
-            rev = encrypt['/R'].get_object()
+            rev = encrypt[b'/R'].get_object()
             if rev == 2:
                 keylen = 5
             else:
-                keylen = encrypt['/Length'].get_object() / 8
+                keylen = encrypt[b'/Length'].get_object() / 8
             key = _alg33_1(password, rev, keylen)
-            real_o = encrypt["/O"].get_object()
+            real_o = encrypt[b'/O'].get_object()
             if rev == 2:
                 userpass = utils.rc4_encrypt(key, real_o)
             else:
@@ -899,11 +898,11 @@ class PdfFileReader(object):
         return 0
 
     def _authenticate_user_password(self, password):
-        encrypt = self.trailer['/Encrypt'].get_object()
-        rev = encrypt['/R'].get_object()
-        owner_entry = encrypt['/O'].get_object().original_bytes
-        p_entry = encrypt['/P'].get_object()
-        id_entry = self.trailer['/ID'].get_object()
+        encrypt = self.trailer[b'/Encrypt'].get_object()
+        rev = encrypt[b'/R'].get_object()
+        owner_entry = encrypt[b'/O'].get_object().original_bytes
+        p_entry = encrypt[b'/P'].get_object()
+        id_entry = self.trailer[b'/ID'].get_object()
         id1_entry = id_entry[0].get_object()
         u = None
         key = None
@@ -911,14 +910,14 @@ class PdfFileReader(object):
             u, key = _alg34(password, owner_entry, p_entry, id1_entry)
         elif rev >= 3:
             u, key = _alg35(password, rev,
-                            encrypt["/Length"].get_object() / 8, owner_entry,
+                            encrypt[b'/Length'].get_object() / 8, owner_entry,
                             p_entry, id1_entry,
                             encrypt.get("/EncryptMetadata", BooleanObject(False)).get_object())
-        real_u = encrypt['/U'].get_object().original_bytes
+        real_u = encrypt[b'/U'].get_object().original_bytes
         return u == real_u, key
 
     def get_is_encrypted(self):
-        return "/Encrypt" in self.trailer
+        return b'/Encrypt' in self.trailer
 
     ##
     # Read-only boolean property showing whether this PDF file is encrypted.
@@ -1087,8 +1086,8 @@ class PageObject(DictionaryObject):
     # Returns the /Contents object, or None if it doesn't exist.
     # /Contents is optionnal, as described in PDF Reference  7.7.3.3
     def get_contents(self):
-        if "/Contents" in self:
-            return self["/Contents"].get_object()
+        if b'/Contents' in self:
+            return self[b'/Contents'].get_object()
         else:
             return None
 
@@ -1126,8 +1125,8 @@ class PageObject(DictionaryObject):
 
         new_resources = DictionaryObject()
         rename = {}
-        original_resources = self["/Resources"].get_object()
-        page2_resources = page2["/Resources"].get_object()
+        original_resources = self[b'/Resources'].get_object()
+        page2_resources = page2[b'/Resources'].get_object()
 
         for res in "/ExtGState", "/Font", "/XObject", "/ColorSpace", "/Pattern", "/Shading", "/Properties":
             new, newrename = PageObject._merge_resources(original_resources, page2_resources, res)
@@ -1339,14 +1338,14 @@ class PageObject(DictionaryObject):
     # @return a unicode string object
     def extract_text(self):
         text = u""
-        content = self["/Contents"].get_object()
+        content = self[b'/Contents'].get_object()
         if not isinstance(content, ContentStream):
             content = ContentStream(content, self.pdf)
         # Note: we check all strings are TextStringObjects.  ByteStringObjects
         # are strings where the byte->string encoding was unknown, so adding
         # them to the text here would be gibberish.
         for operands, operator in content.operations:
-            if operator == "Tj":
+            if operator == b'Tj':
                 _text = operands[0]
                 if isinstance(_text, TextStringObject):
                     text += _text
@@ -1362,7 +1361,7 @@ class PageObject(DictionaryObject):
                 if isinstance(_text, TextStringObject):
                     text += "\n"
                     text += _text
-            elif operator == "TJ":
+            elif operator == b'TJ':
                 for i in operands[0]:
                     if isinstance(i, TextStringObject):
                         text += i
@@ -1473,7 +1472,7 @@ class ContentStream(DecodedStreamObject):
         while True:
             tok = read_non_whitespace(stream)
             stream.seek(-1, io.SEEK_CUR)
-            if tok == "I":
+            if tok == b'I':
                 # "ID" - begin of image data
                 break
             key = read_object(stream, self.pdf)
@@ -1483,13 +1482,13 @@ class ContentStream(DecodedStreamObject):
             settings[key] = value
         # left at beginning of ID
         tmp = stream.read(3)
-        assert tmp[:2] == "ID"
+        assert tmp[:2] == b'ID'
         data = ""
         while True:
             tok = stream.read(1)
-            if tok == "E":
+            if tok == b'E':
                 _next = stream.read(1)
-                if _next == "I":
+                if _next == b'I':
                     break
                 else:
                     stream.seek(-1, io.SEEK_CUR)
@@ -1506,10 +1505,10 @@ class ContentStream(DecodedStreamObject):
             if operator == "INLINE IMAGE":
                 newdata.write("BI")
                 dicttext = StringIO()
-                operands["settings"].write_to_stream(dicttext, None)
+                operands[b'settings'].write_to_stream(dicttext, None)
                 newdata.write(dicttext.getvalue()[2:-2])
                 newdata.write("ID ")
-                newdata.write(operands["data"])
+                newdata.write(operands[b'data'])
                 newdata.write("EI")
             else:
                 for op in operands:
@@ -1601,10 +1600,10 @@ class Destination(DictionaryObject):
         self[NameObject(b'/Type')] = typ
 
         # from table 8.2 of the PDF 1.6 reference.
-        if typ == "/XYZ":
+        if typ == b'/XYZ':
             (self[NameObject(b'/Left')], self[NameObject(b'/Top')],
              self[NameObject(b'/Zoom')]) = args
-        elif typ == "/FitR":
+        elif typ == b'/FitR':
             (self[NameObject(b'/Left')], self[NameObject(b'/Bottom')],
              self[NameObject(b'/Right')], self[NameObject(b'/Top')]) = args
         elif typ in ["/FitH", "FitBH"]:
