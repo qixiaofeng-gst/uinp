@@ -346,7 +346,7 @@ class PdfFileReader(object):
     # @return Returns a {@link #DocumentInformation DocumentInformation}
     #         instance, or None if none exists.
     def get_document_info(self):
-        if "/Info" not in self.trailer:
+        if b'/Info' not in self.trailer:
             return None
         obj = self.trailer[b'/Info']
         retval = DocumentInformation()
@@ -451,7 +451,7 @@ class PdfFileReader(object):
             for i in range(0, len(names), 2):
                 key = names[i].get_object()
                 val = names[i + 1].get_object()
-                if isinstance(val, DictionaryObject) and '/D' in val:
+                if isinstance(val, DictionaryObject) and b'/D' in val:
                     val = val[b'/D']
                 dest = self._build_destination(key, val)
                 if dest is not None:
@@ -499,7 +499,7 @@ class PdfFileReader(object):
                 if sub_outlines:
                     outlines.append(sub_outlines)
 
-            if "/Next" not in node:
+            if b'/Next' not in node:
                 break
             node = node[b'/Next']
 
@@ -586,7 +586,7 @@ class PdfFileReader(object):
             # read the entire object stream into memory
             stmnum, idx = self.xref_objStm[indirect_reference.idnum]
             obj_stm = IndirectObject(stmnum, 0, self).get_object()
-            assert obj_stm[b'/Type'] == '/ObjStm'
+            assert obj_stm[b'/Type'] == b'/ObjStm'
             assert idx < obj_stm[b'/N']
             stream_data = StringIO(obj_stm.get_data())
             for i in range(obj_stm[b'/N']):
@@ -603,6 +603,7 @@ class PdfFileReader(object):
                 stream_data.seek(t, io.SEEK_SET)
             return self.resolvedObjects[0][indirect_reference.idnum]
         start = self.xref[indirect_reference.generation][indirect_reference.idnum]
+        utils.debug(start)
         self.stream.seek(start, io.SEEK_SET)
         idnum, generation = self.read_object_header(self.stream)
         assert idnum == indirect_reference.idnum
@@ -748,8 +749,8 @@ class PdfFileReader(object):
                 assert xrefstream[b'/Type'] == b'/XRef'
                 self.cache_indirect_object(generation, idnum, xrefstream)
                 stream_data = StringIO(xrefstream.get_data())
-                idx_pairs = xrefstream.get("/Index", [0, xrefstream.get("/Size")])
-                entry_sizes = xrefstream.get("/W")
+                idx_pairs = xrefstream.get(b'/Index', [0, xrefstream.get(b'/Size')])
+                entry_sizes = xrefstream.get(b'/W')
                 for num, size in self._pairs(idx_pairs):
                     cnt = 0
                     xref_type = None
@@ -788,7 +789,7 @@ class PdfFileReader(object):
                                 self.xref_objStm[num] = [objstr_num, obstr_idx]
                         cnt += 1
                         num += 1
-                trailer_keys = "/Root", "/Encrypt", "/Info", "/ID"
+                trailer_keys = b'/Root', b'/Encrypt', b'/Info', b'/ID'
                 for key in trailer_keys:
                     if key in xrefstream and key not in self.trailer:
                         self.trailer[NameObject(key)] = xrefstream.raw_get(key)
@@ -802,7 +803,7 @@ class PdfFileReader(object):
                 # off-by-one before.
                 stream.seek(-11, io.SEEK_CUR)
                 tmp = stream.read(20)
-                xref_loc = tmp.find("xref")
+                xref_loc = tmp.find(b'xref')
                 if xref_loc != -1:
                     startxref -= (10 - xref_loc)
                     continue
@@ -865,7 +866,7 @@ class PdfFileReader(object):
 
     def _decrypt(self, password):
         encrypt = self.trailer[b'/Encrypt'].get_object()
-        if encrypt[b'/Filter'] != '/Standard':
+        if not encrypt[b'/Filter'] == b'/Standard':
             raise NotImplementedError("only Standard PDF encryption handler is available")
         if not (encrypt[b'/V'] in (1, 2)):
             raise NotImplementedError("only algorithm code 1 and 2 are supported")
@@ -912,7 +913,7 @@ class PdfFileReader(object):
             u, key = _alg35(password, rev,
                             encrypt[b'/Length'].get_object() / 8, owner_entry,
                             p_entry, id1_entry,
-                            encrypt.get("/EncryptMetadata", BooleanObject(False)).get_object())
+                            encrypt.get(b'/EncryptMetadata', BooleanObject(False)).get_object())
         real_u = encrypt[b'/U'].get_object().original_bytes
         return u == real_u, key
 
@@ -1027,7 +1028,7 @@ class PageObject(DictionaryObject):
         return self
 
     def _rotate(self, angle):
-        current_angle = self.get("/Rotate", 0)
+        current_angle = self.get(b'/Rotate', 0)
         self[NameObject(b'/Rotate')] = NumberObject(current_angle + angle)
 
     def _merge_resources(res1, res2, resource):
@@ -1037,7 +1038,7 @@ class PageObject(DictionaryObject):
         rename_res = {}
         for key in page2_res.keys():
             if key in new_res and new_res[key] != page2_res[key]:
-                newname = NameObject(key + "renamed")
+                newname = NameObject(key + b'renamed')
                 rename_res[key] = newname
                 new_res[newname] = page2_res[key]
             elif key not in new_res:
@@ -1064,8 +1065,8 @@ class PageObject(DictionaryObject):
         # of a content stream.  This isolates it from changes such as 
         # transformation matricies.
         stream = ContentStream(contents, _pdf)
-        stream.operations.insert(0, [[], "q"])
-        stream.operations.append([[], "Q"])
+        stream.operations.insert(0, [[], b'q'])
+        stream.operations.append([[], b'Q'])
         return stream
 
     _push_pop_gs = staticmethod(_push_pop_gs)
@@ -1128,7 +1129,7 @@ class PageObject(DictionaryObject):
         original_resources = self[b'/Resources'].get_object()
         page2_resources = page2[b'/Resources'].get_object()
 
-        for res in "/ExtGState", "/Font", "/XObject", "/ColorSpace", "/Pattern", "/Shading", "/Properties":
+        for res in b'/ExtGState', b'/Font', b'/XObject', b'/ColorSpace', b'/Pattern', b'/Shading', b'/Properties':
             new, newrename = PageObject._merge_resources(original_resources, page2_resources, res)
             if new:
                 new_resources[NameObject(res)] = new
@@ -1136,8 +1137,8 @@ class PageObject(DictionaryObject):
 
         # Combine /ProcSet sets.
         new_resources[NameObject(b'/ProcSet')] = ArrayObject(
-            frozenset(original_resources.get("/ProcSet", ArrayObject()).get_object()).union(
-                frozenset(page2_resources.get("/ProcSet", ArrayObject()).get_object())
+            frozenset(original_resources.get(b'/ProcSet', ArrayObject()).get_object()).union(
+                frozenset(page2_resources.get(b'/ProcSet', ArrayObject()).get_object())
             )
         )
 
@@ -1373,7 +1374,7 @@ class PageObject(DictionaryObject):
     # intended to be displayed or printed.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    mediaBox = create_rectangle_accessor("/MediaBox", ())
+    mediaBox = create_rectangle_accessor(b'/MediaBox', ())
 
     ##
     # A rectangle (RectangleObject), expressed in default user space units,
@@ -1383,7 +1384,7 @@ class PageObject(DictionaryObject):
     # implementation-defined manner.  Default value: same as MediaBox.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    cropBox = create_rectangle_accessor("/CropBox", ("/MediaBox",))
+    cropBox = create_rectangle_accessor(b'/CropBox', (b'/MediaBox',))
 
     ##
     # A rectangle (RectangleObject), expressed in default user space units,
@@ -1391,14 +1392,14 @@ class PageObject(DictionaryObject):
     # when output in a production enviroment.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    bleedBox = create_rectangle_accessor("/BleedBox", ("/CropBox", "/MediaBox"))
+    bleedBox = create_rectangle_accessor(b'/BleedBox', (b'/CropBox', b'/MediaBox'))
 
     ##
     # A rectangle (RectangleObject), expressed in default user space units,
     # defining the intended dimensions of the finished page after trimming.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    trimBox = create_rectangle_accessor("/TrimBox", ("/CropBox", "/MediaBox"))
+    trimBox = create_rectangle_accessor(b'/TrimBox', (b'/CropBox', b'/MediaBox'))
 
     ##
     # A rectangle (RectangleObject), expressed in default user space units,
@@ -1406,7 +1407,7 @@ class PageObject(DictionaryObject):
     # page's creator.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    artBox = create_rectangle_accessor("/ArtBox", ("/CropBox", "/MediaBox"))
+    artBox = create_rectangle_accessor(b'/ArtBox', (b'/CropBox', b'/MediaBox'))
 
 
 class ContentStream(DecodedStreamObject):
@@ -1450,11 +1451,11 @@ class ContentStream(DecodedStreamObject):
                     # mechanism is required, of course... thanks buddy...
                     assert operands == []
                     ii = self._read_inline_image(stream)
-                    self.operations.append((ii, "INLINE IMAGE"))
+                    self.operations.append((ii, b'INLINE IMAGE'))
                 else:
                     self.operations.append((operands, operator))
                     operands = []
-            elif peek == '%':
+            elif peek in b'%':
                 # If we encounter a comment in the content stream, we have to
                 # handle it here.  Typically, readObject will handle
                 # encountering a comment -- but readObject assumes that
@@ -1497,12 +1498,12 @@ class ContentStream(DecodedStreamObject):
                 data += tok
         _x = read_non_whitespace(stream)
         stream.seek(-1, io.SEEK_CUR)
-        return {"settings": settings, "data": data}
+        return {b'settings': settings, b'data': data}
 
     def _get_data(self):
         newdata = StringIO()
         for operands, operator in self.operations:
-            if operator == "INLINE IMAGE":
+            if operator == b'INLINE IMAGE':
                 newdata.write("BI")
                 dicttext = StringIO()
                 operands[b'settings'].write_to_stream(dicttext, None)
@@ -1548,24 +1549,24 @@ class DocumentInformation(DictionaryObject):
     # exist for all future v1.x releases.  Modified in v1.10 to always return a
     # unicode string (TextStringObject).
     # @return A unicode string, or None if the title is not provided.
-    title = property(lambda self: self.get_text("/Title"))
-    title_raw = property(lambda self: self.get("/Title"))
+    title = property(lambda self: self.get_text(b'/Title'))
+    title_raw = property(lambda self: self.get(b'/Title'))
 
     ##
     # Read-only property accessing the document's author.  Added in v1.6, will
     # exist for all future v1.x releases.  Modified in v1.10 to always return a
     # unicode string (TextStringObject).
     # @return A unicode string, or None if the author is not provided.
-    author = property(lambda self: self.get_text("/Author"))
-    author_raw = property(lambda self: self.get("/Author"))
+    author = property(lambda self: self.get_text(b'/Author'))
+    author_raw = property(lambda self: self.get(b'/Author'))
 
     ##
     # Read-only property accessing the subject of the document.  Added in v1.6,
     # will exist for all future v1.x releases.  Modified in v1.10 to always
     # return a unicode string (TextStringObject).
     # @return A unicode string, or None if the subject is not provided.
-    subject = property(lambda self: self.get_text("/Subject"))
-    subject_raw = property(lambda self: self.get("/Subject"))
+    subject = property(lambda self: self.get_text(b'/Subject'))
+    subject_raw = property(lambda self: self.get(b'/Subject'))
 
     ##
     # Read-only property accessing the document's creator.  If the document was
@@ -1574,8 +1575,8 @@ class DocumentInformation(DictionaryObject):
     # converted.  Added in v1.6, will exist for all future v1.x releases.
     # Modified in v1.10 to always return a unicode string (TextStringObject).
     # @return A unicode string, or None if the creator is not provided.
-    creator = property(lambda self: self.get_text("/Creator"))
-    creator_raw = property(lambda self: self.get("/Creator"))
+    creator = property(lambda self: self.get_text(b'/Creator'))
+    creator_raw = property(lambda self: self.get(b'/Creator'))
 
     ##
     # Read-only property accessing the document's producer.  If the document
@@ -1584,8 +1585,8 @@ class DocumentInformation(DictionaryObject):
     # exist for all future v1.x releases.  Modified in v1.10 to always return a
     # unicode string (TextStringObject).
     # @return A unicode string, or None if the producer is not provided.
-    producer = property(lambda self: self.get_text("/Producer"))
-    producer_raw = property(lambda self: self.get("/Producer"))
+    producer = property(lambda self: self.get_text(b'/Producer'))
+    producer_raw = property(lambda self: self.get(b'/Producer'))
 
 
 ##
@@ -1606,11 +1607,11 @@ class Destination(DictionaryObject):
         elif typ == b'/FitR':
             (self[NameObject(b'/Left')], self[NameObject(b'/Bottom')],
              self[NameObject(b'/Right')], self[NameObject(b'/Top')]) = args
-        elif typ in ["/FitH", "FitBH"]:
+        elif typ in [b'/FitH', b'FitBH']:
             self[NameObject(b'/Top')], = args
-        elif typ in ["/FitV", "FitBV"]:
+        elif typ in [b'/FitV', b'FitBV']:
             self[NameObject(b'/Left')], = args
-        elif typ in ["/Fit", "FitB"]:
+        elif typ in [b'/Fit', b'FitB']:
             pass
         else:
             raise utils.PdfReadError("Unknown Destination Type: %r" % typ)
@@ -1618,42 +1619,42 @@ class Destination(DictionaryObject):
     ##
     # Read-only property accessing the destination title.
     # @return A string.
-    title = property(lambda self: self.get("/Title"))
+    title = property(lambda self: self.get(b'/Title'))
 
     ##
     # Read-only property accessing the destination page.
     # @return An integer.
-    page = property(lambda self: self.get("/Page"))
+    page = property(lambda self: self.get(b'/Page'))
 
     ##
     # Read-only property accessing the destination type.
     # @return A string.
-    typ = property(lambda self: self.get("/Type"))
+    typ = property(lambda self: self.get(b'/Type'))
 
     ##
     # Read-only property accessing the zoom factor.
     # @return A number, or None if not available.
-    zoom = property(lambda self: self.get("/Zoom", None))
+    zoom = property(lambda self: self.get(b'/Zoom', None))
 
     ##
     # Read-only property accessing the left horizontal coordinate.
     # @return A number, or None if not available.
-    left = property(lambda self: self.get("/Left", None))
+    left = property(lambda self: self.get(b'/Left', None))
 
     ##
     # Read-only property accessing the right horizontal coordinate.
     # @return A number, or None if not available.
-    right = property(lambda self: self.get("/Right", None))
+    right = property(lambda self: self.get(b'/Right', None))
 
     ##
     # Read-only property accessing the top vertical coordinate.
     # @return A number, or None if not available.
-    top = property(lambda self: self.get("/Top", None))
+    top = property(lambda self: self.get(b'/Top', None))
 
     ##
     # Read-only property accessing the bottom vertical coordinate.
     # @return A number, or None if not available.
-    bottom = property(lambda self: self.get("/Bottom", None))
+    bottom = property(lambda self: self.get(b'/Bottom', None))
 
 
 def convert_to_int(d, size):
