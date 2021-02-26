@@ -7,6 +7,7 @@ __author_email__ = "biziqe@mathieu.fenniak.net"
 
 from io import StringIO
 from PyPDF.utils import PdfReadError
+from PyPDF.generic import NameObject
 from zlib import decompress, compress
 
 
@@ -16,10 +17,10 @@ class FlateDecode(object):
         data = decompress(data)
         predictor = 1
         if decode_parms:
-            predictor = decode_parms.get("/Predictor", 1)
+            predictor = decode_parms.get(b'/Predictor', 1)
         # predictor 1 == no predictor
         if predictor != 1:
-            columns = decode_parms["/Columns"]
+            columns = decode_parms[b'/Columns']
             # PNG prediction:
             if 10 <= predictor <= 15:
                 output = StringIO()
@@ -132,22 +133,21 @@ class ASCII85Decode(object):
 
 
 def decode_stream_data(stream):
-    from PyPDF.generic import NameObject
-    filters = stream.get("/Filter", ())
+    filters = stream.get(b'/Filter', ())
     if len(filters) and not isinstance(filters[0], NameObject):
         # we have a single filter instance
         filters = (filters,)
-    data = stream.get_data()
+    data = stream.raw_data
     for filterType in filters:
-        if filterType == "/FlateDecode":
-            data = FlateDecode.decode(data, stream.get("/DecodeParms"))
-        elif filterType == "/ASCIIHexDecode":
+        if filterType == b'/FlateDecode':
+            data = FlateDecode.decode(data, stream.get(b'/DecodeParms'))
+        elif filterType == b'/ASCIIHexDecode':
             data = ASCIIHexDecode.decode(data)
-        elif filterType == "/ASCII85Decode":
+        elif filterType == b'/ASCII85Decode':
             data = ASCII85Decode.decode(data)
-        elif filterType == "/Crypt":
-            decode_params = stream.get("/DecodeParams", {})
-            if "/Name" not in decode_params and "/Type" not in decode_params:
+        elif filterType == b'/Crypt':
+            decode_params = stream.get(b'/DecodeParams', {})
+            if b'/Name' not in decode_params and b'/Type' not in decode_params:
                 pass
             else:
                 raise NotImplementedError("/Crypt filter with /Name or /Type not supported yet")

@@ -5,10 +5,23 @@ Utility functions for PDF library.
 import os as _os
 import io as _io
 import inspect as _insp
+_HIGHTLIGHTEN = False
 
 
-def debug(*args):
-    info = _insp.getframeinfo(_insp.stack()[1][0])
+def debug(*_args):
+    if not _HIGHTLIGHTEN:
+        _super_print(*_args)
+
+
+def hightlight_debug(*_args):
+    global _HIGHTLIGHTEN
+    _HIGHTLIGHTEN = True
+    print('>' * 32, 'hightlighted', '<' * 32)
+    _super_print(*_args)
+
+
+def _super_print(*args):
+    info = _insp.getframeinfo(_insp.stack()[2][0])
     dirname, basename = _os.path.split(info.filename)
     dirname = _os.path.basename(dirname)
     print('[{}] {} [{}]'.format(_os.path.join(dirname, basename), info.function, info.lineno), *args)
@@ -44,7 +57,7 @@ def read_until_whitespace(stream, maxchars=None):
 
 def read_non_whitespace(stream: _io.BufferedReader, seek_back: bool = False):
     tok = b' '
-    while tok in b'\n\r\t ':
+    while tok in b'\n\r\t ' and len(tok) > 0:
         tok = stream.read(1)
     if seek_back:
         stream.seek(-1, _io.SEEK_CUR)

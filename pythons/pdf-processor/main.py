@@ -10,10 +10,10 @@ if __name__ == "__main__":
             page2 = input2.get_page(0)
             page3 = input2.get_page(1)
 
-            page1.mergePage(page2)
-            page1.mergePage(page3)
+            page1.merge_page(page2)
+            page1.merge_page(page3)
 
             output = PdfFileWriter()
             output.add_page(page1)
-            with open("test_output.PyPDF", "wb") as file:
+            with open("test_output.pdf", "wb") as file:
                 output.write(file)

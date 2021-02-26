@@ -8,7 +8,7 @@ It may be a solid base for future PDF file work in Python.
 import math
 import struct
 from hashlib import md5
-from io import StringIO, BufferedReader
+from io import StringIO, BufferedReader, BytesIO
 
 import PyPDF.filters
 import PyPDF.utils as utils
@@ -29,7 +29,7 @@ class PdfFileWriter(object):
         self._encrypt_key = None
         self.stack = []
 
-        self._header = "%PDF-1.3"
+        self._header = b'%PDF-1.3'
         self._objects = []  # array of indirect objects
 
         # The root of our page tree node.
@@ -61,7 +61,7 @@ class PdfFileWriter(object):
         return IndirectObject(len(self._objects), 0, self)
 
     def get_object(self, ido):
-        if ido.pdf != self:
+        if not ido.pdf == self:
             raise ValueError("PyPDF must be self")
         return self._objects[ido.idnum - 1]
 
@@ -228,44 +228,44 @@ class PdfFileWriter(object):
 
         # Begin writing:
         object_positions = []
-        stream.write(self._header + "\n")
+        stream.write(self._header + b'\n')
         for i in range(len(self._objects)):
             idnum = (i + 1)
             obj = self._objects[i]
             object_positions.append(stream.tell())
-            stream.write(str(idnum) + " 0 obj\n")
+            stream.write(utils.s2b(str(idnum) + " 0 obj\n"))
             key = None
-            if hasattr(self, "_encrypt") and idnum != self._encrypt.idnum:
+            if self._encrypt is not None and idnum != self._encrypt.idnum:
                 pack1 = struct.pack("<i", i + 1)[:3]
                 pack2 = struct.pack("<i", 0)[:2]
                 key = _encrypt(self._encrypt_key, pack1, pack2)
             obj.write_to_stream(stream, key)
-            stream.write("\nendobj\n")
+            stream.write(b'\nendobj\n')
 
         # xref table
         xref_location = stream.tell()
-        stream.write("xref\n")
-        stream.write("0 %s\n" % (len(self._objects) + 1))
-        stream.write("%010d %05d f \n" % (0, 65535))
+        stream.write(b'xref\n')
+        stream.write(utils.s2b("0 %s\n" % (len(self._objects) + 1)))
+        stream.write(utils.s2b("%010d %05d f \n" % (0, 65535)))
         for offset in object_positions:
-            stream.write("%010d %05d n \n" % (offset, 0))
+            stream.write(utils.s2b("%010d %05d n \n" % (offset, 0)))
 
         # trailer
-        stream.write("trailer\n")
+        stream.write(b'trailer\n')
         trailer = DictionaryObject()
         trailer.update({
             NameObject(b'/Size'): NumberObject(len(self._objects) + 1),
             NameObject(b'/Root'): self._root,
             NameObject(b'/Info'): self._info,
         })
-        if hasattr(self, "_ID"):
+        if self._ID is not None:
             trailer[NameObject(b'/ID')] = self._ID
-        if hasattr(self, "_encrypt"):
+        if self._encrypt is not None:
             trailer[NameObject(b'/Encrypt')] = self._encrypt
         trailer.write_to_stream(stream, None)
 
         # eof
-        stream.write("\nstartxref\n%s\n%%%%EOF\n" % xref_location)
+        stream.write(utils.s2b("\nstartxref\n%s\n%%%%EOF\n" % xref_location))
 
     def _sweep_indirect_references(self, extern_map, data):
         if isinstance(data, DictionaryObject):
@@ -316,63 +316,6 @@ class PdfFileWriter(object):
                 return newobj
         else:
             return data
-
-
-def parse_standard_cross_reference_table(stream, pdf_reader):
-    # standard cross-reference table
-    ref = stream.read(4)
-    if not ref[:3] == b'ref':
-        raise utils.PdfReadError("xref table read error")
-    seek_token(stream)
-    while 1:
-        num = read_object(stream, pdf_reader)
-        seek_token(stream)
-        size = read_object(stream, pdf_reader)
-        seek_token(stream)
-        cnt = 0
-        utils.debug(num, size)
-        while cnt < size:
-            line = stream.read(20)
-            # It's very clear in section 3.4.3 of the PDF spec
-            # that all cross-reference table lines are a fixed
-            # 20 bytes.  However... some malformed PDF files
-            # use a single character EOL without a preceeding
-            # space.  Detect that case, and seek the stream
-            # back one character.  (0-9 means we've bled into
-            # the next xref entry, t means we've bled into the
-            # text "trailer"):
-            if line[-1] in b'0123456789t':
-                stream.seek(-1, io.SEEK_CUR)
-            offset, generation = line[:16].split(b' ')
-            offset, generation = int(offset), int(generation)
-            if generation not in pdf_reader.xref:
-                pdf_reader.xref[generation] = {}
-            if num in pdf_reader.xref[generation]:
-                # It really seems like we should allow the last
-                # xref table in the file to override previous
-                # ones. Since we read the file backwards, assume
-                # any existing key is already set correctly.
-                pass
-            else:
-                pdf_reader.xref[generation][num] = offset
-            cnt += 1
-            num += 1
-        seek_token(stream)
-        trailertag = stream.read(7)
-        if not trailertag == b'trailer':
-            # more xrefs!
-            stream.seek(-7, io.SEEK_CUR)
-        else:
-            break
-    seek_token(stream)
-    new_trailer = read_object(stream, pdf_reader)
-    for key, value in new_trailer.items():
-        if key not in pdf_reader.trailer:
-            pdf_reader.trailer[key] = value
-    if b'/Prev' in new_trailer:
-        return new_trailer[b'/Prev']
-    else:
-        return None
 
 
 ##
@@ -615,7 +558,6 @@ class PdfFileReader(object):
             inherit = dict()
         if pages is None:
             self.flattenedPages = []
-            utils.debug(self.trailer[b'/Root'])
             catalog = self.trailer[b'/Root'].get_object()
             pages = catalog[b'/Pages'].get_object()
         t = pages[b'/Type']
@@ -626,7 +568,7 @@ class PdfFileReader(object):
             for page in pages[b'/Kids']:
                 addt = {}
                 if isinstance(page, IndirectObject):
-                    addt[b'indirectRef'] = page
+                    addt['indirect_ref'] = page
                 self._flatten(page.get_object(), inherit, **addt)
         elif t == b'/Page':
             for attr, value in inherit.items():
@@ -674,7 +616,7 @@ class PdfFileReader(object):
         # override encryption is used for the /Encrypt dictionary
         if not self._override_encryption and self.isEncrypted:
             # if we don't have the encryption key:
-            if not hasattr(self, '_decryption_key'):
+            if self._decryption_key is None:
                 raise Exception("file has not been decrypted")
             # otherwise, decrypt here...
             import struct
@@ -1151,8 +1093,7 @@ class PageObject(DictionaryObject):
 
         original_content = self.get_contents()
         if original_content is not None:
-            new_content_array.append(PageObject._push_pop_gs(
-                original_content, self.pdf))
+            new_content_array.append(PageObject._push_pop_gs(original_content, self.pdf))
 
         page2_content = page2.get_contents()
         if page2_content is not None:
@@ -1424,17 +1365,20 @@ class ContentStream(DecodedStreamObject):
         # multiple StreamObjects to be cat'd together.
         stream = stream.get_object()
         if isinstance(stream, ArrayObject):
-            data = ""
+            data = b''
             for s in stream:
+                utils.debug(s)
                 data += s.get_object().get_data()
-            stream = StringIO(data)
+            stream = BytesIO(data)
         else:
-            stream = StringIO(stream.get_data())
+            stream = BytesIO(stream.get_data())
+        # assert stream is None
         self.__parse_content_stream(stream)
 
     def __parse_content_stream(self, stream):
         stream.seek(0, io.SEEK_SET)
         operands = []
+        utils.debug('peek')
         while True:
             peek = read_non_whitespace(stream)
             if peek == b'':
@@ -1444,10 +1388,10 @@ class ContentStream(DecodedStreamObject):
                 operator = b''
                 while True:
                     tok = stream.read(1)
-                    if tok.isspace() or tok in utils.DELIMITERS:
-                        stream.seek(-1, io.SEEK_CUR)
+                    if tok == b'':
                         break
-                    elif tok == b'':
+                    elif tok.isspace() or tok in utils.DELIMITERS:
+                        stream.seek(-1, io.SEEK_CUR)
                         break
                     operator += tok
                 if operator == b'BI':
@@ -1502,26 +1446,28 @@ class ContentStream(DecodedStreamObject):
         return {b'settings': settings, b'data': data}
 
     def _get_data(self):
-        newdata = StringIO()
+        newdata = BytesIO()
         for operands, operator in self.operations:
             if operator == b'INLINE IMAGE':
-                newdata.write("BI")
-                dicttext = StringIO()
-                operands[b'settings'].write_to_stream(dicttext, None)
+                newdata.write(b'BI')
+                dicttext = BytesIO()
+                operands[b'settings'].write_to_stream(dicttext)
                 newdata.write(dicttext.getvalue()[2:-2])
-                newdata.write("ID ")
+                newdata.write(b'ID ')
                 newdata.write(operands[b'data'])
-                newdata.write("EI")
+                newdata.write(b'EI')
             else:
                 for op in operands:
-                    op.write_to_stream(newdata, None)
-                    newdata.write(" ")
+                    utils.debug(op, type(op))
+                    op.write_to_stream(newdata)
+                    newdata.write(b' ')
                 newdata.write(operator)
-            newdata.write("\n")
+            newdata.write(b'\n')
         return newdata.getvalue()
 
     def _set_data(self, value):
-        self.__parse_content_stream(StringIO(value))
+        utils.debug(value)
+        self.__parse_content_stream(BytesIO(value))
 
     _data = property(_get_data, _set_data)
 
@@ -1839,3 +1785,60 @@ def _create_rotation_scaling_matrix(rotation, scale):
                [0, 0, 1]]
     ctm = utils.matrix_multiply(rotating, scaling)
     return ctm
+
+
+def parse_standard_cross_reference_table(stream, pdf_reader):
+    # standard cross-reference table
+    ref = stream.read(4)
+    if not ref[:3] == b'ref':
+        raise utils.PdfReadError("xref table read error")
+    seek_token(stream)
+    while 1:
+        num = read_object(stream, pdf_reader)
+        seek_token(stream)
+        size = read_object(stream, pdf_reader)
+        seek_token(stream)
+        cnt = 0
+        utils.debug(num, size)
+        while cnt < size:
+            line = stream.read(20)
+            # It's very clear in section 3.4.3 of the PDF spec
+            # that all cross-reference table lines are a fixed
+            # 20 bytes.  However... some malformed PDF files
+            # use a single character EOL without a preceeding
+            # space.  Detect that case, and seek the stream
+            # back one character.  (0-9 means we've bled into
+            # the next xref entry, t means we've bled into the
+            # text "trailer"):
+            if line[-1] in b'0123456789t':
+                stream.seek(-1, io.SEEK_CUR)
+            offset, generation = line[:16].split(b' ')
+            offset, generation = int(offset), int(generation)
+            if generation not in pdf_reader.xref:
+                pdf_reader.xref[generation] = {}
+            if num in pdf_reader.xref[generation]:
+                # It really seems like we should allow the last
+                # xref table in the file to override previous
+                # ones. Since we read the file backwards, assume
+                # any existing key is already set correctly.
+                pass
+            else:
+                pdf_reader.xref[generation][num] = offset
+            cnt += 1
+            num += 1
+        seek_token(stream)
+        trailertag = stream.read(7)
+        if not trailertag == b'trailer':
+            # more xrefs!
+            stream.seek(-7, io.SEEK_CUR)
+        else:
+            break
+    seek_token(stream)
+    new_trailer = read_object(stream, pdf_reader)
+    for key, value in new_trailer.items():
+        if key not in pdf_reader.trailer:
+            pdf_reader.trailer[key] = value
+    if b'/Prev' in new_trailer:
+        return new_trailer[b'/Prev']
+    else:
+        return None

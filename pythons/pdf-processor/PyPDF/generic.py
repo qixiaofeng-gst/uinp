@@ -10,6 +10,7 @@ import PyPDF.filters as filters
 import PyPDF.utils as utils
 import decimal
 import codecs
+_STREAM_KEY = "__streamdata__"
 
 
 def read_object(stream: io.BufferedReader, pdf_reader):
@@ -104,7 +105,11 @@ class ArrayObject(list, PdfObject):
         stream.write(b'[')
         for data in self:
             stream.write(b' ')
-            data.write_to_stream(stream, encryption_key)
+            utils.debug(data, type(data))
+            if isinstance(data, _PLAIN_OBJECTS):
+                data.write_to_stream(stream)
+            else:
+                data.write_to_stream(stream, encryption_key)
         stream.write(b' ]')
 
     @staticmethod
@@ -182,13 +187,13 @@ class FloatObject(decimal.Decimal, PdfObject):
 
     def __repr__(self):
         if self == self.to_integral():
-            return bytes(str(self.quantize(decimal.Decimal(1))), utils.ENCODING_UTF8)
+            return str(self.quantize(decimal.Decimal(1)))
         else:
             # XXX: this adds useless extraneous zeros.
-            return bytes("%.5f" % self, utils.ENCODING_UTF8)
+            return "%.5f" % self
 
     def write_to_stream(self, stream):
-        stream.write(bytes(repr(self), utils.ENCODING_UTF8))
+        stream.write(utils.s2b(repr(self)))
 
 
 class NumberObject(int, PdfObject):
@@ -277,13 +282,13 @@ class TextStringObject(str, PdfObject):
             obj = ByteStringObject(bytearr)
             obj.write_to_stream(stream, None)
         else:
-            stream.write("(")
+            stream.write(b'(')
             for c in bytearr:
-                if not c.isalnum() and c != ' ':
-                    stream.write("\\%03o" % ord(c))
+                if not c.isalnum() and not c == ' ':
+                    stream.write(utils.s2b("\\%03o" % ord(c)))
                 else:
-                    stream.write(c)
-            stream.write(")")
+                    stream.write(utils.s2b(c))
+            stream.write(b')')
 
 
 class NameObject(bytes, PdfObject):
@@ -348,7 +353,6 @@ class DictionaryObject(dict, PdfObject):
         return dict.setdefault(self, key, value)
 
     def __getitem__(self, key):
-        utils.debug(key, dict.__getitem__(self, key))
         return dict.__getitem__(self, key).get_object()
 
     ##
@@ -360,14 +364,14 @@ class DictionaryObject(dict, PdfObject):
     # that can be used to access XMP metadata from the document.  Can also
     # return None if no metadata was found on the document root.
     def get_xmp_metadata(self):
-        metadata = self.get("/Metadata", None)
+        metadata = self.get(b'/Metadata', None)
         if metadata is None:
             return None
         metadata = metadata.getObject()
         import PyPDF.xmp as xmp
         if not isinstance(metadata, xmp.XmpInformation):
             metadata = xmp.XmpInformation(metadata)
-            self[NameObject("/Metadata")] = metadata
+            self[NameObject(b'/Metadata')] = metadata
         return metadata
 
     ##
@@ -380,9 +384,12 @@ class DictionaryObject(dict, PdfObject):
     def write_to_stream(self, stream, encryption_key):
         stream.write(b'<<\n')
         for key, value in self.items():
-            key.write_to_stream(stream, encryption_key)
+            key.write_to_stream(stream)
             stream.write(b' ')
-            value.write_to_stream(stream, encryption_key)
+            if isinstance(value, _PLAIN_OBJECTS):
+                value.write_to_stream(stream)
+            else:
+                value.write_to_stream(stream, encryption_key)
             stream.write(b'\n')
         stream.write(b'>>')
 
@@ -418,16 +425,16 @@ class DictionaryObject(dict, PdfObject):
                 # read \n after
                 stream.read(1)
             # this is a stream object, not a dictionary
-            assert "/Length" in data
-            length = data["/Length"]
+            assert b'/Length' in data
+            length = data[b'/Length']
             if isinstance(length, IndirectObject):
                 t = stream.tell()
                 length = pdf_object.get_object(length)
                 stream.seek(t, io.SEEK_SET)
-            data["__streamdata__"] = stream.read(length)
+            data[_STREAM_KEY] = stream.read(length)
             e = read_non_whitespace(stream)
             ndstream = stream.read(8)
-            if (e + ndstream) != "endstream":
+            if (e + ndstream) != b'endstream':
                 # (sigh) - the odd PDF file has a length that is too long, so
                 # we need to read backwards to find the "endstream" ending.
                 # ReportLab (unknown version) generates files with this bug,
@@ -437,15 +444,15 @@ class DictionaryObject(dict, PdfObject):
                 pos = stream.tell()
                 stream.seek(-10, io.SEEK_CUR)
                 end = stream.read(9)
-                if end == "endstream":
+                if end == b'endstream':
                     # we found it by looking back one character further.
-                    data["__streamdata__"] = data["__streamdata__"][:-1]
+                    data[_STREAM_KEY] = data[_STREAM_KEY][:-1]
                 else:
                     stream.seek(pos, io.SEEK_SET)
                     raise utils.PdfReadError("Unable to find 'endstream' marker after stream.")
         else:
             stream.seek(pos, io.SEEK_SET)
-        if "__streamdata__" in data:
+        if _STREAM_KEY in data:
             return StreamObject.initialize_from_dictionary(data)
         else:
             retval = DictionaryObject()
@@ -460,42 +467,42 @@ class StreamObject(DictionaryObject):
         self.decodedSelf = None
 
     def write_to_stream(self, stream, encryption_key):
-        self[NameObject("/Length")] = NumberObject(len(self._data))
+        self[NameObject(b'/Length')] = NumberObject(len(self._data))
         DictionaryObject.write_to_stream(self, stream, encryption_key)
-        del self["/Length"]
-        stream.write("\nstream\n")
+        del self[b'/Length']
+        stream.write(b'\nstream\n')
         data = self._data
         if encryption_key:
             data = rc4_encrypt(encryption_key, data)
         stream.write(data)
-        stream.write("\nendstream")
+        stream.write(b'\nendstream')
 
     @staticmethod
     def initialize_from_dictionary(data):
-        if "/Filter" in data:
+        if b'/Filter' in data:
             retval = EncodedStreamObject()
         else:
             retval = DecodedStreamObject()
-        retval._data = data["__streamdata__"]
-        del data["__streamdata__"]
-        del data["/Length"]
+        retval._data = data[_STREAM_KEY]
+        del data[_STREAM_KEY]
+        del data[b'/Length']
         retval.update(data)
         return retval
 
     def flate_encode(self):
-        if "/Filter" in self:
-            f = self["/Filter"]
+        if b'/Filter' in self:
+            f = self[b'/Filter']
             if isinstance(f, ArrayObject):
-                f.insert(0, NameObject("/FlateDecode"))
+                f.insert(0, NameObject(b'/FlateDecode'))
             else:
                 newf = ArrayObject()
-                newf.append(NameObject("/FlateDecode"))
+                newf.append(NameObject(b'/FlateDecode'))
                 newf.append(f)
                 f = newf
         else:
-            f = NameObject("/FlateDecode")
+            f = NameObject(b'/FlateDecode')
         retval = EncodedStreamObject()
-        retval[NameObject("/Filter")] = f
+        retval[NameObject(b'/Filter')] = f
         retval._data = filters.FlateDecode.encode(self._data)
         return retval
 
@@ -515,16 +522,22 @@ class EncodedStreamObject(StreamObject):
         super().__init__()
         self.decodedSelf = None
 
+    @property
+    def raw_data(self):
+        return self._data
+
     def get_data(self):
-        if self.decodedSelf:
+        utils.debug(self.decodedSelf)
+        if self.decodedSelf is not None:
             # cached version of decoded object
             return self.decodedSelf.get_data()
         else:
+            # assert self.decodedSelf is not None
             # create decoded object
             decoded = DecodedStreamObject()
             decoded._data = filters.decode_stream_data(self)
             for key, value in self.items():
-                if key not in ("/Length", "/Filter", "/DecodeParms"):
+                if key not in (b'/Length', b'/Filter', b'/DecodeParms'):
                     decoded[key] = value
             self.decodedSelf = decoded
             return decoded.get_data()
@@ -769,3 +782,4 @@ for __idx in range(256):
         continue
     assert char not in _pdfDocEncoding_rev
     _pdfDocEncoding_rev[char] = __idx
+_PLAIN_OBJECTS = (IndirectObject, NumberObject, NameObject, FloatObject, BooleanObject)
