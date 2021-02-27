@@ -261,7 +261,7 @@ class TextStringObject(str, PdfObject):
         if self.autodetect_utf16:
             return codecs.BOM_UTF16_BE + self.encode(utils.ENCODING_UTF16BE)
         elif self.autodetect_pdfdocencoding:
-            return encode_pdf_doc_encoding(self)
+            return utils.encode_pdf_doc_encoding(self)
         else:
             raise Exception("no information about original bytes")
 
@@ -270,7 +270,7 @@ class TextStringObject(str, PdfObject):
         # nicer to look at in the PDF file.  Sadly, we take a performance hit
         # here for trying...
         try:
-            bytearr = encode_pdf_doc_encoding(self)
+            bytearr = utils.encode_pdf_doc_encoding(self)
         except UnicodeEncodeError:
             bytearr = codecs.BOM_UTF16_BE + self.encode(utils.ENCODING_UTF16BE)
         if encryption_key:
@@ -351,15 +351,16 @@ class DictionaryObject(dict, PdfObject):
     def __getitem__(self, key):
         return dict.__getitem__(self, key).get_object()
 
-    ##
-    # Retrieves XMP (Extensible Metadata Platform) data relevant to the
-    # this object, if available.
-    # <p>
-    # Stability: Added in v1.12, will exist for all future v1.x releases.
-    # @return Returns a {@link #xmp.XmpInformation XmlInformation} instance
-    # that can be used to access XMP metadata from the document.  Can also
-    # return None if no metadata was found on the document root.
     def get_xmp_metadata(self):
+        """
+        Retrieves XMP (Extensible Metadata Platform) data relevant to the
+        this object, if available.
+
+        Stability: Added in v1.12, will exist for all future v1.x releases.
+        @return Returns a {@link #xmp.XmpInformation XmlInformation} instance
+        that can be used to access XMP metadata from the document.  Can also
+        return None if no metadata was found on the document root.
+        """
         metadata = self.get(b'/Metadata', None)
         if metadata is None:
             return None
@@ -683,6 +684,7 @@ class PageObject(DictionaryObject):
         # Stores the original indirect reference to this object in its source PDF
         self.indirect_ref = indirect_ref
 
+    @staticmethod
     def create_blank_page(_pdf=None, width=None, height=None):
         """
         Returns a new blank page.
@@ -710,8 +712,6 @@ class PageObject(DictionaryObject):
         page.__setitem__(NameObject(b'/MediaBox'), RectangleObject([0, 0, width, height]))
         return page
 
-    create_blank_page = staticmethod(create_blank_page)
-
     ##
     # Rotates a page clockwise by increments of 90 degrees.
     # <p>
@@ -736,6 +736,7 @@ class PageObject(DictionaryObject):
         current_angle = self.get(b'/Rotate', 0)
         self[NameObject(b'/Rotate')] = NumberObject(current_angle + angle)
 
+    @staticmethod
     def _merge_resources(res1, res2, resource):
         new_res = DictionaryObject()
         new_res.update(res1.get(resource, DictionaryObject()).get_object())
@@ -750,8 +751,7 @@ class PageObject(DictionaryObject):
                 new_res[key] = page2_res.raw_get(key)
         return new_res, rename_res
 
-    _merge_resources = staticmethod(_merge_resources)
-
+    @staticmethod
     def _content_stream_rename(stream, rename, _pdf):
         if not rename:
             return stream
@@ -763,8 +763,7 @@ class PageObject(DictionaryObject):
                     operands[i] = rename.get(op, op)
         return stream
 
-    _content_stream_rename = staticmethod(_content_stream_rename)
-
+    @staticmethod
     def _push_pop_gs(contents, _pdf):
         # adds a graphics state "push" and "pop" to the beginning and end
         # of a content stream.  This isolates it from changes such as
@@ -774,8 +773,7 @@ class PageObject(DictionaryObject):
         stream.operations.append([[], b'Q'])
         return stream
 
-    _push_pop_gs = staticmethod(_push_pop_gs)
-
+    @staticmethod
     def _add_transformation_matrix(contents, _pdf, ctm):
         # adds transformation matrix at the beginning of the given
         # contents stream.
@@ -785,8 +783,6 @@ class PageObject(DictionaryObject):
                                         FloatObject(c), FloatObject(d), FloatObject(e),
                                         FloatObject(f)], " cm"])
         return contents
-
-    _add_transformation_matrix = staticmethod(_add_transformation_matrix)
 
     ##
     # Returns the /Contents object, or None if it doesn't exist.
@@ -1279,7 +1275,7 @@ def create_string_object(string: bytes):
             # possible... and the only way to check if that's possible is
             # to try.  Some strings are strings, some are just byte arrays.
             try:
-                retval = TextStringObject(decode_pdf_doc_encoding(string))
+                retval = TextStringObject(utils.decode_pdf_doc_encoding(string))
                 retval.autodetect_pdfdocencoding = True
                 return retval
             except UnicodeDecodeError:
@@ -1291,145 +1287,15 @@ def create_string_object(string: bytes):
 
 
 def read_hex_string_from_stream(stream):
-    stream.read(1)
-    txt = b''
-    x = b''
-    while True:
-        tok = read_non_whitespace(stream)
-        if tok == b'>':
-            break
-        x += tok
-        if len(x) == 2:
-            txt += utils.s2b(chr(int(x, base=16)))
-            x = b''
-    if len(x) == 1:
-        x += b'0'
-    if len(x) == 2:
-        txt += utils.s2b(chr(int(x, base=16)))
-    return create_string_object(txt)
+    return create_string_object(utils.read_hex_bytes_from(stream))
 
 
 def read_string_from_stream(stream):
-    _tok = stream.read(1)
-    parens = 1
-    txt = b''
-    while True:
-        tok = stream.read(1)
-        if tok in b'(':
-            parens += 1
-        elif tok in b')':
-            parens -= 1
-            if parens == 0:
-                break
-        elif tok in b'\\':
-            tok = stream.read(1)
-            if tok in b'n':
-                tok = b'\n'
-            elif tok in b'r':
-                tok = b'\r'
-            elif tok in b't':
-                tok = b'\t'
-            elif tok in b'b':
-                tok = b'\b'
-            elif tok in b'f':
-                tok = b'\f'
-            elif tok in b'()\\':
-                pass
-            elif tok.isdigit():
-                # "The number ddd may consist of one, two, or three
-                # octal digits; high-order overflow shall be ignored.
-                # Three octal digits shall be used, with leading zeros
-                # as needed, if the next character of the string is also
-                # a digit." (PDF reference 7.3.4.2, p 16)
-                for _i in range(2):
-                    ntok = stream.read(1)
-                    if ntok.isdigit():
-                        tok += ntok
-                    else:
-                        break
-                tok = utils.s2b(chr(int(tok, base=8)))
-            elif tok in b'\n\r':
-                # This case is  hit when a backslash followed by a line
-                # break occurs.  If it's a multi-char EOL, consume the
-                # second character:
-                tok = stream.read(1)
-                if tok not in b'\n\r':
-                    stream.seek(-1, io.SEEK_CUR)
-                # Then don't add anything to the actual string, since this
-                # line break was escaped:
-                tok = b''
-            else:
-                raise utils.PdfReadError("Unexpected escaped string")
-        txt += tok
-    return create_string_object(txt)
+    return create_string_object(utils.read_bytes_from(stream))
 
 
 def is_plain_object(obj):
     return isinstance(obj, _PLAIN_OBJECTS)
 
 
-def encode_pdf_doc_encoding(unicode_string):
-    retval = ''
-    for c in unicode_string:
-        try:
-            retval += chr(_PDF_DOC_ENCODING_REVERSED[c])
-        except KeyError:
-            raise UnicodeEncodeError("pdfdocencoding", c, -1, -1, "does not exist in translation table")
-    return retval
-
-
-def decode_pdf_doc_encoding(byte_array: bytes):
-    retval = u''
-    for b in byte_array:
-        c = _PDF_DOC_ENCODING[b]
-        if c == u'\u0000':
-            raise UnicodeDecodeError("pdfdocencoding", bytes([b]), -1, -1, "does not exist in translation table")
-        retval += c
-    return retval
-
-
-_PDF_DOC_ENCODING = (
-    u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000',
-    u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000',
-    u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000', u'\u0000',
-    u'\u02d8', u'\u02c7', u'\u02c6', u'\u02d9', u'\u02dd', u'\u02db', u'\u02da', u'\u02dc',
-    u'\u0020', u'\u0021', u'\u0022', u'\u0023', u'\u0024', u'\u0025', u'\u0026', u'\u0027',
-    u'\u0028', u'\u0029', u'\u002a', u'\u002b', u'\u002c', u'\u002d', u'\u002e', u'\u002f',
-    u'\u0030', u'\u0031', u'\u0032', u'\u0033', u'\u0034', u'\u0035', u'\u0036', u'\u0037',
-    u'\u0038', u'\u0039', u'\u003a', u'\u003b', u'\u003c', u'\u003d', u'\u003e', u'\u003f',
-    u'\u0040', u'\u0041', u'\u0042', u'\u0043', u'\u0044', u'\u0045', u'\u0046', u'\u0047',
-    u'\u0048', u'\u0049', u'\u004a', u'\u004b', u'\u004c', u'\u004d', u'\u004e', u'\u004f',
-    u'\u0050', u'\u0051', u'\u0052', u'\u0053', u'\u0054', u'\u0055', u'\u0056', u'\u0057',
-    u'\u0058', u'\u0059', u'\u005a', u'\u005b', u'\u005c', u'\u005d', u'\u005e', u'\u005f',
-    u'\u0060', u'\u0061', u'\u0062', u'\u0063', u'\u0064', u'\u0065', u'\u0066', u'\u0067',
-    u'\u0068', u'\u0069', u'\u006a', u'\u006b', u'\u006c', u'\u006d', u'\u006e', u'\u006f',
-    u'\u0070', u'\u0071', u'\u0072', u'\u0073', u'\u0074', u'\u0075', u'\u0076', u'\u0077',
-    u'\u0078', u'\u0079', u'\u007a', u'\u007b', u'\u007c', u'\u007d', u'\u007e', u'\u0000',
-    u'\u2022', u'\u2020', u'\u2021', u'\u2026', u'\u2014', u'\u2013', u'\u0192', u'\u2044',
-    u'\u2039', u'\u203a', u'\u2212', u'\u2030', u'\u201e', u'\u201c', u'\u201d', u'\u2018',
-    u'\u2019', u'\u201a', u'\u2122', u'\ufb01', u'\ufb02', u'\u0141', u'\u0152', u'\u0160',
-    u'\u0178', u'\u017d', u'\u0131', u'\u0142', u'\u0153', u'\u0161', u'\u017e', u'\u0000',
-    u'\u20ac', u'\u00a1', u'\u00a2', u'\u00a3', u'\u00a4', u'\u00a5', u'\u00a6', u'\u00a7',
-    u'\u00a8', u'\u00a9', u'\u00aa', u'\u00ab', u'\u00ac', u'\u0000', u'\u00ae', u'\u00af',
-    u'\u00b0', u'\u00b1', u'\u00b2', u'\u00b3', u'\u00b4', u'\u00b5', u'\u00b6', u'\u00b7',
-    u'\u00b8', u'\u00b9', u'\u00ba', u'\u00bb', u'\u00bc', u'\u00bd', u'\u00be', u'\u00bf',
-    u'\u00c0', u'\u00c1', u'\u00c2', u'\u00c3', u'\u00c4', u'\u00c5', u'\u00c6', u'\u00c7',
-    u'\u00c8', u'\u00c9', u'\u00ca', u'\u00cb', u'\u00cc', u'\u00cd', u'\u00ce', u'\u00cf',
-    u'\u00d0', u'\u00d1', u'\u00d2', u'\u00d3', u'\u00d4', u'\u00d5', u'\u00d6', u'\u00d7',
-    u'\u00d8', u'\u00d9', u'\u00da', u'\u00db', u'\u00dc', u'\u00dd', u'\u00de', u'\u00df',
-    u'\u00e0', u'\u00e1', u'\u00e2', u'\u00e3', u'\u00e4', u'\u00e5', u'\u00e6', u'\u00e7',
-    u'\u00e8', u'\u00e9', u'\u00ea', u'\u00eb', u'\u00ec', u'\u00ed', u'\u00ee', u'\u00ef',
-    u'\u00f0', u'\u00f1', u'\u00f2', u'\u00f3', u'\u00f4', u'\u00f5', u'\u00f6', u'\u00f7',
-    u'\u00f8', u'\u00f9', u'\u00fa', u'\u00fb', u'\u00fc', u'\u00fd', u'\u00fe', u'\u00ff'
-)
-
-assert len(_PDF_DOC_ENCODING) == 256
-
-_PDF_DOC_ENCODING_REVERSED = {}
-for __idx in range(256):
-    char = _PDF_DOC_ENCODING[__idx]
-    if char == u"\u0000":
-        continue
-    assert char not in _PDF_DOC_ENCODING_REVERSED
-    _PDF_DOC_ENCODING_REVERSED[char] = __idx
 _PLAIN_OBJECTS = (IndirectObject, NumberObject, NameObject, FloatObject, BooleanObject)
