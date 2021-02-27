@@ -7,9 +7,8 @@ It may be a solid base for future PDF file work in Python.
 import io
 import struct
 from hashlib import md5
-from io import StringIO, BufferedReader, BytesIO
+from io import BufferedReader, BytesIO
 
-import PyPDF.filters
 import PyPDF.utils as utils
 from PyPDF.generic import (
     NameObject, DictionaryObject, NumberObject, ArrayObject, BooleanObject, PageObject,
@@ -82,66 +81,28 @@ class PdfFileWriter(object):
         callback_add(pages[b'/Kids'], page)
         pages[NameObject(b'/Count')] = NumberObject(pages[b'/Count'] + 1)
 
-    ##
-    # Adds a page to this PDF file.  The page is usually acquired from a
-    # {@link #PdfFileReader PdfFileReader} instance.
-    # <p>
-    # Stability: Added in v1.0, will exist for all v1.x releases.
-    #
-    # @param page The page to add to the document.  This argument should be
-    #             an instance of {@link #PageObject PageObject}.
     def add_page(self, page):
         self._add_page(page, list.append)
 
-    ##
-    # Insert a page in this PDF file.  The page is usually acquired from a
-    # {@link #PdfFileReader PdfFileReader} instance.
-    #
-    # @param page The page to add to the document.  This argument should be
-    #             an instance of {@link #PageObject PageObject}.
-    # @param index Position at which the page will be inserted.
     def insert_page(self, page, index=0):
         self._add_page(page, lambda l, p: l.insert(index, p))
 
-    ##
-    # Retrieves a page by number from this PDF file.
-    # @return Returns a {@link #PageObject PageObject} instance.
     def get_page(self, page_number):
-        pages = self.get_object(self._pages)
-        # XXX: crude hack
+        """Retrieves a page by number from this PDF file."""
+        pages = self._pages.get_object()
         return pages[b'/Kids'][page_number].get_object()
 
-    ##
-    # Return the number of pages.
-    # @return The number of pages.
     def get_pages_count(self):
         pages = self.get_object(self._pages)
         return int(pages[NameObject(b'/Count')])
 
-    ##
-    # Append a blank page to this PDF file and returns it. If no page size
-    # is specified, use the size of the last page; throw
-    # PageSizeNotDefinedError if it doesn't exist.
-    # @param width The width of the new page expressed in default user
-    # space units.
-    # @param height The height of the new page expressed in default user
-    # space units.
     def add_blank_page(self, width=None, height=None):
         page = PageObject.create_blank_page(self, width, height)
         self.add_page(page)
         return page
 
-    ##
-    # Insert a blank page to this PDF file and returns it. If no page size
-    # is specified, use the size of the page in the given index; throw
-    # PageSizeNotDefinedError if it doesn't exist.
-    # @param width  The width of the new page expressed in default user
-    #               space units.
-    # @param height The height of the new page expressed in default user
-    #               space units.
-    # @param index  Position to add the page.
     def insert_blank_page(self, width=None, height=None, index=0):
-        if width is None or height is None and (self.get_pages_count() - 1) >= index:
+        if width is None or height is None and self.get_pages_count() > index:
             oldpage = self.get_page(index)
             width = oldpage.media_box.get_width()
             height = oldpage.media_box.get_height()
@@ -202,8 +163,6 @@ class PdfFileWriter(object):
     # @param stream An object to write the file to.  The object must support
     # the write method, and the tell method, similar to a file object.
     def write(self, stream):
-        import struct
-
         external_reference_map = {}
 
         # PDF objects sometimes have circular references to their /Page objects
@@ -324,17 +283,15 @@ class PdfFileWriter(object):
             return data
 
 
-##
-# Initializes a PdfFileReader object.  This operation can take some time, as
-# the PDF stream's cross-reference tables are read into memory.
-# <p>
-# Stability: Added in v1.0, will exist for all v1.x releases.
-#
-# @param stream An object that supports the standard read and seek methods
-#               similar to a file object.
 class PdfFileReader(object):
     def __init__(self, stream):
-        utils.debug(type(stream), '>' * 32)
+        """Initializes a PdfFileReader object.  This operation can take some time, as
+        the PDF stream's cross-reference tables are read into memory.
+
+        Stability: Added in v1.0, will exist for all v1.x releases.
+
+        stream - An object that supports the standard read
+                 and seek methods similar to a file object."""
         self.xref = {}
         self._xref_obj_stream = {}
         self.trailer = None
@@ -345,16 +302,15 @@ class PdfFileReader(object):
         self.stream: BufferedReader = stream
         self._override_encryption = False
 
-    ##
-    # Retrieves the PDF file's document information dictionary, if it exists.
-    # Note that some PDF files use metadata streams instead of docinfo
-    # dictionaries, and these metadata streams will not be accessed by this
-    # function.
-    # <p>
-    # Stability: Added in v1.6, will exist for all future v1.x releases.
-    # @return Returns a {@link #DocumentInformation DocumentInformation}
-    #         instance, or None if none exists.
     def get_document_info(self):
+        """Retrieves the PDF file's document information dictionary, if it exists.
+        Note that some PDF files use metadata streams instead of docinfo
+        dictionaries, and these metadata streams will not be accessed by this
+        function.
+
+        Stability: Added in v1.6, will exist for all future v1.x releases.
+
+        return - Returns a DocumentInformation instance, or None if none exists."""
         if b'/Info' not in self.trailer:
             return None
         obj = self.trailer[b'/Info']
@@ -507,7 +463,7 @@ class PdfFileReader(object):
                 outline = self._named_dests[dest]
                 outline[NameObject(b'/Title')] = title
             else:
-                raise PyPDF.utils.PdfReadError("Unexpected destination %r" % dest)
+                raise utils.PdfReadError("Unexpected destination %r" % dest)
         return outline
 
     def _flatten(self, pages=None, inherit=None, indirect_ref=None):
@@ -577,7 +533,6 @@ class PdfFileReader(object):
             if self._decryption_key is None:
                 raise Exception("file has not been decrypted")
             # otherwise, decrypt here...
-            import struct
             pack1 = struct.pack("<i", indirect_reference.idnum)[:3]
             pack2 = struct.pack("<i", indirect_reference.generation)[:2]
             key = _encrypt(self._decryption_key, pack1, pack2)
@@ -653,7 +608,7 @@ class PdfFileReader(object):
                 utils.debug(xrefstream)
                 assert xrefstream[b'/Type'] == b'/XRef'
                 self.cache_indirect_object(generation, idnum, xrefstream)
-                stream_data = StringIO(xrefstream.get_data())
+                stream_data = BytesIO(xrefstream.get_data())
                 idx_pairs = xrefstream.get(b'/Index', [0, xrefstream.get(b'/Size')])
                 entry_sizes = xrefstream.get(b'/W')
                 for num, size in self._pairs(idx_pairs):
@@ -850,7 +805,6 @@ def _alg32(password, rev, keylen, owner_entry, p_entry, id1_entry, metadata_encr
     password = (password + _encryption_padding)[:32]
     # 2. Initialize the MD5 hash function and pass the result of step 1 as
     # input to this function.
-    import struct
     m = md5(password)
     # 3. Pass the value of the encryption dictionary's /O entry to the MD5 hash
     # function.
