@@ -1,5 +1,5 @@
 from PyPDF.pdf import PdfFileReader, PdfFileWriter
-from PyPDF.utils import hightlight_debug
+import PyPDF.utils as utils
 
 if __name__ == "__main__":
     with open("test_input_a.pdf", "rb") as file_a:
@@ -10,6 +10,8 @@ if __name__ == "__main__":
             page1 = input1.get_page(1)
             page2 = input2.get_page(0)
             page3 = input2.get_page(1)
+            utils.debug(page2)
+            utils.debug(page3)
 
             page1.merge_page(page2)
             page1.merge_page(page3)

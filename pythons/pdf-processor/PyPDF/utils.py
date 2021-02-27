@@ -68,26 +68,6 @@ def seek_token(stream):
     return read_non_whitespace(stream, True)
 
 
-class ConvertFunctionsToVirtualList(object):
-    def __init__(self, length_function, get_function):
-        self.lengthFunction = length_function
-        self.getFunction = get_function
-
-    def __len__(self):
-        return self.lengthFunction()
-
-    def __getitem__(self, index):
-        if not isinstance(index, int):
-            raise TypeError("sequence indices must be integers")
-        len_self = len(self)
-        if index < 0:
-            # support negative indexes
-            index = len_self + index
-        if index < 0 or index >= len_self:
-            raise IndexError("sequence index out of range")
-        return self.getFunction(index)
-
-
 def rc4_encrypt(key, plaintext):
     s = [i for i in range(256)]
     j = 0

@@ -5,7 +5,6 @@ be able to split and merge PDF files by page, and that's about all it can do.
 It may be a solid base for future PDF file work in Python.
 """
 import io
-import math
 import struct
 from hashlib import md5
 from io import StringIO, BufferedReader, BytesIO
@@ -13,13 +12,12 @@ from io import StringIO, BufferedReader, BytesIO
 import PyPDF.filters
 import PyPDF.utils as utils
 from PyPDF.generic import (
-    NameObject, DictionaryObject, NumberObject, ArrayObject, BooleanObject, FloatObject, NullObject,
-    IndirectObject, ByteStringObject, StreamObject, TextStringObject, RectangleObject, DecodedStreamObject,
+    NameObject, DictionaryObject, NumberObject, ArrayObject, BooleanObject, PageObject,
+    IndirectObject, ByteStringObject, StreamObject, TextStringObject, DocumentInformation, Destination,
     create_string_object, read_object, is_plain_object,
 )
 from PyPDF.utils import (
-    read_non_whitespace, seek_token,
-    read_until_whitespace, ConvertFunctionsToVirtualList
+    seek_token, read_until_whitespace,
 )
 
 
@@ -48,7 +46,7 @@ class PdfFileWriter(object):
         # info object
         info = DictionaryObject()
         info.update({
-            NameObject(b'/Producer'): create_string_object(b'Python PDF Library - http://pybrary.net/pyPdf/')
+            NameObject(b'/Producer'): create_string_object(b'PyPDF - Refactored by xiaofeng.qi')
         })
         self._info = self._add_object(info)
 
@@ -76,12 +74,12 @@ class PdfFileWriter(object):
     #             an instance of {@link #PageObject PageObject}.
     # @param action The function which will insert the page in the dictionnary.
     #               Takes: page list, page to add.
-    def _add_page(self, page, action):
+    def _add_page(self, page, callback_add):
         assert page[b'/Type'] == b'/Page'
         page[NameObject(b'/Parent')] = self._pages
         page = self._add_object(page)
-        pages = self.get_object(self._pages)
-        action(pages[b'/Kids'], page)
+        pages = self._pages.get_object()
+        callback_add(pages[b'/Kids'], page)
         pages[NameObject(b'/Count')] = NumberObject(pages[b'/Count'] + 1)
 
     ##
@@ -145,8 +143,8 @@ class PdfFileWriter(object):
     def insert_blank_page(self, width=None, height=None, index=0):
         if width is None or height is None and (self.get_pages_count() - 1) >= index:
             oldpage = self.get_page(index)
-            width = oldpage.mediaBox.get_width()
-            height = oldpage.mediaBox.get_height()
+            width = oldpage.media_box.get_width()
+            height = oldpage.media_box.get_height()
         page = PageObject.create_blank_page(self, width, height)
         self.insert_page(page, index)
         return page
@@ -216,15 +214,16 @@ class PdfFileWriter(object):
         # we sweep for indirect references.  This forces self-page-referencing
         # trees to reference the correct new object location, rather than
         # copying in a new copy of the page object.
-        for objIndex in range(len(self._objects)):
-            obj = self._objects[objIndex]
-            if isinstance(obj, PageObject) and obj.indirectRef is not None:
-                data = obj.indirectRef
+        for obj_index in range(len(self._objects)):
+            obj = self._objects[obj_index]
+            if isinstance(obj, PageObject) and obj.indirect_ref is not None:
+                utils.debug(type(obj), obj.indirect_ref)
+                data = obj.indirect_ref
                 if data.pdf not in external_reference_map:
                     external_reference_map[data.pdf] = {}
                 if data.generation not in external_reference_map[data.pdf]:
                     external_reference_map[data.pdf][data.generation] = {}
-                external_reference_map[data.pdf][data.generation][data.idnum] = IndirectObject(objIndex + 1, 0, self)
+                external_reference_map[data.pdf][data.generation][data.idnum] = IndirectObject(obj_index + 1, 0, self)
 
         self.stack = []
         self._sweep_indirect_references(external_reference_map, self._root)
@@ -339,7 +338,7 @@ class PdfFileReader(object):
         self.xref = {}
         self._xref_obj_stream = {}
         self.trailer = None
-        self._namedDests = None
+        self._named_dests = None
         self._flattened_pages = None
         self._resolved_objects = {}
         self.read(stream)
@@ -364,13 +363,6 @@ class PdfFileReader(object):
         return retval
 
     ##
-    # Read-only property that accesses the {@link
-    # #PdfFileReader.getDocumentInfo getDocumentInfo} function.
-    # <p>
-    # Stability: Added in v1.7, will exist for all future v1.x releases.
-    documentInfo = property(lambda self: self.get_document_info(), None, None)
-
-    ##
     # Retrieves XMP (Extensible Metadata Platform) data from the PDF document
     # root.
     # <p>
@@ -386,13 +378,6 @@ class PdfFileReader(object):
             self._override_encryption = False
 
     ##
-    # Read-only property that accesses the {@link #PdfFileReader.getXmpData
-    # getXmpData} function.
-    # <p>
-    # Stability: Added in v1.12, will exist for all future v1.x releases.
-    xmpMetadata = property(lambda self: self.get_xmp_metadata(), None, None)
-
-    ##
     # Calculates the number of pages in this PDF file.
     # <p>
     # Stability: Added in v1.0, will exist for all v1.x releases.
@@ -401,13 +386,6 @@ class PdfFileReader(object):
         if self._flattened_pages is None:
             self._flatten()
         return len(self._flattened_pages)
-
-    ##
-    # Read-only property that accesses the {@link #PdfFileReader.getNumPages
-    # getNumPages} function.
-    # <p>
-    # Stability: Added in v1.7, will exist for all future v1.x releases.
-    numPages = property(lambda self: self.get_pages_count(), None, None)
 
     ##
     # Retrieves a page by number from this PDF file.
@@ -420,14 +398,6 @@ class PdfFileReader(object):
         if self._flattened_pages is None:
             self._flatten()
         return self._flattened_pages[page_number]
-
-    ##
-    # Read-only property that accesses the 
-    # {@link #PdfFileReader.getNamedDestinations 
-    # getNamedDestinations} function.
-    # <p>
-    # Stability: Added in v1.10, will exist for all future v1.x releases.
-    namedDestinations = property(lambda self: self.get_named_destinations(), None, None)
 
     ##
     # Retrieves the named destinations present in the document.
@@ -470,13 +440,6 @@ class PdfFileReader(object):
         return retval
 
     ##
-    # Read-only property that accesses the {@link #PdfFileReader.getOutlines
-    # getOutlines} function.
-    # <p>
-    # Stability: Added in v1.10, will exist for all future v1.x releases.
-    outlines = property(lambda self: self.get_outlines(), None, None)
-
-    ##
     # Retrieves the document outline present in the document.
     # <p>
     # Stability: Added in v1.10, will exist for all future v1.x releases.
@@ -491,7 +454,7 @@ class PdfFileReader(object):
                 lines = catalog[b'/Outlines']
                 if b'/First' in lines:
                     node = lines[b'/First']
-            self._namedDests = self.get_named_destinations()
+            self._named_dests = self.get_named_destinations()
 
         if node is None:
             return outlines
@@ -540,21 +503,12 @@ class PdfFileReader(object):
             if isinstance(dest, ArrayObject):
                 outline = self._build_destination(title, dest)
             # FIXME elif dest in isinstance(dest, unicode) and self._namedDests:
-            elif dest in isinstance(dest, str) and self._namedDests:
-                outline = self._namedDests[dest]
+            elif dest in isinstance(dest, str) and self._named_dests:
+                outline = self._named_dests[dest]
                 outline[NameObject(b'/Title')] = title
             else:
                 raise PyPDF.utils.PdfReadError("Unexpected destination %r" % dest)
         return outline
-
-    ##
-    # Read-only property that emulates a list based upon the {@link
-    # #PdfFileReader.getNumPages getNumPages} and {@link #PdfFileReader.getPage
-    # getPage} functions.
-    # <p>
-    # Stability: Added in v1.7, and will exist for all future v1.x releases.
-    pages = property(lambda self: ConvertFunctionsToVirtualList(self.get_pages_count, self.get_page),
-                     None, None)
 
     def _flatten(self, pages=None, inherit=None, indirect_ref=None):
         inheritable_page_attributes = (
@@ -688,7 +642,7 @@ class PdfFileReader(object):
             stream.seek(startxref, io.SEEK_SET)
             x = stream.read(1)
             if x in b'x':
-                startxref = parse_standard_cross_reference_table(stream, self)
+                startxref = _parse_standard_cross_reference_table(stream, self)
                 if startxref is None:
                     break
             elif x.isdigit():
@@ -866,740 +820,9 @@ class PdfFileReader(object):
         real_u = encrypt[b'/U'].get_object().original_bytes
         return u == real_u, key
 
-    def get_is_encrypted(self):
+    @property
+    def _is_encrypted(self):
         return b'/Encrypt' in self.trailer
-
-    ##
-    # Read-only boolean property showing whether this PDF file is encrypted.
-    # Note that this property, if true, will remain true even after the {@link
-    # #PdfFileReader.decrypt decrypt} function is called.
-    _is_encrypted = property(lambda self: self.get_is_encrypted(), None, None)
-
-
-def get_rectangle(self, name, defaults):
-    retval = self.get(name)
-    if isinstance(retval, RectangleObject):
-        return retval
-    if retval is None:
-        for d in defaults:
-            retval = self.get(d)
-            if retval is not None:
-                break
-    if isinstance(retval, IndirectObject):
-        retval = self.pdf.get_object(retval)
-    retval = RectangleObject(retval)
-    set_rectangle(self, name, retval)
-    return retval
-
-
-def set_rectangle(self, name, value):
-    if not isinstance(name, NameObject):
-        name = NameObject(name)
-    self[name] = value
-
-
-def delete_rectangle(self, name):
-    del self[name]
-
-
-def create_rectangle_accessor(name, fallback):
-    return \
-        property(
-            lambda self: get_rectangle(self, name, fallback),
-            lambda self, value: set_rectangle(self, name, value),
-            lambda self: delete_rectangle(self, name)
-        )
-
-
-##
-# This class represents a single page within a PDF file.  Typically this object
-# will be created by accessing the {@link #PdfFileReader.getPage getPage}
-# function of the {@link #PdfFileReader PdfFileReader} class, but it is
-# also possible to create an empty page with the createBlankPage static
-# method.
-# @param PyPDF PDF file the page belongs to (optional, defaults to None).
-class PageObject(DictionaryObject):
-    def __init__(self, _pdf=None, indirect_ref=None):
-        DictionaryObject.__init__(self)
-        self.pdf = _pdf
-        # Stores the original indirect reference to this object in its source PDF
-        self.indirectRef = indirect_ref
-
-    ##
-    # Returns a new blank page.
-    # If width or height is None, try to get the page size from the
-    # last page of PyPDF. If PyPDF is None or contains no page, a
-    # PageSizeNotDefinedError is raised.
-    # @param PyPDF    PDF file the page belongs to
-    # @param width  The width of the new page expressed in default user
-    #               space units.
-    # @param height The height of the new page expressed in default user
-    #               space units.
-    def create_blank_page(_pdf=None, width=None, height=None):
-        page = PageObject(PyPDF)
-
-        # Creates a new page (cf PDF Reference  7.7.3.3)
-        page.__setitem__(NameObject(b'/Type'), NameObject(b'/Page'))
-        page.__setitem__(NameObject(b'/Parent'), NullObject())
-        page.__setitem__(NameObject(b'/Resources'), DictionaryObject())
-        if width is None or height is None:
-            if _pdf is not None and _pdf.get_pages_count() > 0:
-                lastpage = _pdf.get_page(_pdf.get_pages_count() - 1)
-                width = lastpage.mediaBox.get_width()
-                height = lastpage.mediaBox.get_height()
-            else:
-                raise utils.PageSizeNotDefinedError()
-        page.__setitem__(NameObject(b'/MediaBox'),
-                         RectangleObject([0, 0, width, height]))
-
-        return page
-
-    create_blank_page = staticmethod(create_blank_page)
-
-    ##
-    # Rotates a page clockwise by increments of 90 degrees.
-    # <p>
-    # Stability: Added in v1.1, will exist for all future v1.x releases.
-    # @param angle Angle to rotate the page.  Must be an increment of 90 deg.
-    def rotate_clockwise(self, angle):
-        assert angle % 90 == 0
-        self._rotate(angle)
-        return self
-
-    ##
-    # Rotates a page counter-clockwise by increments of 90 degrees.
-    # <p>
-    # Stability: Added in v1.1, will exist for all future v1.x releases.
-    # @param angle Angle to rotate the page.  Must be an increment of 90 deg.
-    def rotate_counter_clockwise(self, angle):
-        assert angle % 90 == 0
-        self._rotate(-angle)
-        return self
-
-    def _rotate(self, angle):
-        current_angle = self.get(b'/Rotate', 0)
-        self[NameObject(b'/Rotate')] = NumberObject(current_angle + angle)
-
-    def _merge_resources(res1, res2, resource):
-        new_res = DictionaryObject()
-        new_res.update(res1.get(resource, DictionaryObject()).get_object())
-        page2_res = res2.get(resource, DictionaryObject()).get_object()
-        rename_res = {}
-        for key in page2_res.keys():
-            if key in new_res and new_res[key] != page2_res[key]:
-                newname = NameObject(key + b'renamed')
-                rename_res[key] = newname
-                new_res[newname] = page2_res[key]
-            elif key not in new_res:
-                new_res[key] = page2_res.raw_get(key)
-        return new_res, rename_res
-
-    _merge_resources = staticmethod(_merge_resources)
-
-    def _content_stream_rename(stream, rename, _pdf):
-        if not rename:
-            return stream
-        stream = ContentStream(stream, _pdf)
-        for operands, operator in stream.operations:
-            for i in range(len(operands)):
-                op = operands[i]
-                if isinstance(op, NameObject):
-                    operands[i] = rename.get(op, op)
-        return stream
-
-    _content_stream_rename = staticmethod(_content_stream_rename)
-
-    def _push_pop_gs(contents, _pdf):
-        # adds a graphics state "push" and "pop" to the beginning and end
-        # of a content stream.  This isolates it from changes such as 
-        # transformation matricies.
-        stream = ContentStream(contents, _pdf)
-        stream.operations.insert(0, [[], b'q'])
-        stream.operations.append([[], b'Q'])
-        return stream
-
-    _push_pop_gs = staticmethod(_push_pop_gs)
-
-    def _add_transformation_matrix(contents, _pdf, ctm):
-        # adds transformation matrix at the beginning of the given
-        # contents stream.
-        a, b, c, d, e, f = ctm
-        contents = ContentStream(contents, _pdf)
-        contents.operations.insert(0, [[FloatObject(a), FloatObject(b),
-                                        FloatObject(c), FloatObject(d), FloatObject(e),
-                                        FloatObject(f)], " cm"])
-        return contents
-
-    _add_transformation_matrix = staticmethod(_add_transformation_matrix)
-
-    ##
-    # Returns the /Contents object, or None if it doesn't exist.
-    # /Contents is optionnal, as described in PDF Reference  7.7.3.3
-    def get_contents(self):
-        if b'/Contents' in self:
-            return self[b'/Contents'].get_object()
-        else:
-            return None
-
-    ##
-    # Merges the content streams of two pages into one.  Resource references
-    # (i.e. fonts) are maintained from both pages.  The mediabox/cropbox/etc
-    # of this page are not altered.  The parameter page's content stream will
-    # be added to the end of this page's content stream, meaning that it will
-    # be drawn after, or "on top" of this page.
-    # <p>
-    # Stability: Added in v1.4, will exist for all future 1.x releases.
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged
-    #              into this one.
-    def merge_page(self, page2):
-        self._merge_page(page2)
-
-    ##
-    # Actually merges the content streams of two pages into one. Resource
-    # references (i.e. fonts) are maintained from both pages. The
-    # mediabox/cropbox/etc of this page are not altered. The parameter page's
-    # content stream will be added to the end of this page's content stream,
-    # meaning that it will be drawn after, or "on top" of this page.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged
-    #              into this one.
-    # @param page2transformation A fuction which applies a transformation to
-    #                            the content stream of page2. Takes: page2
-    #                            contents stream. Must return: new contents
-    #                            stream. If omitted, the content stream will
-    #                            not be modified.
-    def _merge_page(self, page2, page2transformation=None):
-        # First we work on merging the resource dictionaries.  This allows us
-        # to find out what symbols in the content streams we might need to
-        # rename.
-
-        new_resources = DictionaryObject()
-        rename = {}
-        original_resources = self[b'/Resources'].get_object()
-        page2_resources = page2[b'/Resources'].get_object()
-
-        for res in b'/ExtGState', b'/Font', b'/XObject', b'/ColorSpace', b'/Pattern', b'/Shading', b'/Properties':
-            new, newrename = PageObject._merge_resources(original_resources, page2_resources, res)
-            if new:
-                new_resources[NameObject(res)] = new
-                rename.update(newrename)
-
-        # Combine /ProcSet sets.
-        new_resources[NameObject(b'/ProcSet')] = ArrayObject(
-            frozenset(original_resources.get(b'/ProcSet', ArrayObject()).get_object()).union(
-                frozenset(page2_resources.get(b'/ProcSet', ArrayObject()).get_object())
-            )
-        )
-
-        new_content_array = ArrayObject()
-
-        original_content = self.get_contents()
-        if original_content is not None:
-            new_content_array.append(PageObject._push_pop_gs(original_content, self.pdf))
-
-        page2_content = page2.get_contents()
-        if page2_content is not None:
-            if page2transformation is not None:
-                page2_content = page2transformation(page2_content)
-            page2_content = PageObject._content_stream_rename(
-                page2_content, rename, self.pdf)
-            page2_content = PageObject._push_pop_gs(page2_content, self.pdf)
-            new_content_array.append(page2_content)
-
-        self[NameObject(b'/Contents')] = ContentStream(new_content_array, self.pdf)
-        self[NameObject(b'/Resources')] = new_resources
-
-    ##
-    # This is similar to mergePage, but a transformation matrix is
-    # applied to the merged stream.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged.
-    # @param ctm   A 6 elements tuple containing the operands of the
-    #              transformation matrix
-    def merge_transformed_page(self, page2, ctm):
-        self._merge_page(page2, lambda page2_content: PageObject._add_transformation_matrix(
-            page2_content, page2.pdf, ctm
-        ))
-
-    ##
-    # This is similar to mergePage, but the stream to be merged is scaled
-    # by appling a transformation matrix.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged.
-    # @param factor The scaling factor
-    def merge_scaled_page(self, page2, factor):
-        # CTM to scale : [ sx 0 0 sy 0 0 ]
-        return self.merge_transformed_page(page2, [factor, 0,
-                                                   0, factor,
-                                                   0, 0])
-
-    ##
-    # This is similar to mergePage, but the stream to be merged is rotated
-    # by appling a transformation matrix.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged.
-    # @param rotation The angle of the rotation, in degrees
-    def merge_rotated_page(self, page2, rotation):
-        rotation = math.radians(rotation)
-        return self.merge_transformed_page(page2,
-                                           [math.cos(rotation), math.sin(rotation),
-                                            -math.sin(rotation), math.cos(rotation),
-                                            0, 0])
-
-    ##
-    # This is similar to mergePage, but the stream to be merged is translated
-    # by appling a transformation matrix.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged.
-    # @param tx    The translation on X axis
-    # @param tx    The translation on Y axis
-    def merge_translated_page(self, page2, tx, ty):
-        return self.merge_transformed_page(page2, [1, 0,
-                                                   0, 1,
-                                                   tx, ty])
-
-    ##
-    # This is similar to mergePage, but the stream to be merged is rotated
-    # and scaled by appling a transformation matrix.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged.
-    # @param rotation The angle of the rotation, in degrees
-    # @param factor The scaling factor
-    def merge_rotated_scaled_page(self, page2, rotation, scale):
-        ctm = _create_rotation_scaling_matrix(rotation, scale)
-
-        return self.merge_transformed_page(page2,
-                                           [ctm[0][0], ctm[0][1],
-                                            ctm[1][0], ctm[1][1],
-                                            ctm[2][0], ctm[2][1]])
-
-    ##
-    # This is similar to mergePage, but the stream to be merged is translated
-    # and scaled by appling a transformation matrix.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged.
-    # @param scale The scaling factor
-    # @param tx    The translation on X axis
-    # @param tx    The translation on Y axis
-    def merge_scaled_translated_page(self, page2, scale, tx, ty):
-        scaling = [[scale, 0, 0],
-                   [0, scale, 0],
-                   [0, 0, 1]]
-        return self._translate_and_merge(scaling, tx, ty, page2)
-
-    ##
-    # This is similar to mergePage, but the stream to be merged is translated,
-    # rotated and scaled by appling a transformation matrix.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged.
-    # @param tx    The translation on X axis
-    # @param ty    The translation on Y axis
-    # @param rotation The angle of the rotation, in degrees
-    # @param scale The scaling factor
-    def merge_rotated_scaled_translated_page(self, page2, rotation, scale, tx, ty):
-        ctm = _create_rotation_scaling_matrix(rotation, scale)
-        return self._translate_and_merge(ctm, tx, ty, page2)
-
-    def _translate_and_merge(self, ctm, tx, ty, page2):
-        translation = [[1, 0, 0],
-                       [0, 1, 0],
-                       [tx, ty, 1]]
-        ctm = utils.matrix_multiply(ctm, translation)
-
-        return self.merge_transformed_page(page2, [ctm[0][0], ctm[0][1],
-                                                   ctm[1][0], ctm[1][1],
-                                                   ctm[2][0], ctm[2][1]])
-
-    ##
-    # Applys a transformation matrix the page.
-    #
-    # @param ctm   A 6 elements tuple containing the operands of the
-    #              transformation matrix
-    def add_transformation(self, ctm):
-        original_content = self.get_contents()
-        if original_content is not None:
-            new_content = PageObject._add_transformation_matrix(
-                original_content, self.pdf, ctm)
-            new_content = PageObject._push_pop_gs(new_content, self.pdf)
-            self[NameObject(b'/Contents')] = new_content
-
-    ##
-    # Scales a page by the given factors by appling a transformation
-    # matrix to its content and updating the page size.
-    #
-    # @param sx The scaling factor on horizontal axis
-    # @param sy The scaling factor on vertical axis
-    def scale(self, sx, sy):
-        self.add_transformation([sx, 0,
-                                 0, sy,
-                                 0, 0])
-        self.mediaBox = RectangleObject([
-            float(self.mediaBox.get_lower_left_x()) * sx,
-            float(self.mediaBox.get_lower_left_y()) * sy,
-            float(self.mediaBox.get_upper_right_x()) * sx,
-            float(self.mediaBox.get_upper_right_y()) * sy])
-
-    ##
-    # Scales a page by the given factor by appling a transformation
-    # matrix to its content and updating the page size.
-    #
-    # @param factor The scaling factor
-    def scale_by(self, factor):
-        self.scale(factor, factor)
-
-    ##
-    # Scales a page to the specified dimentions by appling a
-    # transformation matrix to its content and updating the page size.
-    #
-    # @param width The new width
-    # @param height The new heigth
-    def scale_to(self, width, height):
-        sx = width / (self.mediaBox.get_upper_right_x() -
-                      self.mediaBox.get_lower_left_x())
-        sy = height / (self.mediaBox.get_upper_right_y() -
-                       self.mediaBox.get_lower_left_x())
-        self.scale(sx, sy)
-
-    ##
-    # Compresses the size of this page by joining all content streams and
-    # applying a FlateDecode filter.
-    # <p>
-    # Stability: Added in v1.6, will exist for all future v1.x releases.
-    # However, it is possible that this function will perform no action if
-    # content stream compression becomes "automatic" for some reason.
-    def compress_content_streams(self):
-        content = self.get_contents()
-        if content is not None:
-            if not isinstance(content, ContentStream):
-                content = ContentStream(content, self.pdf)
-            self[NameObject(b'/Contents')] = content.flate_encode()
-
-    ##
-    # Locate all text drawing commands, in the order they are provided in the
-    # content stream, and extract the text.  This works well for some PDF
-    # files, but poorly for others, depending on the generator used.  This will
-    # be refined in the future.  Do not rely on the order of text coming out of
-    # this function, as it will change if this function is made more
-    # sophisticated.
-    # <p>
-    # Stability: Added in v1.7, will exist for all future v1.x releases.  May
-    # be overhauled to provide more ordered text in the future.
-    # @return a unicode string object
-    def extract_text(self):
-        text = u""
-        content = self[b'/Contents'].get_object()
-        if not isinstance(content, ContentStream):
-            content = ContentStream(content, self.pdf)
-        # Note: we check all strings are TextStringObjects.  ByteStringObjects
-        # are strings where the byte->string encoding was unknown, so adding
-        # them to the text here would be gibberish.
-        for operands, operator in content.operations:
-            if operator == b'Tj':
-                _text = operands[0]
-                if isinstance(_text, TextStringObject):
-                    text += _text
-            elif operator == "T*":
-                text += "\n"
-            elif operator == "'":
-                text += "\n"
-                _text = operands[0]
-                if isinstance(_text, TextStringObject):
-                    text += operands[0]
-            elif operator == '"':
-                _text = operands[2]
-                if isinstance(_text, TextStringObject):
-                    text += "\n"
-                    text += _text
-            elif operator == b'TJ':
-                for i in operands[0]:
-                    if isinstance(i, TextStringObject):
-                        text += i
-        return text
-
-    ##
-    # A rectangle (RectangleObject), expressed in default user space units,
-    # defining the boundaries of the physical medium on which the page is
-    # intended to be displayed or printed.
-    # <p>
-    # Stability: Added in v1.4, will exist for all future v1.x releases.
-    mediaBox = create_rectangle_accessor(b'/MediaBox', ())
-
-    ##
-    # A rectangle (RectangleObject), expressed in default user space units,
-    # defining the visible region of default user space.  When the page is
-    # displayed or printed, its contents are to be clipped (cropped) to this
-    # rectangle and then imposed on the output medium in some
-    # implementation-defined manner.  Default value: same as MediaBox.
-    # <p>
-    # Stability: Added in v1.4, will exist for all future v1.x releases.
-    cropBox = create_rectangle_accessor(b'/CropBox', (b'/MediaBox',))
-
-    ##
-    # A rectangle (RectangleObject), expressed in default user space units,
-    # defining the region to which the contents of the page should be clipped
-    # when output in a production enviroment.
-    # <p>
-    # Stability: Added in v1.4, will exist for all future v1.x releases.
-    bleedBox = create_rectangle_accessor(b'/BleedBox', (b'/CropBox', b'/MediaBox'))
-
-    ##
-    # A rectangle (RectangleObject), expressed in default user space units,
-    # defining the intended dimensions of the finished page after trimming.
-    # <p>
-    # Stability: Added in v1.4, will exist for all future v1.x releases.
-    trimBox = create_rectangle_accessor(b'/TrimBox', (b'/CropBox', b'/MediaBox'))
-
-    ##
-    # A rectangle (RectangleObject), expressed in default user space units,
-    # defining the extent of the page's meaningful content as intended by the
-    # page's creator.
-    # <p>
-    # Stability: Added in v1.4, will exist for all future v1.x releases.
-    artBox = create_rectangle_accessor(b'/ArtBox', (b'/CropBox', b'/MediaBox'))
-
-
-class ContentStream(DecodedStreamObject):
-    def __init__(self, stream, _pdf, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.pdf = _pdf
-        self.operations = []
-        # stream may be a StreamObject or an ArrayObject containing
-        # multiple StreamObjects to be cat'd together.
-        stream = stream.get_object()
-        if isinstance(stream, ArrayObject):
-            data = b''
-            for s in stream:
-                data += s.get_object().get_data()
-            stream = BytesIO(data)
-        else:
-            stream = BytesIO(stream.get_data())
-        # assert stream is None
-        self.__parse_content_stream(stream)
-
-    def __parse_content_stream(self, stream):
-        stream.seek(0, io.SEEK_SET)
-        operands = []
-        while True:
-            peek = read_non_whitespace(stream)
-            if peek == b'':
-                break
-            stream.seek(-1, io.SEEK_CUR)
-            if peek.isalpha() or peek in b'"\'':
-                operator = b''
-                while True:
-                    tok = stream.read(1)
-                    if tok == b'':
-                        break
-                    elif tok.isspace() or tok in utils.DELIMITERS:
-                        stream.seek(-1, io.SEEK_CUR)
-                        break
-                    operator += tok
-                if operator == b'BI':
-                    # begin inline image - a completely different parsing
-                    # mechanism is required, of course... thanks buddy...
-                    assert operands == []
-                    ii = self._read_inline_image(stream)
-                    self.operations.append((ii, b'INLINE IMAGE'))
-                else:
-                    self.operations.append((operands, operator))
-                    operands = []
-            elif peek in b'%':
-                # If we encounter a comment in the content stream, we have to
-                # handle it here.  Typically, readObject will handle
-                # encountering a comment -- but readObject assumes that
-                # following the comment must be the object we're trying to
-                # read.  In this case, it could be an operator instead.
-                while peek not in ('\r', '\n'):
-                    peek = stream.read(1)
-            else:
-                operands.append(read_object(stream, None))
-
-    def _read_inline_image(self, stream):
-        # begin reading just after the "BI" - begin image
-        # first read the dictionary of settings.
-        settings = DictionaryObject()
-        while True:
-            tok = seek_token(stream)
-            if tok == b'I':
-                # "ID" - begin of image data
-                break
-            key = read_object(stream, self.pdf)
-            seek_token(stream)
-            value = read_object(stream, self.pdf)
-            settings[key] = value
-        # left at beginning of ID
-        tmp = stream.read(3)
-        assert tmp[:2] == b'ID'
-        data = ""
-        while True:
-            tok = stream.read(1)
-            if tok == b'E':
-                _next = stream.read(1)
-                if _next == b'I':
-                    break
-                else:
-                    stream.seek(-1, io.SEEK_CUR)
-                    data += tok
-            else:
-                data += tok
-        seek_token(stream)
-        return {b'settings': settings, b'data': data}
-
-    def _get_data(self):
-        newdata = BytesIO()
-        for operands, operator in self.operations:
-            if operator == b'INLINE IMAGE':
-                newdata.write(b'BI')
-                dicttext = BytesIO()
-                operands[b'settings'].write_to_stream(dicttext)
-                newdata.write(dicttext.getvalue()[2:-2])
-                newdata.write(b'ID ')
-                newdata.write(operands[b'data'])
-                newdata.write(b'EI')
-            else:
-                for op in operands:
-                    op.write_to_stream(newdata)
-                    newdata.write(b' ')
-                newdata.write(operator)
-            newdata.write(b'\n')
-        return newdata.getvalue()
-
-    def _set_data(self, value):
-        self.__parse_content_stream(BytesIO(value))
-
-    _data = property(_get_data, _set_data)
-
-
-##
-# A class representing the basic document metadata provided in a PDF File.
-# <p>
-# As of pyPdf v1.10, all text properties of the document metadata have two
-# properties, eg. author and author_raw.  The non-raw property will always
-# return a TextStringObject, making it ideal for a case where the metadata is
-# being displayed.  The raw property can sometimes return a ByteStringObject,
-# if pyPdf was unable to decode the string's text encoding; this requires
-# additional safety in the caller and therefore is not as commonly accessed.
-class DocumentInformation(DictionaryObject):
-    def __init__(self):
-        DictionaryObject.__init__(self)
-
-    def get_text(self, key):
-        retval = self.get(key, None)
-        if isinstance(retval, TextStringObject):
-            return retval
-        return None
-
-    ##
-    # Read-only property accessing the document's title.  Added in v1.6, will
-    # exist for all future v1.x releases.  Modified in v1.10 to always return a
-    # unicode string (TextStringObject).
-    # @return A unicode string, or None if the title is not provided.
-    title = property(lambda self: self.get_text(b'/Title'))
-    title_raw = property(lambda self: self.get(b'/Title'))
-
-    ##
-    # Read-only property accessing the document's author.  Added in v1.6, will
-    # exist for all future v1.x releases.  Modified in v1.10 to always return a
-    # unicode string (TextStringObject).
-    # @return A unicode string, or None if the author is not provided.
-    author = property(lambda self: self.get_text(b'/Author'))
-    author_raw = property(lambda self: self.get(b'/Author'))
-
-    ##
-    # Read-only property accessing the subject of the document.  Added in v1.6,
-    # will exist for all future v1.x releases.  Modified in v1.10 to always
-    # return a unicode string (TextStringObject).
-    # @return A unicode string, or None if the subject is not provided.
-    subject = property(lambda self: self.get_text(b'/Subject'))
-    subject_raw = property(lambda self: self.get(b'/Subject'))
-
-    ##
-    # Read-only property accessing the document's creator.  If the document was
-    # converted to PDF from another format, the name of the application (for
-    # example, OpenOffice) that created the original document from which it was
-    # converted.  Added in v1.6, will exist for all future v1.x releases.
-    # Modified in v1.10 to always return a unicode string (TextStringObject).
-    # @return A unicode string, or None if the creator is not provided.
-    creator = property(lambda self: self.get_text(b'/Creator'))
-    creator_raw = property(lambda self: self.get(b'/Creator'))
-
-    ##
-    # Read-only property accessing the document's producer.  If the document
-    # was converted to PDF from another format, the name of the application
-    # (for example, OSX Quartz) that converted it to PDF.  Added in v1.6, will
-    # exist for all future v1.x releases.  Modified in v1.10 to always return a
-    # unicode string (TextStringObject).
-    # @return A unicode string, or None if the producer is not provided.
-    producer = property(lambda self: self.get_text(b'/Producer'))
-    producer_raw = property(lambda self: self.get(b'/Producer'))
-
-
-##
-# A class representing a destination within a PDF file.
-# See section 8.2.1 of the PDF 1.6 reference.
-# Stability: Added in v1.10, will exist for all v1.x releases.
-class Destination(DictionaryObject):
-    def __init__(self, title, page, typ, *args):
-        DictionaryObject.__init__(self)
-        self[NameObject(b'/Title')] = title
-        self[NameObject(b'/Page')] = page
-        self[NameObject(b'/Type')] = typ
-
-        # from table 8.2 of the PDF 1.6 reference.
-        if typ == b'/XYZ':
-            (self[NameObject(b'/Left')], self[NameObject(b'/Top')],
-             self[NameObject(b'/Zoom')]) = args
-        elif typ == b'/FitR':
-            (self[NameObject(b'/Left')], self[NameObject(b'/Bottom')],
-             self[NameObject(b'/Right')], self[NameObject(b'/Top')]) = args
-        elif typ in [b'/FitH', b'FitBH']:
-            self[NameObject(b'/Top')], = args
-        elif typ in [b'/FitV', b'FitBV']:
-            self[NameObject(b'/Left')], = args
-        elif typ in [b'/Fit', b'FitB']:
-            pass
-        else:
-            raise utils.PdfReadError("Unknown Destination Type: %r" % typ)
-
-    ##
-    # Read-only property accessing the destination title.
-    # @return A string.
-    title = property(lambda self: self.get(b'/Title'))
-
-    ##
-    # Read-only property accessing the destination page.
-    # @return An integer.
-    page = property(lambda self: self.get(b'/Page'))
-
-    ##
-    # Read-only property accessing the destination type.
-    # @return A string.
-    typ = property(lambda self: self.get(b'/Type'))
-
-    ##
-    # Read-only property accessing the zoom factor.
-    # @return A number, or None if not available.
-    zoom = property(lambda self: self.get(b'/Zoom', None))
-
-    ##
-    # Read-only property accessing the left horizontal coordinate.
-    # @return A number, or None if not available.
-    left = property(lambda self: self.get(b'/Left', None))
-
-    ##
-    # Read-only property accessing the right horizontal coordinate.
-    # @return A number, or None if not available.
-    right = property(lambda self: self.get(b'/Right', None))
-
-    ##
-    # Read-only property accessing the top vertical coordinate.
-    # @return A number, or None if not available.
-    top = property(lambda self: self.get(b'/Top', None))
-
-    ##
-    # Read-only property accessing the bottom vertical coordinate.
-    # @return A number, or None if not available.
-    bottom = property(lambda self: self.get(b'/Bottom', None))
 
 
 def convert_to_int(d, size):
@@ -1773,19 +996,7 @@ def _encrypt(encrypt_key, pack1, pack2):
     return key
 
 
-def _create_rotation_scaling_matrix(rotation, scale):
-    rotation = math.radians(rotation)
-    rotating = [[math.cos(rotation), math.sin(rotation), 0],
-                [-math.sin(rotation), math.cos(rotation), 0],
-                [0, 0, 1]]
-    scaling = [[scale, 0, 0],
-               [0, scale, 0],
-               [0, 0, 1]]
-    ctm = utils.matrix_multiply(rotating, scaling)
-    return ctm
-
-
-def parse_standard_cross_reference_table(stream, pdf_reader):
+def _parse_standard_cross_reference_table(stream, pdf_reader):
     # standard cross-reference table
     ref = stream.read(4)
     if not ref[:3] == b'ref':
