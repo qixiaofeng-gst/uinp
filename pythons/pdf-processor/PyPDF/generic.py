@@ -371,7 +371,7 @@ class DictionaryObject(dict, PdfObject):
             self[NameObject(b'/Metadata')] = metadata
         return metadata
 
-    def write_to_stream(self, stream, encryption_key):
+    def write_to_stream(self, stream, encryption_key=None):
         stream.write(b'<<\n')
         for key, value in self.items():
             key.write_to_stream(stream)
@@ -456,13 +456,13 @@ class StreamObject(DictionaryObject):
         self._data = None
         self.decodedSelf = None
 
-    def write_to_stream(self, stream, encryption_key):
+    def write_to_stream(self, stream, encryption_key=None):
         self[NameObject(b'/Length')] = NumberObject(len(self._data))
         DictionaryObject.write_to_stream(self, stream, encryption_key)
         del self[b'/Length']
         stream.write(b'\nstream\n')
         data = self._data
-        if encryption_key:
+        if encryption_key is not None:
             data = rc4_encrypt(encryption_key, data)
         stream.write(data)
         stream.write(b'\nendstream')
@@ -470,9 +470,9 @@ class StreamObject(DictionaryObject):
     @staticmethod
     def initialize_from_dictionary(data):
         if b'/Filter' in data:
-            retval = EncodedStreamObject()
+            retval = _EncodedStreamObject()
         else:
-            retval = DecodedStreamObject()
+            retval = _DecodedStreamObject()
         retval._data = data[_STREAM_KEY]
         del data[_STREAM_KEY]
         del data[b'/Length']
@@ -491,7 +491,7 @@ class StreamObject(DictionaryObject):
                 f = newf
         else:
             f = NameObject(b'/FlateDecode')
-        retval = EncodedStreamObject()
+        retval = _EncodedStreamObject()
         retval[NameObject(b'/Filter')] = f
         retval._data = filters.FlateDecode.encode(self._data)
         return retval
@@ -503,11 +503,131 @@ class StreamObject(DictionaryObject):
         self._data = data
 
 
-class DecodedStreamObject(StreamObject):
+class _DecodedStreamObject(StreamObject):
     pass
 
 
-class EncodedStreamObject(StreamObject):
+class _ContentStream(_DecodedStreamObject):
+    def __init__(self, stream, _pdf, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.pdf = _pdf
+        self.operations = []
+        # stream may be a StreamObject or an ArrayObject containing
+        # multiple StreamObjects to be cat'd together.
+        stream = stream.get_object()
+        if isinstance(stream, ArrayObject):
+            data = b''
+            for s in stream:
+                utils.debug(s)
+                data += s.get_object().get_data()
+            stream = BytesIO(data)
+        else:
+            stream = BytesIO(stream.get_data())
+        # assert stream is None
+        self.__parse_content_stream(stream)
+        utils.debug(_pdf)
+
+    def __parse_content_stream(self, stream):
+        stream.seek(0, io.SEEK_SET)
+        operands = []
+        while True:
+            peek = read_non_whitespace(stream)
+            if peek == b'':
+                break
+            stream.seek(-1, io.SEEK_CUR)
+            if peek.isalpha() or peek in b'"\'':
+                operator = b''
+                while True:
+                    tok = stream.read(1)
+                    if tok == b'':
+                        break
+                    elif tok.isspace() or tok in utils.DELIMITERS:
+                        stream.seek(-1, io.SEEK_CUR)
+                        break
+                    operator += tok
+                if operator == b'BI':
+                    # begin inline image - a completely different parsing
+                    # mechanism is required, of course... thanks buddy...
+                    assert operands == []
+                    ii = self.__read_inline_image(stream)
+                    self.operations.append((ii, b'INLINE IMAGE'))
+                else:
+                    self.operations.append((operands, operator))
+                    operands = []
+            elif peek in b'%':
+                # If we encounter a comment in the content stream, we have to
+                # handle it here.  Typically, readObject will handle
+                # encountering a comment -- but readObject assumes that
+                # following the comment must be the object we're trying to
+                # read.  In this case, it could be an operator instead.
+                while peek not in ('\r', '\n'):
+                    peek = stream.read(1)
+            else:
+                operands.append(read_object(stream, None))
+
+    def __read_inline_image(self, stream):
+        # begin reading just after the "BI" - begin image
+        # first read the dictionary of settings.
+        settings = DictionaryObject()
+        while True:
+            tok = seek_token(stream)
+            if tok == b'I':
+                # "ID" - begin of image data
+                break
+            key = read_object(stream, self.pdf)
+            seek_token(stream)
+            value = read_object(stream, self.pdf)
+            settings[key] = value
+        # left at beginning of ID
+        tmp = stream.read(3)
+        assert tmp[:2] == b'ID'
+        data = self._read_image_data(stream)
+        utils.debug(len(data))
+        seek_token(stream)
+        return {b'settings': settings, b'data': data}
+
+    @staticmethod
+    def _read_image_data(stream):
+        data = b''
+        while True:
+            tok = stream.read(1)
+            if tok == b'E':
+                _next = stream.read(1)
+                if _next == b'I':
+                    break
+                else:
+                    stream.seek(-1, io.SEEK_CUR)
+                    data += tok
+            else:
+                data += tok
+        return data
+
+    @property
+    def _data(self):
+        newdata = BytesIO()
+        for operands, operator in self.operations:
+            if operator == b'INLINE IMAGE':
+                newdata.write(b'BI')
+                dicttext = BytesIO()
+                operands[b'settings'].write_to_stream(dicttext)
+                newdata.write(dicttext.getvalue()[2:-2])
+                newdata.write(b'ID ')
+                newdata.write(operands[b'data'])
+                newdata.write(b'EI')
+            else:
+                for op in operands:
+                    op.write_to_stream(newdata)
+                    newdata.write(b' ')
+                newdata.write(operator)
+            newdata.write(b'\n')
+        return newdata.getvalue()
+
+    @_data.setter
+    def _data(self, value):
+        self.__parse_content_stream(BytesIO(value))
+
+
+class _EncodedStreamObject(StreamObject):
     def __init__(self):
         super().__init__()
         self.decodedSelf = None
@@ -523,8 +643,8 @@ class EncodedStreamObject(StreamObject):
         else:
             # assert self.decodedSelf is not None
             # create decoded object
-            decoded = DecodedStreamObject()
-            decoded._data = filters.decode_stream_data(self)
+            decoded = _DecodedStreamObject()
+            decoded._data = _decode_stream_data(self)
             for key, value in self.items():
                 if key not in (b'/Length', b'/Filter', b'/DecodeParms'):
                     decoded[key] = value
@@ -755,7 +875,7 @@ class PageObject(DictionaryObject):
     def _content_stream_rename(stream, rename, _pdf):
         if not rename:
             return stream
-        stream = ContentStream(stream, _pdf)
+        stream = _ContentStream(stream, _pdf)
         for operands, operator in stream.operations:
             for i in range(len(operands)):
                 op = operands[i]
@@ -765,66 +885,49 @@ class PageObject(DictionaryObject):
 
     @staticmethod
     def _push_pop_gs(contents, _pdf):
-        # adds a graphics state "push" and "pop" to the beginning and end
-        # of a content stream.  This isolates it from changes such as
-        # transformation matricies.
-        stream = ContentStream(contents, _pdf)
+        """adds a graphics state "push" and "pop" to the beginning and end
+        of a content stream.  This isolates it from changes such as
+        transformation matricies."""
+        stream = _ContentStream(contents, _pdf)
         stream.operations.insert(0, [[], b'q'])
         stream.operations.append([[], b'Q'])
         return stream
 
     @staticmethod
     def _add_transformation_matrix(contents, _pdf, ctm):
-        # adds transformation matrix at the beginning of the given
-        # contents stream.
+        """adds transformation matrix at the beginning of the given contents stream."""
         a, b, c, d, e, f = ctm
-        contents = ContentStream(contents, _pdf)
+        contents = _ContentStream(contents, _pdf)
         contents.operations.insert(0, [[FloatObject(a), FloatObject(b),
                                         FloatObject(c), FloatObject(d), FloatObject(e),
                                         FloatObject(f)], " cm"])
         return contents
 
-    ##
-    # Returns the /Contents object, or None if it doesn't exist.
-    # /Contents is optionnal, as described in PDF Reference  7.7.3.3
     def get_contents(self):
+        """Returns the /Contents object, or None if it doesn't exist.
+        /Contents is optionnal, as described in PDF Reference  7.7.3.3"""
         if b'/Contents' in self:
             return self[b'/Contents'].get_object()
         else:
             return None
 
-    ##
-    # Merges the content streams of two pages into one.  Resource references
-    # (i.e. fonts) are maintained from both pages.  The mediabox/cropbox/etc
-    # of this page are not altered.  The parameter page's content stream will
-    # be added to the end of this page's content stream, meaning that it will
-    # be drawn after, or "on top" of this page.
-    # <p>
-    # Stability: Added in v1.4, will exist for all future 1.x releases.
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged
-    #              into this one.
-    def merge_page(self, page2):
-        self._merge_page(page2)
+    def merge_page(self, page2, page2transformation=None):
+        """Merges the content streams of two pages into one. Resource
+        references (i.e. fonts) are maintained from both pages. The
+        mediabox/cropbox/etc of this page are not altered. The parameter page's
+        content stream will be added to the end of this page's content stream,
+        meaning that it will be drawn after, or "on top" of this page.
 
-    ##
-    # Actually merges the content streams of two pages into one. Resource
-    # references (i.e. fonts) are maintained from both pages. The
-    # mediabox/cropbox/etc of this page are not altered. The parameter page's
-    # content stream will be added to the end of this page's content stream,
-    # meaning that it will be drawn after, or "on top" of this page.
-    #
-    # @param page2 An instance of {@link #PageObject PageObject} to be merged
-    #              into this one.
-    # @param page2transformation A fuction which applies a transformation to
-    #                            the content stream of page2. Takes: page2
-    #                            contents stream. Must return: new contents
-    #                            stream. If omitted, the content stream will
-    #                            not be modified.
-    def _merge_page(self, page2, page2transformation=None):
+        page2 - An instance of {@link #PageObject PageObject} to be merged
+                into this one.
+        page2transformation - A fuction which applies a transformation to
+                              the content stream of page2. Takes: page2
+                              contents stream. Must return: new contents
+                              stream. If omitted, the content stream will
+                              not be modified."""
         # First we work on merging the resource dictionaries.  This allows us
         # to find out what symbols in the content streams we might need to
         # rename.
-
         new_resources = DictionaryObject()
         rename = {}
         original_resources = self[b'/Resources'].get_object()
@@ -858,7 +961,8 @@ class PageObject(DictionaryObject):
             page2_content = PageObject._push_pop_gs(page2_content, self.pdf)
             new_content_array.append(page2_content)
 
-        self[NameObject(b'/Contents')] = ContentStream(new_content_array, self.pdf)
+        utils.debug('-' * 16)
+        self[NameObject(b'/Contents')] = _ContentStream(new_content_array, self.pdf)
         self[NameObject(b'/Resources')] = new_resources
 
     ##
@@ -869,7 +973,7 @@ class PageObject(DictionaryObject):
     # @param ctm   A 6 elements tuple containing the operands of the
     #              transformation matrix
     def merge_transformed_page(self, page2, ctm):
-        self._merge_page(page2, lambda page2_content: PageObject._add_transformation_matrix(
+        self.merge_page(page2, lambda page2_content: PageObject._add_transformation_matrix(
             page2_content, page2.pdf, ctm
         ))
 
@@ -1022,8 +1126,8 @@ class PageObject(DictionaryObject):
     def compress_content_streams(self):
         content = self.get_contents()
         if content is not None:
-            if not isinstance(content, ContentStream):
-                content = ContentStream(content, self.pdf)
+            if not isinstance(content, _ContentStream):
+                content = _ContentStream(content, self.pdf)
             self[NameObject(b'/Contents')] = content.flate_encode()
 
     ##
@@ -1040,8 +1144,8 @@ class PageObject(DictionaryObject):
     def extract_text(self):
         text = u""
         content = self[b'/Contents'].get_object()
-        if not isinstance(content, ContentStream):
-            content = ContentStream(content, self.pdf)
+        if not isinstance(content, _ContentStream):
+            content = _ContentStream(content, self.pdf)
         # Note: we check all strings are TextStringObjects.  ByteStringObjects
         # are strings where the byte->string encoding was unknown, so adding
         # them to the text here would be gibberish.
@@ -1110,116 +1214,39 @@ class PageObject(DictionaryObject):
     art_box = _create_rectangle_accessor(b'/ArtBox', (b'/CropBox', b'/MediaBox'))
 
 
-class ContentStream(DecodedStreamObject):
-    def __init__(self, stream, _pdf, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.pdf = _pdf
-        self.operations = []
-        # stream may be a StreamObject or an ArrayObject containing
-        # multiple StreamObjects to be cat'd together.
-        stream = stream.get_object()
-        if isinstance(stream, ArrayObject):
-            data = b''
-            for s in stream:
-                data += s.get_object().get_data()
-            stream = BytesIO(data)
+def create_string_object(string):
+    if isinstance(string, bytes):
+        if string.startswith(codecs.BOM_UTF16_BE):
+            retval = TextStringObject(string.decode(utils.ENCODING_UTF16))
+            retval.autodetect_utf16 = True
+            return retval
         else:
-            stream = BytesIO(stream.get_data())
-        # assert stream is None
-        self.__parse_content_stream(stream)
+            # This is probably a big performance hit here, but we need to
+            # convert string objects into the text/unicode-aware version if
+            # possible... and the only way to check if that's possible is
+            # to try.  Some strings are strings, some are just byte arrays.
+            try:
+                retval = TextStringObject(utils.decode_pdf_doc_encoding(string))
+                retval.autodetect_pdfdocencoding = True
+                return retval
+            except UnicodeDecodeError:
+                return ByteStringObject(string)
+    elif isinstance(string, str):
+        return TextStringObject(string)
+    else:
+        raise TypeError("createStringObject should have str or unicode arg")
 
-    def __parse_content_stream(self, stream):
-        stream.seek(0, io.SEEK_SET)
-        operands = []
-        while True:
-            peek = read_non_whitespace(stream)
-            if peek == b'':
-                break
-            stream.seek(-1, io.SEEK_CUR)
-            if peek.isalpha() or peek in b'"\'':
-                operator = b''
-                while True:
-                    tok = stream.read(1)
-                    if tok == b'':
-                        break
-                    elif tok.isspace() or tok in utils.DELIMITERS:
-                        stream.seek(-1, io.SEEK_CUR)
-                        break
-                    operator += tok
-                if operator == b'BI':
-                    # begin inline image - a completely different parsing
-                    # mechanism is required, of course... thanks buddy...
-                    assert operands == []
-                    ii = self._read_inline_image(stream)
-                    self.operations.append((ii, b'INLINE IMAGE'))
-                else:
-                    self.operations.append((operands, operator))
-                    operands = []
-            elif peek in b'%':
-                # If we encounter a comment in the content stream, we have to
-                # handle it here.  Typically, readObject will handle
-                # encountering a comment -- but readObject assumes that
-                # following the comment must be the object we're trying to
-                # read.  In this case, it could be an operator instead.
-                while peek not in ('\r', '\n'):
-                    peek = stream.read(1)
-            else:
-                operands.append(read_object(stream, None))
 
-    def _read_inline_image(self, stream):
-        # begin reading just after the "BI" - begin image
-        # first read the dictionary of settings.
-        settings = DictionaryObject()
-        while True:
-            tok = seek_token(stream)
-            if tok == b'I':
-                # "ID" - begin of image data
-                break
-            key = read_object(stream, self.pdf)
-            seek_token(stream)
-            value = read_object(stream, self.pdf)
-            settings[key] = value
-        # left at beginning of ID
-        tmp = stream.read(3)
-        assert tmp[:2] == b'ID'
-        data = ""
-        while True:
-            tok = stream.read(1)
-            if tok == b'E':
-                _next = stream.read(1)
-                if _next == b'I':
-                    break
-                else:
-                    stream.seek(-1, io.SEEK_CUR)
-                    data += tok
-            else:
-                data += tok
-        seek_token(stream)
-        return {b'settings': settings, b'data': data}
+def read_hex_string_from_stream(stream):
+    return create_string_object(utils.read_hex_bytes_from(stream))
 
-    @property
-    def _data(self):
-        newdata = BytesIO()
-        for operands, operator in self.operations:
-            if operator == b'INLINE IMAGE':
-                newdata.write(b'BI')
-                dicttext = BytesIO()
-                operands[b'settings'].write_to_stream(dicttext)
-                newdata.write(dicttext.getvalue()[2:-2])
-                newdata.write(b'ID ')
-                newdata.write(operands[b'data'])
-                newdata.write(b'EI')
-            else:
-                for op in operands:
-                    op.write_to_stream(newdata)
-                    newdata.write(b' ')
-                newdata.write(operator)
-            newdata.write(b'\n')
-        return newdata.getvalue()
 
-    @_data.setter
-    def _data(self, value):
-        self.__parse_content_stream(BytesIO(value))
+def read_string_from_stream(stream):
+    return create_string_object(utils.read_bytes_from(stream))
+
+
+def is_plain_object(obj):
+    return isinstance(obj, _PLAIN_OBJECTS)
 
 
 def _get_rectangle(this, name, defaults):
@@ -1260,42 +1287,28 @@ def _create_rotation_scaling_matrix(rotation, scale):
     return ctm
 
 
-##
-# Given a string (either a "str" or "unicode"), create a ByteStringObject or a
-# TextStringObject to represent the string.
-def create_string_object(string: bytes):
-    if isinstance(string, bytes):
-        if string.startswith(codecs.BOM_UTF16_BE):
-            retval = TextStringObject(string.decode(utils.ENCODING_UTF16))
-            retval.autodetect_utf16 = True
-            return retval
+def _decode_stream_data(stream):
+    filters_in_steam = stream.get(b'/Filter', ())
+    if len(filters_in_steam) and not isinstance(filters_in_steam[0], NameObject):
+        # we have a single filter instance
+        filters_in_steam = (filters_in_steam,)
+    data = stream.bytes_data
+    for filterType in filters_in_steam:
+        if filterType == b'/FlateDecode':
+            data = filters.FlateDecode.decode(data, stream.get(b'/DecodeParms'))
+        elif filterType == b'/ASCIIHexDecode':
+            data = filters.ASCIIHexDecode.decode(data)
+        elif filterType == b'/ASCII85Decode':
+            data = filters.ASCII85Decode.decode(data)
+        elif filterType == b'/Crypt':
+            decode_params = stream.get(b'/DecodeParams', {})
+            if b'/Name' not in decode_params and b'/Type' not in decode_params:
+                pass
+            else:
+                raise NotImplementedError("/Crypt filter with /Name or /Type not supported yet")
         else:
-            # This is probably a big performance hit here, but we need to
-            # convert string objects into the text/unicode-aware version if
-            # possible... and the only way to check if that's possible is
-            # to try.  Some strings are strings, some are just byte arrays.
-            try:
-                retval = TextStringObject(utils.decode_pdf_doc_encoding(string))
-                retval.autodetect_pdfdocencoding = True
-                return retval
-            except UnicodeDecodeError:
-                return ByteStringObject(string)
-    elif isinstance(string, str):
-        return TextStringObject(string)
-    else:
-        raise TypeError("createStringObject should have str or unicode arg")
-
-
-def read_hex_string_from_stream(stream):
-    return create_string_object(utils.read_hex_bytes_from(stream))
-
-
-def read_string_from_stream(stream):
-    return create_string_object(utils.read_bytes_from(stream))
-
-
-def is_plain_object(obj):
-    return isinstance(obj, _PLAIN_OBJECTS)
+            raise NotImplementedError("unsupported filter %s" % filterType)
+    return data
 
 
 _PLAIN_OBJECTS = (IndirectObject, NumberObject, NameObject, FloatObject, BooleanObject)

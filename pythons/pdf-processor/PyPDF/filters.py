@@ -2,9 +2,6 @@
 """
 Implementation of stream filters for PDF.
 """
-__author__ = "Mathieu Fenniak"
-__author_email__ = "biziqe@mathieu.fenniak.net"
-
 from io import StringIO
 from PyPDF.utils import PdfReadError
 from zlib import decompress, compress
@@ -61,7 +58,7 @@ class ASCIIHexDecode(object):
         char = b''
         x = 0
         while True:
-            c = data[x:x+1]
+            c = data[x:x + 1]
             if c in b'>':
                 break
             elif c.isspace():
@@ -86,8 +83,8 @@ class ASCII85Decode(object):
         # remove all whitespace from data
         data = bytes(y for y in data if not (y in b' \n\r\t'))
         while not hit_eod:
-            c = data[x:x+1]
-            if len(retval) == 0 and c in b'<' and data[x+1:x+2] in b'~':
+            c = data[x:x + 1]
+            if len(retval) == 0 and c in b'<' and data[x + 1:x + 2] in b'~':
                 x += 2
                 continue
             elif c.isspace():
@@ -97,7 +94,7 @@ class ASCII85Decode(object):
                 assert len(group) == 0
                 retval += '\x00\x00\x00\x00'
                 continue
-            elif c in b'~' and data[x+1:x+2] in b'>':
+            elif c in b'~' and data[x + 1:x + 2] in b'>':
                 if len(group) > 0:
                     # cannot have a final group of just 1 char
                     assert len(group) > 1
@@ -127,31 +124,6 @@ class ASCII85Decode(object):
                 group = []
             x += 1
         return retval
-
-
-def decode_stream_data(stream):
-    from PyPDF.generic import NameObject
-    filters = stream.get(b'/Filter', ())
-    if len(filters) and not isinstance(filters[0], NameObject):
-        # we have a single filter instance
-        filters = (filters,)
-    data = stream.bytes_data
-    for filterType in filters:
-        if filterType == b'/FlateDecode':
-            data = FlateDecode.decode(data, stream.get(b'/DecodeParms'))
-        elif filterType == b'/ASCIIHexDecode':
-            data = ASCIIHexDecode.decode(data)
-        elif filterType == b'/ASCII85Decode':
-            data = ASCII85Decode.decode(data)
-        elif filterType == b'/Crypt':
-            decode_params = stream.get(b'/DecodeParams', {})
-            if b'/Name' not in decode_params and b'/Type' not in decode_params:
-                pass
-            else:
-                raise NotImplementedError("/Crypt filter with /Name or /Type not supported yet")
-        else:
-            raise NotImplementedError("unsupported filter %s" % filterType)
-    return data
 
 
 if __name__ == "__main__":

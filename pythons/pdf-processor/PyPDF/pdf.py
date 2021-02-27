@@ -25,12 +25,10 @@ from PyPDF.utils import (
 # class (typically {@link #PdfFileReader PdfFileReader}).
 class PdfFileWriter(object):
     def __init__(self):
-        self._ID = None
+        self._id = None
         self._encrypt = None
         self._encrypt_key = None
-        self.stack = []
-
-        self._header = b'%PDF-1.3'
+        self._stack = []
         self._objects = []  # array of indirect objects
 
         # The root of our page tree node.
@@ -57,29 +55,10 @@ class PdfFileWriter(object):
         })
         self._root = self._add_object(root)
 
-    def _add_object(self, obj):
-        self._objects.append(obj)
-        return IndirectObject(len(self._objects), 0, self)
-
     def get_object(self, ido):
         if not ido.pdf == self:
             raise ValueError("PyPDF must be self")
         return self._objects[ido.idnum - 1]
-
-    ##
-    # Common method for inserting or adding a page to this PDF file.
-    #
-    # @param page The page to add to the document.  This argument should be
-    #             an instance of {@link #PageObject PageObject}.
-    # @param action The function which will insert the page in the dictionnary.
-    #               Takes: page list, page to add.
-    def _add_page(self, page, callback_add):
-        assert page[b'/Type'] == b'/Page'
-        page[NameObject(b'/Parent')] = self._pages
-        page = self._add_object(page)
-        pages = self._pages.get_object()
-        callback_add(pages[b'/Kids'], page)
-        pages[NameObject(b'/Count')] = NumberObject(pages[b'/Count'] + 1)
 
     def add_page(self, page):
         self._add_page(page, list.append)
@@ -93,7 +72,7 @@ class PdfFileWriter(object):
         return pages[b'/Kids'][page_number].get_object()
 
     def get_pages_count(self):
-        pages = self.get_object(self._pages)
+        pages = self._pages.get_object()
         return int(pages[NameObject(b'/Count')])
 
     def add_blank_page(self, width=None, height=None):
@@ -138,7 +117,7 @@ class PdfFileWriter(object):
         o = ByteStringObject(_alg33(owner_pwd, user_pwd, rev, keylen))
         id_1 = md5(bytes(repr(time.time()), utils.ENCODING_UTF8)).digest()
         id_2 = md5(bytes(repr(random.random()), utils.ENCODING_UTF8)).digest()
-        self._ID = ArrayObject((ByteStringObject(id_1), ByteStringObject(id_2)))
+        self._id = ArrayObject((ByteStringObject(id_1), ByteStringObject(id_2)))
         if rev == 2:
             u, key = _alg34(user_pwd, o, p, id_1)
         else:
@@ -156,41 +135,36 @@ class PdfFileWriter(object):
         self._encrypt = self._add_object(encrypt)
         self._encrypt_key = key
 
-    ##
-    # Writes the collection of pages added to this object out as a PDF file.
-    # <p>
-    # Stability: Added in v1.0, will exist for all v1.x releases.
-    # @param stream An object to write the file to.  The object must support
-    # the write method, and the tell method, similar to a file object.
     def write(self, stream):
-        external_reference_map = {}
+        """Writes the collection of pages added to this object out as a PDF file.
 
-        # PDF objects sometimes have circular references to their /Page objects
-        # inside their object tree (for example, annotations).  Those will be
-        # indirect references to objects that we've recreated in this PDF.  To
-        # address this problem, PageObject's store their original object
-        # reference number, and we add it to the external reference map before
-        # we sweep for indirect references.  This forces self-page-referencing
-        # trees to reference the correct new object location, rather than
-        # copying in a new copy of the page object.
-        for obj_index in range(len(self._objects)):
-            obj = self._objects[obj_index]
-            if isinstance(obj, PageObject) and obj.indirect_ref is not None:
-                utils.debug(type(obj), obj.indirect_ref)
-                data = obj.indirect_ref
-                if data.pdf not in external_reference_map:
-                    external_reference_map[data.pdf] = {}
-                if data.generation not in external_reference_map[data.pdf]:
-                    external_reference_map[data.pdf][data.generation] = {}
-                external_reference_map[data.pdf][data.generation][data.idnum] = IndirectObject(obj_index + 1, 0, self)
+        Stability: Added in v1.0, will exist for all v1.x releases.
 
-        self.stack = []
+        stream - An object to write the file to.  The object must support
+                 the write method, and the tell method, similar to a file object."""
+        external_reference_map = self._build_external_reference_map()
+        self._stack = []
         self._sweep_indirect_references(external_reference_map, self._root)
-        del self.stack
+        self._stack = []
 
         # Begin writing:
+        object_positions = self._write_objects_to(stream)
+        xref_location = self._write_cross_reference_table(stream, object_positions)
+        self._write_trailer_to(stream)
+        stream.write(utils.s2b('\nstartxref\n%s\n%%%%EOF\n' % xref_location))
+
+    def _write_cross_reference_table(self, stream, object_positions):
+        xref_location = stream.tell()
+        stream.write(b'xref\n')
+        stream.write(utils.s2b("0 %s\n" % (len(self._objects) + 1)))
+        stream.write(utils.s2b("%010d %05d f \n" % (0, 65535)))
+        for offset in object_positions:
+            stream.write(utils.s2b("%010d %05d n \n" % (offset, 0)))
+        return xref_location
+
+    def _write_objects_to(self, stream):
         object_positions = []
-        stream.write(self._header + b'\n')
+        stream.write(b'%PDF-1.3\n')
         for i in range(len(self._objects)):
             idnum = (i + 1)
             obj = self._objects[i]
@@ -206,16 +180,49 @@ class PdfFileWriter(object):
             else:
                 obj.write_to_stream(stream, key)
             stream.write(b'\nendobj\n')
+        return object_positions
 
-        # xref table
-        xref_location = stream.tell()
-        stream.write(b'xref\n')
-        stream.write(utils.s2b("0 %s\n" % (len(self._objects) + 1)))
-        stream.write(utils.s2b("%010d %05d f \n" % (0, 65535)))
-        for offset in object_positions:
-            stream.write(utils.s2b("%010d %05d n \n" % (offset, 0)))
+    def _add_object(self, obj):
+        self._objects.append(obj)
+        return IndirectObject(len(self._objects), 0, self)
 
-        # trailer
+    def _add_page(self, page, callback_add):
+        """Common method for inserting or adding a page to this PDF file.
+
+        page - The page to add to the document.  This argument should be
+                    an instance of {@link #PageObject PageObject}.
+        callback_add - The function which will insert the page in the dictionnary.
+                      Takes: page list, page to add."""
+        assert page[b'/Type'] == b'/Page'
+        page[NameObject(b'/Parent')] = self._pages
+        page = self._add_object(page)
+        pages = self._pages.get_object()
+        callback_add(pages[b'/Kids'], page)
+        pages[NameObject(b'/Count')] = NumberObject(pages[b'/Count'] + 1)
+
+    def _build_external_reference_map(self):
+        """PDF objects sometimes have circular references to their /Page objects
+        inside their object tree (for example, annotations).  Those will be
+        indirect references to objects that we've recreated in this PDF.  To
+        address this problem, PageObject's store their original object
+        reference number, and we add it to the external reference map before
+        we sweep for indirect references.  This forces self-page-referencing
+        trees to reference the correct new object location, rather than
+        copying in a new copy of the page object."""
+        external_reference_map = {}
+        for ido_index in range(len(self._objects)):
+            ido = self._objects[ido_index]
+            if isinstance(ido, PageObject) and ido.indirect_ref is not None:
+                utils.debug(type(ido), ido.indirect_ref)
+                data = ido.indirect_ref
+                if data.pdf not in external_reference_map:
+                    external_reference_map[data.pdf] = {}
+                if data.generation not in external_reference_map[data.pdf]:
+                    external_reference_map[data.pdf][data.generation] = {}
+                external_reference_map[data.pdf][data.generation][data.idnum] = IndirectObject(ido_index + 1, 0, self)
+        return external_reference_map
+
+    def _write_trailer_to(self, stream):
         stream.write(b'trailer\n')
         trailer = DictionaryObject()
         trailer.update({
@@ -223,14 +230,11 @@ class PdfFileWriter(object):
             NameObject(b'/Root'): self._root,
             NameObject(b'/Info'): self._info,
         })
-        if self._ID is not None:
-            trailer[NameObject(b'/ID')] = self._ID
+        if self._id is not None:
+            trailer[NameObject(b'/ID')] = self._id
         if self._encrypt is not None:
             trailer[NameObject(b'/Encrypt')] = self._encrypt
-        trailer.write_to_stream(stream, None)
-
-        # eof
-        stream.write(utils.s2b("\nstartxref\n%s\n%%%%EOF\n" % xref_location))
+        trailer.write_to_stream(stream)
 
     def _sweep_indirect_references(self, extern_map, data):
         if isinstance(data, DictionaryObject):
@@ -255,13 +259,13 @@ class PdfFileWriter(object):
         elif isinstance(data, IndirectObject):
             # internal indirect references are fine
             if data.pdf == self:
-                if data.idnum in self.stack:
+                if data.idnum in self._stack:
                     return data
                 else:
-                    self.stack.append(data.idnum)
+                    self._stack.append(data.idnum)
                     realdata = self.get_object(data)
                     self._sweep_indirect_references(extern_map, realdata)
-                    self.stack.pop()
+                    self._stack.pop()
                     return data
             else:
                 newobj = extern_map.get(data.pdf, {}).get(data.generation, {}).get(data.idnum, None)
@@ -434,69 +438,6 @@ class PdfFileReader(object):
 
         return outlines
 
-    @staticmethod
-    def _build_destination(title, array):
-        page, typ = array[0:2]
-        array = array[2:]
-        return Destination(title, page, typ, *array)
-
-    def _build_outline(self, node):
-        dest, title, outline = None, None, None
-
-        if b'/A' in node and b'/Title' in node:
-            # Action, section 8.5 (only type GoTo supported)
-            title = node[b'/Title']
-            action = node[b'/A']
-            if action[b'/S'] == b'/GoTo':
-                dest = action[b'/D']
-        elif b'/Dest' in node and b'/Title' in node:
-            # Destination, section 8.2.1
-            title = node[b'/Title']
-            dest = node[b'/Dest']
-
-        # if destination found, then create outline
-        if dest:
-            if isinstance(dest, ArrayObject):
-                outline = self._build_destination(title, dest)
-            # FIXME elif dest in isinstance(dest, unicode) and self._namedDests:
-            elif dest in isinstance(dest, str) and self._named_dests:
-                outline = self._named_dests[dest]
-                outline[NameObject(b'/Title')] = title
-            else:
-                raise utils.PdfReadError("Unexpected destination %r" % dest)
-        return outline
-
-    def _flatten(self, pages=None, inherit=None, indirect_ref=None):
-        inheritable_page_attributes = (
-            NameObject(b'/Resources'), NameObject(b'/MediaBox'),
-            NameObject(b'/CropBox'), NameObject(b'/Rotate')
-        )
-        if inherit is None:
-            inherit = dict()
-        if pages is None:
-            self._flattened_pages = []
-            catalog = self.trailer[b'/Root'].get_object()
-            pages = catalog[b'/Pages'].get_object()
-        t = pages[b'/Type']
-        if t == b'/Pages':
-            for attr in inheritable_page_attributes:
-                if attr in pages:
-                    inherit[attr] = pages[attr]
-            for page in pages[b'/Kids']:
-                addt = {}
-                if isinstance(page, IndirectObject):
-                    addt['indirect_ref'] = page
-                self._flatten(page.get_object(), inherit, **addt)
-        elif t == b'/Page':
-            for attr, value in inherit.items():
-                # if the page has it's own value, it does not inherit the
-                # parent's value:
-                if attr not in pages:
-                    pages[attr] = value
-            page_obj = PageObject(self, indirect_ref)
-            page_obj.update(pages)
-            self._flattened_pages.append(page_obj)
-
     def get_object(self, indirect_reference):
         retval = self._resolved_objects.get(indirect_reference.generation, {}).get(indirect_reference.idnum, None)
         if retval is not None:
@@ -540,19 +481,6 @@ class PdfFileReader(object):
 
         self.cache_indirect_object(generation, idnum, retval)
         return retval
-
-    def _decrypt_object(self, obj, key):
-        if isinstance(obj, ByteStringObject) or isinstance(obj, TextStringObject):
-            obj = create_string_object(utils.rc4_encrypt(key, obj.original_bytes))
-        elif isinstance(obj, StreamObject):
-            obj.set_data(utils.rc4_encrypt(key, obj.get_data()))
-        elif isinstance(obj, DictionaryObject):
-            for dictkey, value in obj.items():
-                obj[dictkey] = self._decrypt_object(value, key)
-        elif isinstance(obj, ArrayObject):
-            for i in range(len(obj)):
-                obj[i] = self._decrypt_object(obj[i], key)
-        return obj
 
     @staticmethod
     def read_object_header(stream):
@@ -672,15 +600,6 @@ class PdfFileReader(object):
                     assert False
 
     @staticmethod
-    def _pairs(array):
-        i = 0
-        while True:
-            yield array[i], array[i + 1]
-            i += 2
-            if (i + 1) >= len(array):
-                break
-
-    @staticmethod
     def read_next_end_line(stream: BufferedReader):
         line = b''
         while True:
@@ -721,6 +640,21 @@ class PdfFileReader(object):
             return self._decrypt(password)
         finally:
             self._override_encryption = False
+
+    @staticmethod
+    def _pairs(array):
+        i = 0
+        while True:
+            yield array[i], array[i + 1]
+            i += 2
+            if (i + 1) >= len(array):
+                break
+
+    @staticmethod
+    def _build_destination(title, array):
+        page, typ = array[0:2]
+        array = array[2:]
+        return Destination(title, page, typ, *array)
 
     def _decrypt(self, password):
         encrypt = self.trailer[b'/Encrypt'].get_object()
@@ -774,6 +708,76 @@ class PdfFileReader(object):
                             encrypt.get(b'/EncryptMetadata', BooleanObject(False)).get_object())
         real_u = encrypt[b'/U'].get_object().original_bytes
         return u == real_u, key
+
+    def _decrypt_object(self, obj, key):
+        if isinstance(obj, ByteStringObject) or isinstance(obj, TextStringObject):
+            obj = create_string_object(utils.rc4_encrypt(key, obj.original_bytes))
+        elif isinstance(obj, StreamObject):
+            obj.set_data(utils.rc4_encrypt(key, obj.get_data()))
+        elif isinstance(obj, DictionaryObject):
+            for dictkey, value in obj.items():
+                obj[dictkey] = self._decrypt_object(value, key)
+        elif isinstance(obj, ArrayObject):
+            for i in range(len(obj)):
+                obj[i] = self._decrypt_object(obj[i], key)
+        return obj
+
+    def _build_outline(self, node):
+        dest, title, outline = None, None, None
+
+        if b'/A' in node and b'/Title' in node:
+            # Action, section 8.5 (only type GoTo supported)
+            title = node[b'/Title']
+            action = node[b'/A']
+            if action[b'/S'] == b'/GoTo':
+                dest = action[b'/D']
+        elif b'/Dest' in node and b'/Title' in node:
+            # Destination, section 8.2.1
+            title = node[b'/Title']
+            dest = node[b'/Dest']
+
+        # if destination found, then create outline
+        if dest:
+            if isinstance(dest, ArrayObject):
+                outline = self._build_destination(title, dest)
+            # FIXME elif dest in isinstance(dest, unicode) and self._namedDests:
+            elif dest in isinstance(dest, str) and self._named_dests:
+                outline = self._named_dests[dest]
+                outline[NameObject(b'/Title')] = title
+            else:
+                raise utils.PdfReadError("Unexpected destination %r" % dest)
+        return outline
+
+    def _flatten(self, pages=None, inherit=None, indirect_ref=None):
+        inheritable_page_attributes = (
+            NameObject(b'/Resources'), NameObject(b'/MediaBox'),
+            NameObject(b'/CropBox'), NameObject(b'/Rotate')
+        )
+        if inherit is None:
+            inherit = dict()
+        if pages is None:
+            self._flattened_pages = []
+            catalog = self.trailer[b'/Root'].get_object()
+            pages = catalog[b'/Pages'].get_object()
+        t = pages[b'/Type']
+        if t == b'/Pages':
+            for attr in inheritable_page_attributes:
+                if attr in pages:
+                    inherit[attr] = pages[attr]
+            for page in pages[b'/Kids']:
+                addt = {}
+                if isinstance(page, IndirectObject):
+                    addt['indirect_ref'] = page
+                self._flatten(page.get_object(), inherit, **addt)
+        elif t == b'/Page':
+            for attr, value in inherit.items():
+                # if the page has it's own value, it does not inherit the
+                # parent's value:
+                if attr not in pages:
+                    pages[attr] = value
+            page_obj = PageObject(self, indirect_ref)
+            page_obj.update(pages)
+            self._flattened_pages.append(page_obj)
 
     @property
     def _is_encrypted(self):
