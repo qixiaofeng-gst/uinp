@@ -443,7 +443,7 @@ class DictionaryObject(dict, PdfObject):
         else:
             stream.seek(pos, io.SEEK_SET)
         if _STREAM_KEY in data:
-            return StreamObject.initialize_from_dictionary(data)
+            return initialize_from_dictionary(data)
         else:
             retval = DictionaryObject()
             retval.update(data)
@@ -467,18 +467,6 @@ class StreamObject(DictionaryObject):
         stream.write(data)
         stream.write(b'\nendstream')
 
-    @staticmethod
-    def initialize_from_dictionary(data):
-        if b'/Filter' in data:
-            retval = _EncodedStreamObject()
-        else:
-            retval = _DecodedStreamObject()
-        retval._data = data[_STREAM_KEY]
-        del data[_STREAM_KEY]
-        del data[b'/Length']
-        retval.update(data)
-        return retval
-
     def flate_encode(self):
         if b'/Filter' in self:
             f = self[b'/Filter']
@@ -501,6 +489,18 @@ class StreamObject(DictionaryObject):
 
     def set_data(self, data):
         self._data = data
+
+
+def initialize_from_dictionary(data):
+    if b'/Filter' in data:
+        retval = _EncodedStreamObject()
+    else:
+        retval = _DecodedStreamObject()
+    retval._data = data[_STREAM_KEY]
+    del data[_STREAM_KEY]
+    del data[b'/Length']
+    retval.update(data)
+    return retval
 
 
 class _DecodedStreamObject(StreamObject):
@@ -581,26 +581,10 @@ class _ContentStream(_DecodedStreamObject):
         # left at beginning of ID
         tmp = stream.read(3)
         assert tmp[:2] == b'ID'
-        data = self._read_image_data(stream)
+        data = _read_image_data(stream)
         utils.debug(len(data))
         seek_token(stream)
         return {b'settings': settings, b'data': data}
-
-    @staticmethod
-    def _read_image_data(stream):
-        data = b''
-        while True:
-            tok = stream.read(1)
-            if tok == b'E':
-                _next = stream.read(1)
-                if _next == b'I':
-                    break
-                else:
-                    stream.seek(-1, io.SEEK_CUR)
-                    data += tok
-            else:
-                data += tok
-        return data
 
     @property
     def _data(self):
@@ -625,6 +609,22 @@ class _ContentStream(_DecodedStreamObject):
     @_data.setter
     def _data(self, value):
         self.__parse_content_stream(BytesIO(value))
+
+
+def _read_image_data(stream):
+    data = b''
+    while True:
+        tok = stream.read(1)
+        if tok == b'E':
+            _next = stream.read(1)
+            if _next == b'I':
+                break
+            else:
+                stream.seek(-1, io.SEEK_CUR)
+                data += tok
+        else:
+            data += tok
+    return data
 
 
 class _EncodedStreamObject(StreamObject):
@@ -660,13 +660,7 @@ class RectangleObject(ArrayObject):
         # must have four points
         assert len(arr) == 4
         # automatically convert arr[x] into NumberObject(arr[x]) if necessary
-        ArrayObject.__init__(self, [self.ensure_is_number(x) for x in arr])
-
-    @staticmethod
-    def ensure_is_number(value):
-        if not isinstance(value, (NumberObject, FloatObject)):
-            value = FloatObject(value)
-        return value
+        ArrayObject.__init__(self, [ensure_is_number(x) for x in arr])
 
     def __repr__(self):
         return "RectangleObject(%s)" % repr(list(self))
@@ -708,22 +702,28 @@ class RectangleObject(ArrayObject):
         return self.get_upper_right_x(), self.get_upper_right_y()
 
     def set_lower_left(self, value):
-        self[0], self[1] = [self.ensure_is_number(x) for x in value]
+        self[0], self[1] = [ensure_is_number(x) for x in value]
 
     def set_lower_right(self, value):
-        self[2], self[1] = [self.ensure_is_number(x) for x in value]
+        self[2], self[1] = [ensure_is_number(x) for x in value]
 
     def set_upper_left(self, value):
-        self[0], self[3] = [self.ensure_is_number(x) for x in value]
+        self[0], self[3] = [ensure_is_number(x) for x in value]
 
     def set_upper_right(self, value):
-        self[2], self[3] = [self.ensure_is_number(x) for x in value]
+        self[2], self[3] = [ensure_is_number(x) for x in value]
 
     def get_width(self):
         return self.get_upper_right_x() - self.get_lower_left_x()
 
     def get_height(self):
         return self.get_upper_right_y() - self.get_lower_left_x()
+
+
+def ensure_is_number(value):
+    if not isinstance(value, (NumberObject, FloatObject)):
+        value = FloatObject(value)
+    return value
 
 
 def _create_rectangle_accessor(name, fallback):
@@ -804,34 +804,6 @@ class PageObject(DictionaryObject):
         # Stores the original indirect reference to this object in its source PDF
         self.indirect_ref = indirect_ref
 
-    @staticmethod
-    def create_blank_page(_pdf=None, width=None, height=None):
-        """
-        Returns a new blank page.
-        If width or height is None, try to get the page size from the
-        last page of PyPDF. If PyPDF is None or contains no page, a
-        PageSizeNotDefinedError is raised.
-
-         _pdf -- PDF file the page belongs to
-        width -- The width of the new page expressed in default user space units.
-        height -- The height of the new page expressed in default user space units.
-        """
-        page = PageObject(_pdf)
-
-        # Creates a new page (cf PDF Reference  7.7.3.3)
-        page.__setitem__(NameObject(b'/Type'), NameObject(b'/Page'))
-        page.__setitem__(NameObject(b'/Parent'), NullObject())
-        page.__setitem__(NameObject(b'/Resources'), DictionaryObject())
-        if width is None or height is None:
-            if _pdf is not None and _pdf.get_pages_count() > 0:
-                lastpage = _pdf.get_page(_pdf.get_pages_count() - 1)
-                width = lastpage.media_box.get_width()
-                height = lastpage.media_box.get_height()
-            else:
-                raise utils.PageSizeNotDefinedError()
-        page.__setitem__(NameObject(b'/MediaBox'), RectangleObject([0, 0, width, height]))
-        return page
-
     ##
     # Rotates a page clockwise by increments of 90 degrees.
     # <p>
@@ -855,53 +827,6 @@ class PageObject(DictionaryObject):
     def _rotate(self, angle):
         current_angle = self.get(b'/Rotate', 0)
         self[NameObject(b'/Rotate')] = NumberObject(current_angle + angle)
-
-    @staticmethod
-    def _merge_resources(res1, res2, resource):
-        new_res = DictionaryObject()
-        new_res.update(res1.get(resource, DictionaryObject()).get_object())
-        page2_res = res2.get(resource, DictionaryObject()).get_object()
-        rename_res = {}
-        for key in page2_res.keys():
-            if key in new_res and new_res[key] != page2_res[key]:
-                newname = NameObject(key + b'renamed')
-                rename_res[key] = newname
-                new_res[newname] = page2_res[key]
-            elif key not in new_res:
-                new_res[key] = page2_res.raw_get(key)
-        return new_res, rename_res
-
-    @staticmethod
-    def _content_stream_rename(stream, rename, _pdf):
-        if not rename:
-            return stream
-        stream = _ContentStream(stream, _pdf)
-        for operands, operator in stream.operations:
-            for i in range(len(operands)):
-                op = operands[i]
-                if isinstance(op, NameObject):
-                    operands[i] = rename.get(op, op)
-        return stream
-
-    @staticmethod
-    def _push_pop_gs(contents, _pdf):
-        """adds a graphics state "push" and "pop" to the beginning and end
-        of a content stream.  This isolates it from changes such as
-        transformation matricies."""
-        stream = _ContentStream(contents, _pdf)
-        stream.operations.insert(0, [[], b'q'])
-        stream.operations.append([[], b'Q'])
-        return stream
-
-    @staticmethod
-    def _add_transformation_matrix(contents, _pdf, ctm):
-        """adds transformation matrix at the beginning of the given contents stream."""
-        a, b, c, d, e, f = ctm
-        contents = _ContentStream(contents, _pdf)
-        contents.operations.insert(0, [[FloatObject(a), FloatObject(b),
-                                        FloatObject(c), FloatObject(d), FloatObject(e),
-                                        FloatObject(f)], " cm"])
-        return contents
 
     def get_contents(self):
         """Returns the /Contents object, or None if it doesn't exist.
@@ -934,7 +859,7 @@ class PageObject(DictionaryObject):
         page2_resources = page2[b'/Resources'].get_object()
 
         for res in b'/ExtGState', b'/Font', b'/XObject', b'/ColorSpace', b'/Pattern', b'/Shading', b'/Properties':
-            new, newrename = PageObject._merge_resources(original_resources, page2_resources, res)
+            new, newrename = _merge_resources(original_resources, page2_resources, res)
             if new:
                 new_resources[NameObject(res)] = new
                 rename.update(newrename)
@@ -950,15 +875,15 @@ class PageObject(DictionaryObject):
 
         original_content = self.get_contents()
         if original_content is not None:
-            new_content_array.append(PageObject._push_pop_gs(original_content, self.pdf))
+            new_content_array.append(_push_pop_gs(original_content, self.pdf))
 
         page2_content = page2.get_contents()
         if page2_content is not None:
             if page2transformation is not None:
                 page2_content = page2transformation(page2_content)
-            page2_content = PageObject._content_stream_rename(
+            page2_content = _content_stream_rename(
                 page2_content, rename, self.pdf)
-            page2_content = PageObject._push_pop_gs(page2_content, self.pdf)
+            page2_content = _push_pop_gs(page2_content, self.pdf)
             new_content_array.append(page2_content)
 
         utils.debug('-' * 16)
@@ -973,7 +898,7 @@ class PageObject(DictionaryObject):
     # @param ctm   A 6 elements tuple containing the operands of the
     #              transformation matrix
     def merge_transformed_page(self, page2, ctm):
-        self.merge_page(page2, lambda page2_content: PageObject._add_transformation_matrix(
+        self.merge_page(page2, lambda page2_content: _add_transformation_matrix(
             page2_content, page2.pdf, ctm
         ))
 
@@ -1074,9 +999,9 @@ class PageObject(DictionaryObject):
     def add_transformation(self, ctm):
         original_content = self.get_contents()
         if original_content is not None:
-            new_content = PageObject._add_transformation_matrix(
+            new_content = _add_transformation_matrix(
                 original_content, self.pdf, ctm)
-            new_content = PageObject._push_pop_gs(new_content, self.pdf)
+            new_content = _push_pop_gs(new_content, self.pdf)
             self[NameObject(b'/Contents')] = new_content
 
     ##
@@ -1212,6 +1137,81 @@ class PageObject(DictionaryObject):
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
     art_box = _create_rectangle_accessor(b'/ArtBox', (b'/CropBox', b'/MediaBox'))
+
+
+def _merge_resources(res1, res2, resource):
+    new_res = DictionaryObject()
+    new_res.update(res1.get(resource, DictionaryObject()).get_object())
+    page2_res = res2.get(resource, DictionaryObject()).get_object()
+    rename_res = {}
+    for key in page2_res.keys():
+        if key in new_res and new_res[key] != page2_res[key]:
+            newname = NameObject(key + b'renamed')
+            rename_res[key] = newname
+            new_res[newname] = page2_res[key]
+        elif key not in new_res:
+            new_res[key] = page2_res.raw_get(key)
+    return new_res, rename_res
+
+
+def create_blank_page(_pdf=None, width=None, height=None):
+    """
+    Returns a new blank page.
+    If width or height is None, try to get the page size from the
+    last page of PyPDF. If PyPDF is None or contains no page, a
+    PageSizeNotDefinedError is raised.
+
+     _pdf -- PDF file the page belongs to
+    width -- The width of the new page expressed in default user space units.
+    height -- The height of the new page expressed in default user space units.
+    """
+    page = PageObject(_pdf)
+
+    # Creates a new page (cf PDF Reference  7.7.3.3)
+    page.__setitem__(NameObject(b'/Type'), NameObject(b'/Page'))
+    page.__setitem__(NameObject(b'/Parent'), NullObject())
+    page.__setitem__(NameObject(b'/Resources'), DictionaryObject())
+    if width is None or height is None:
+        if _pdf is not None and _pdf.get_pages_count() > 0:
+            lastpage = _pdf.get_page(_pdf.get_pages_count() - 1)
+            width = lastpage.media_box.get_width()
+            height = lastpage.media_box.get_height()
+        else:
+            raise utils.PageSizeNotDefinedError()
+    page.__setitem__(NameObject(b'/MediaBox'), RectangleObject([0, 0, width, height]))
+    return page
+
+
+def _add_transformation_matrix(contents, _pdf, ctm):
+    """adds transformation matrix at the beginning of the given contents stream."""
+    a, b, c, d, e, f = ctm
+    contents = _ContentStream(contents, _pdf)
+    contents.operations.insert(0, [[FloatObject(a), FloatObject(b),
+                                    FloatObject(c), FloatObject(d), FloatObject(e),
+                                    FloatObject(f)], " cm"])
+    return contents
+
+
+def _push_pop_gs(contents, _pdf):
+    """adds a graphics state "push" and "pop" to the beginning and end
+    of a content stream.  This isolates it from changes such as
+    transformation matricies."""
+    stream = _ContentStream(contents, _pdf)
+    stream.operations.insert(0, [[], b'q'])
+    stream.operations.append([[], b'Q'])
+    return stream
+
+
+def _content_stream_rename(stream, rename, _pdf):
+    if not rename:
+        return stream
+    stream = _ContentStream(stream, _pdf)
+    for operands, operator in stream.operations:
+        for i in range(len(operands)):
+            op = operands[i]
+            if isinstance(op, NameObject):
+                operands[i] = rename.get(op, op)
+    return stream
 
 
 def create_string_object(string):
