@@ -1,4 +1,6 @@
 Next TODO:
+- 接收声音指令的对接。
+- 设计 EmotionRecord。
 - https://www.javatpoint.com/spring-boot-tutorial
 - 自研麦克风阵列给本体组建立 Issue。
 - IntelliJ IDEA 相关：

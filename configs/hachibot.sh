@@ -295,7 +295,7 @@ dk-xunfei() {
         -v /etc/udev/rules.d:/etc/udev/rules.d \
         -v /hachi/prod/ai-xunfei-runtime/log:/root/.ros/log \
         -v /hachi/prod/ai-xunfei-runtime/audio:/hachi/workspace/audio \
-        d.corp.hachibot.com/ai-xunfei:1.4
+        d.corp.hachibot.com/ai-xunfei:1.5
 }
 dk-clear() {
     docker rmi $(docker images -f "dangling=true" -q)
