@@ -20,6 +20,7 @@ def debug(*_args):
 
 
 def stacktrace_debug():
+    print('-' * 32, 'tracing', '-' * 32)
     prefix = '>' * 2
     trace_format = '{} [{:PATH} - {:LINE}] {}'
     path_width = 0
