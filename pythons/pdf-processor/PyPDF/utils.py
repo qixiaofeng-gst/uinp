@@ -19,6 +19,32 @@ def debug(*_args):
         _super_print(*_args)
 
 
+def stacktrace_debug():
+    prefix = '>' * 2
+    trace_format = '{} [{:PATH} - {:LINE}] {}'
+    path_width = 0
+    line_width = 0
+    lines = []
+    for frame in _insp.stack()[1:]:
+        info = _insp.getframeinfo(frame[0])
+        dirname, basename = _os.path.split(info.filename)
+        dirname = _os.path.basename(dirname)
+        path = _os.path.join(dirname, basename)
+        lines.append([path, info.lineno, info.function, info.code_context])
+        path_width = len(path) if len(path) > path_width else path_width
+        line_width = len(str(info.lineno)) if len(str(info.lineno)) > line_width else line_width
+    trace_format = trace_format.replace('PATH', str(path_width))
+    trace_format = trace_format.replace('LINE', str(line_width))
+    for path, line, func, context in lines:
+        print(trace_format.format(
+            prefix, path, line, func,
+        ))
+        for code in context:
+            if code.endswith('\n'):
+                code = code[:-1]
+            print('{} {}'.format(prefix, code))
+
+
 def hightlight_debug(*_args):
     global _HIGHTLIGHTEN
     _HIGHTLIGHTEN = True

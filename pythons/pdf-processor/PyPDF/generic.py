@@ -526,6 +526,7 @@ class _ContentStream(_DecodedStreamObject):
         # assert stream is None
         self.__parse_content_stream(stream)
         utils.debug(_pdf)
+        utils.stacktrace_debug()
 
     def __parse_content_stream(self, stream):
         stream.seek(0, io.SEEK_SET)
