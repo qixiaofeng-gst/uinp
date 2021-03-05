@@ -549,7 +549,7 @@ def create_blank_page(_pdf=None, width=None, height=None):
     page = PageObject(_pdf)
 
     # Creates a new page (cf PDF Reference  7.7.3.3)
-    page.__setitem__(NameObject(_k.TYPE), NameObject(b'/Page'))
+    page.__setitem__(NameObject(_k.TYPE), NameObject(_k.PAGE))
     page.__setitem__(NameObject(b'/Parent'), NullObject())
     page.__setitem__(NameObject(_k.RESOURCES), DictionaryObject())
     if width is None or height is None:

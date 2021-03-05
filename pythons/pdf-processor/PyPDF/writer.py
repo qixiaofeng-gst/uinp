@@ -56,6 +56,7 @@ class PdfFileWriter(object):
 
         stream - An object to write the file to.  The object must support
                  the write method, and the tell method, similar to a file object."""
+        _u.debug(self.get_pages_count())
         _u.debug(len(self._objects))
         external_reference_map = self._build_external_reference_map()
         _u.debug(len(self._objects))
@@ -186,7 +187,7 @@ class PdfFileWriter(object):
                     an instance of {@link #PageObject PageObject}.
         callback_add - The function which will insert the page in the dictionnary.
                       Takes: page list, page to add."""
-        assert page[_k.TYPE] == b'/Page'
+        assert page[_k.TYPE] == _k.PAGE
         page[NameObject(b'/Parent')] = self._pages
         page = self._add_object(page)
         pages = self._pages.get_object()
@@ -217,11 +218,16 @@ class PdfFileWriter(object):
                 )
         return external_reference_map
 
-    def _scan_indirect_references(self, extern_map, data, stack):
+    def _scan_indirect_references(self, extern_map, data, stack, scan_depth=0):
+        def quick_debug(*args):
+            _u.debug('-' * (12 - scan_depth) * 5 + ' {:2}'.format(scan_depth), *args)
+
         if isinstance(data, DictionaryObject):
+            quick_debug('DICT')
             for key, value in data.items():
+                quick_debug(key, type(value))
                 _origvalue = value
-                value = self._scan_indirect_references(extern_map, value, stack)
+                value = self._scan_indirect_references(extern_map, value, stack, scan_depth + 1)
                 if isinstance(value, StreamObject):
                     # A dictionary value is a stream.
                     # Streams must be indirect objects, so we need to change this value.
@@ -229,8 +235,9 @@ class PdfFileWriter(object):
                 data[key] = value
             return data
         elif isinstance(data, ArrayObject):
+            quick_debug('ARRAY')
             for i in range(len(data)):
-                value = self._scan_indirect_references(extern_map, data[i], stack)
+                value = self._scan_indirect_references(extern_map, data[i], stack, scan_depth + 1)
                 if isinstance(value, StreamObject):
                     # an array value is a stream.  streams must be indirect
                     # objects, so we need to change this value
@@ -238,6 +245,7 @@ class PdfFileWriter(object):
                 data[i] = value
             return data
         elif isinstance(data, IndirectObject):
+            quick_debug('IDO')
             # internal indirect references are fine
             if data.parent == self:
                 if data.idnum in stack:
@@ -245,7 +253,7 @@ class PdfFileWriter(object):
                 else:
                     stack.append(data.idnum)
                     realdata = self.get_object(data)
-                    self._scan_indirect_references(extern_map, realdata, stack)
+                    self._scan_indirect_references(extern_map, realdata, stack, scan_depth + 1)
                     stack.pop()
                     return data
             else:
@@ -260,11 +268,12 @@ class PdfFileWriter(object):
                     if data.generation not in extern_map[data.parent]:
                         extern_map[data.parent][data.generation] = {}
                     extern_map[data.parent][data.generation][data.idnum] = newobj_ido
-                    newobj = self._scan_indirect_references(extern_map, newobj, stack)
+                    newobj = self._scan_indirect_references(extern_map, newobj, stack, scan_depth + 1)
                     self._objects[idnum - 1] = newobj
                     return newobj_ido
                 return newobj
         else:
+            quick_debug('GENERIC', type(data))
             return data
 
     def _write_trailer_to(self, stream):

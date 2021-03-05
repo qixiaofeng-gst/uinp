@@ -1,6 +1,7 @@
 TYPE = b'/Type'
 ROOT = b'/Root'
 PAGES = b'/Pages'
+PAGE = b'/Page'
 KIDS = b'/Kids'
 
 RESOURCES = b'/Resources'

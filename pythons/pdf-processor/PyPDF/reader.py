@@ -494,8 +494,8 @@ class PdfFileReader(object):
         return outline
 
     def _flatten(self, pages, inherit, indirect_ref=None):
-        t = pages[_k.TYPE]
-        if t == _k.PAGES:
+        target_type = pages[_k.TYPE]
+        if target_type == _k.PAGES:
             for attr in _inheritable_page_attributes:
                 if attr in pages:
                     inherit[attr] = pages[attr]
@@ -504,14 +504,14 @@ class PdfFileReader(object):
                     page.get_object(), inherit,
                     indirect_ref=page if isinstance(page, IndirectObject) else None,
                 )
-        elif t == b'/Page':
+        elif target_type == _k.PAGE:
             for attr, value in inherit.items():
                 # if the page has it's own value, it does not inherit the
                 # parent's value:
                 if attr not in pages:
                     pages[attr] = value
             page_obj = _c.PageObject(self, indirect_ref)
-            page_obj.update(pages)
+            page_obj.update(pages)  # FIXME XXX The page absorbed all pages attributes?
             self._flattened_pages.append(page_obj)
 
     @property

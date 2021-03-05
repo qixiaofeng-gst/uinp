@@ -567,7 +567,7 @@ class Destination(DictionaryObject):
     def __init__(self, title, page, position_type, *args):
         DictionaryObject.__init__(self)
         self[NameObject(b'/Title')] = title
-        self[NameObject(b'/Page')] = page
+        self[NameObject(_k.PAGE)] = page
         self[NameObject(_k.TYPE)] = position_type
 
         # from table 8.2 of the PDF 1.6 reference.
