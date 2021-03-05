@@ -1,12 +1,14 @@
 import time
 import random
 import struct as _s
-import PyPDF.utils as utils
+import PyPDF.utils as _u
+import PyPDF.compound as _c
 from hashlib import md5 as _md5
 from PyPDF.generic import (
-    NameObject, DictionaryObject, NumberObject, ArrayObject, PageObject,
-    IndirectObject, ByteStringObject, StreamObject,
-    create_string_object, is_plain_object, create_blank_page,
+    NameObject, NumberObject, IndirectObject, ByteStringObject,
+    ArrayObject, DictionaryObject,
+    StreamObject,
+    create_string_object, is_plain_object,
     TYPE_KEY,
 )
 from PyPDF.keys import (
@@ -58,16 +60,19 @@ class PdfFileWriter(object):
 
         stream - An object to write the file to.  The object must support
                  the write method, and the tell method, similar to a file object."""
+        _u.debug(len(self._objects))
         external_reference_map = self._build_external_reference_map()
+        _u.debug(len(self._objects))
         self._stack = []
         self._scan_indirect_references(external_reference_map, self._root)
         self._stack = []
+        _u.debug(len(self._objects))
 
         # Begin writing:
         object_positions = self._write_objects_to(stream)
         xref_location = self._write_cross_reference_table(stream, object_positions)
         self._write_trailer_to(stream)
-        stream.write(utils.s2b('\nstartxref\n%s\n%%%%EOF\n' % xref_location))
+        stream.write(_u.s2b('\nstartxref\n%s\n%%%%EOF\n' % xref_location))
 
     def get_object(self, ido):
         if not ido.parent == self:
@@ -90,7 +95,7 @@ class PdfFileWriter(object):
         return int(pages[NameObject(b'/Count')])
 
     def add_blank_page(self, width=None, height=None):
-        page = create_blank_page(self, width, height)
+        page = _c.create_blank_page(self, width, height)
         self.add_page(page)
         return page
 
@@ -99,7 +104,7 @@ class PdfFileWriter(object):
             oldpage = self.get_page(index)
             width = oldpage.media_box.get_width()
             height = oldpage.media_box.get_height()
-        page = create_blank_page(self, width, height)
+        page = _c.create_blank_page(self, width, height)
         self.insert_page(page, index)
         return page
 
@@ -126,15 +131,15 @@ class PdfFileWriter(object):
             keylen = 40 / 8
         # permit everything:
         p = -1
-        o = ByteStringObject(utils.algorithm_33(owner_pwd, user_pwd, rev, keylen))
-        id_1 = _md5(bytes(repr(time.time()), utils.ENCODING_UTF8)).digest()
-        id_2 = _md5(bytes(repr(random.random()), utils.ENCODING_UTF8)).digest()
+        o = ByteStringObject(_u.algorithm_33(owner_pwd, user_pwd, rev, keylen))
+        id_1 = _md5(bytes(repr(time.time()), _u.ENCODING_UTF8)).digest()
+        id_2 = _md5(bytes(repr(random.random()), _u.ENCODING_UTF8)).digest()
         self._id = ArrayObject((ByteStringObject(id_1), ByteStringObject(id_2)))
         if rev == 2:
-            u, key = utils.algorithm_34(user_pwd, o, p, id_1)
+            u, key = _u.algorithm_34(user_pwd, o, p, id_1)
         else:
             assert rev == 3
-            u, key = utils.algorithm_35(user_pwd, rev, keylen, o, p, id_1, False)
+            u, key = _u.algorithm_35(user_pwd, rev, keylen, o, p, id_1, False)
         encrypt = DictionaryObject()
         encrypt[NameObject(b'/Filter')] = NameObject(b'/Standard')
         encrypt[NameObject(b'/V')] = NumberObject(v)
@@ -150,10 +155,10 @@ class PdfFileWriter(object):
     def _write_cross_reference_table(self, stream, object_positions):
         xref_location = stream.tell()
         stream.write(b'xref\n')
-        stream.write(utils.s2b("0 %s\n" % (len(self._objects) + 1)))
-        stream.write(utils.s2b("%010d %05d f \n" % (0, 65535)))
+        stream.write(_u.s2b("0 %s\n" % (len(self._objects) + 1)))
+        stream.write(_u.s2b("%010d %05d f \n" % (0, 65535)))
         for offset in object_positions:
-            stream.write(utils.s2b("%010d %05d n \n" % (offset, 0)))
+            stream.write(_u.s2b("%010d %05d n \n" % (offset, 0)))
         return xref_location
 
     def _write_objects_to(self, stream):
@@ -163,18 +168,17 @@ class PdfFileWriter(object):
             idnum = (i + 1)
             obj = self._objects[i]
             object_positions.append(stream.tell())
-            stream.write(utils.s2b(str(idnum) + " 0 obj\n"))
+            stream.write(_u.s2b(str(idnum) + " 0 obj\n"))
             key = None
             if (self._encrypt is not None) and (not (idnum == self._encrypt.idnum)):
                 pack1 = _s.pack("<i", i + 1)[:3]
                 pack2 = _s.pack("<i", 0)[:2]
-                key = utils.encrypt(self._encrypt_key, pack1, pack2)
+                key = _u.encrypt(self._encrypt_key, pack1, pack2)
             if is_plain_object(obj):
                 obj.write_to_stream(stream)
             else:
                 obj.write_to_stream(stream, key)
             stream.write(b'\nendobj\n')
-            utils.debug(idnum, obj, type(obj))
         return object_positions
 
     def _add_object(self, obj):
@@ -207,8 +211,8 @@ class PdfFileWriter(object):
         external_reference_map = {}
         for ido_index in range(len(self._objects)):
             ido = self._objects[ido_index]
-            if isinstance(ido, PageObject) and ido.indirect_ref is not None:
-                utils.debug(type(ido), ido.indirect_ref)
+            if isinstance(ido, _c.PageObject) and ido.indirect_ref is not None:
+                _u.debug(type(ido), ido.indirect_ref)
                 data = ido.indirect_ref
                 if data.parent not in external_reference_map:
                     external_reference_map[data.parent] = {}
@@ -225,8 +229,8 @@ class PdfFileWriter(object):
                 _origvalue = value
                 value = self._scan_indirect_references(extern_map, value)
                 if isinstance(value, StreamObject):
-                    # a dictionary value is a stream.  streams must be indirect
-                    # objects, so we need to change this value.
+                    # A dictionary value is a stream.
+                    # Streams must be indirect objects, so we need to change this value.
                     value = self._add_object(value)
                 data[key] = value
             return data

@@ -8,12 +8,15 @@ import io
 import struct
 from io import BufferedReader, BytesIO
 
+import PyPDF.compound as _page
 import PyPDF.utils as utils
 from PyPDF.generic import (
-    NameObject, DictionaryObject, NumberObject, ArrayObject, BooleanObject, PageObject,
-    IndirectObject, ByteStringObject, StreamObject, TextStringObject, DocumentInformation, Destination,
+    NameObject, NumberObject,  BooleanObject, TextStringObject,
+    IndirectObject, ByteStringObject,
+    DictionaryObject, ArrayObject,
+    StreamObject, DocumentInformation, Destination,
     create_string_object, read_object,
-    RESOURCES_KEY, TYPE_KEY,
+    TYPE_KEY,
 )
 from PyPDF.utils import (
     seek_token, read_until_whitespace,
@@ -438,7 +441,7 @@ class PdfFileReader(object):
 
     def _flatten(self, pages=None, inherit=None, indirect_ref=None):
         inheritable_page_attributes = (
-            NameObject(RESOURCES_KEY), NameObject(b'/MediaBox'),
+            NameObject(_page.RESOURCES_KEY), NameObject(b'/MediaBox'),
             NameObject(b'/CropBox'), NameObject(b'/Rotate')
         )
         if inherit is None:
@@ -463,7 +466,7 @@ class PdfFileReader(object):
                 # parent's value:
                 if attr not in pages:
                     pages[attr] = value
-            page_obj = PageObject(self, indirect_ref)
+            page_obj = _page.PageObject(self, indirect_ref)
             page_obj.update(pages)
             self._flattened_pages.append(page_obj)
 
