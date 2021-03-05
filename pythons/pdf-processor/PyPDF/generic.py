@@ -15,6 +15,7 @@ import codecs
 
 _STREAM_KEY = "__streamdata__"
 _CONTENT_KEY = b'/Contents'
+_IMAGE_KEY = b'INLINE IMAGE'
 RESOURCES_KEY = b'/Resources'
 
 
@@ -553,7 +554,7 @@ class _ContentStream(_DecodedStreamObject):
                     # mechanism is required, of course... thanks buddy...
                     assert operands == []
                     ii = self.__read_inline_image(stream)
-                    self.operations.append((ii, b'INLINE IMAGE'))
+                    self.operations.append((ii, _IMAGE_KEY))
                 else:
                     self.operations.append((operands, operator))
                     operands = []
@@ -593,7 +594,7 @@ class _ContentStream(_DecodedStreamObject):
     def _data(self):
         newdata = BytesIO()
         for operands, operator in self.operations:
-            if operator == b'INLINE IMAGE':
+            if operator == _IMAGE_KEY:
                 newdata.write(b'BI')
                 dicttext = BytesIO()
                 operands[b'settings'].write_to_stream(dicttext)
@@ -878,7 +879,7 @@ class PageObject(DictionaryObject):
 
         original_content = self.get_contents()
         if original_content is not None:
-            new_content_array.append(_push_pop_gs(original_content, self.pdf))
+            new_content_array.append(_push_pop_graphics_state(original_content, self.pdf))
 
         page2_content = page2.get_contents()
         if page2_content is not None:
@@ -886,7 +887,7 @@ class PageObject(DictionaryObject):
                 page2_content = page2transformation(page2_content)
             page2_content = _content_stream_rename(
                 page2_content, rename, self.pdf)
-            page2_content = _push_pop_gs(page2_content, self.pdf)
+            page2_content = _push_pop_graphics_state(page2_content, self.pdf)
             new_content_array.append(page2_content)
 
         utils.debug('-' * 16)
@@ -1004,7 +1005,7 @@ class PageObject(DictionaryObject):
         if original_content is not None:
             new_content = _add_transformation_matrix(
                 original_content, self.pdf, ctm)
-            new_content = _push_pop_gs(new_content, self.pdf)
+            new_content = _push_pop_graphics_state(new_content, self.pdf)
             self[NameObject(_CONTENT_KEY)] = new_content
 
     ##
@@ -1195,7 +1196,7 @@ def _add_transformation_matrix(contents, _pdf, ctm):
     return contents
 
 
-def _push_pop_gs(contents, _pdf):
+def _push_pop_graphics_state(contents, _pdf):
     """adds a graphics state "push" and "pop" to the beginning and end
     of a content stream.  This isolates it from changes such as
     transformation matricies."""
