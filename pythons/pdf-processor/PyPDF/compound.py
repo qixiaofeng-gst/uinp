@@ -9,9 +9,9 @@ from PyPDF.generic import (
     read_object,
 )
 
-CONTENT_KEY = b'/Contents'
 RESOURCES_KEY = b'/Resources'
 _IMAGE_KEY = b'INLINE IMAGE'
+_CONTENT_KEY = b'/Contents'
 
 
 def _create_rectangle_accessor(name, fallback):
@@ -33,39 +33,17 @@ class PageObject(DictionaryObject):
     _pdf -- PDF file the page belongs to (optional, defaults to None).
     """
 
-    def __init__(self, _pdf=None, indirect_ref=None):
+    def __init__(self, parent=None, indirect_ref=None):
         DictionaryObject.__init__(self)
-        self.pdf = _pdf
+        self.parent = parent
         # Stores the original indirect reference to this object in its source PDF
         self.indirect_ref = indirect_ref
-
-    def rotate_clockwise(self, angle):
-        """Rotates a page clockwise by increments of 90 degrees.
-
-        Stability: Added in v1.1, will exist for all future v1.x releases.
-        @param angle Angle to rotate the page.  Must be an increment of 90 deg."""
-        assert angle % 90 == 0
-        self._rotate(angle)
-        return self
-
-    def rotate_counter_clockwise(self, angle):
-        """Rotates a page counter-clockwise by increments of 90 degrees.
-
-        Stability: Added in v1.1, will exist for all future v1.x releases.
-        @param angle Angle to rotate the page.  Must be an increment of 90 deg."""
-        assert angle % 90 == 0
-        self._rotate(-angle)
-        return self
-
-    def _rotate(self, angle):
-        current_angle = self.get(b'/Rotate', 0)
-        self[NameObject(b'/Rotate')] = NumberObject(current_angle + angle)
 
     def get_contents(self):
         """Returns the /Contents object, or None if it doesn't exist.
         /Contents is optionnal, as described in PDF Reference  7.7.3.3"""
-        if CONTENT_KEY in self:
-            return self[CONTENT_KEY].get_object()
+        if _CONTENT_KEY in self:
+            return self[_CONTENT_KEY].get_object()
         else:
             return None
 
@@ -108,20 +86,42 @@ class PageObject(DictionaryObject):
 
         original_content = self.get_contents()
         if original_content is not None:
-            new_content_array.append(_push_pop_graphics_state(original_content, self.pdf))
+            new_content_array.append(_push_pop_graphics_state(original_content, self.parent))
 
         page2_content = page2.get_contents()
         if page2_content is not None:
             if page2transformation is not None:
                 page2_content = page2transformation(page2_content)
             page2_content = _content_stream_rename(
-                page2_content, rename, self.pdf)
-            page2_content = _push_pop_graphics_state(page2_content, self.pdf)
+                page2_content, rename, self.parent)
+            page2_content = _push_pop_graphics_state(page2_content, self.parent)
             new_content_array.append(page2_content)
 
         utils.debug('-' * 16)
-        self[NameObject(CONTENT_KEY)] = _ContentStreamObject(new_content_array, self.pdf)
+        self[NameObject(_CONTENT_KEY)] = _ContentStreamObject(new_content_array, self.parent)
         self[NameObject(RESOURCES_KEY)] = new_resources
+
+    def rotate_clockwise(self, angle):
+        """Rotates a page clockwise by increments of 90 degrees.
+
+        Stability: Added in v1.1, will exist for all future v1.x releases.
+        @param angle Angle to rotate the page.  Must be an increment of 90 deg."""
+        assert angle % 90 == 0
+        self._rotate(angle)
+        return self
+
+    def rotate_counter_clockwise(self, angle):
+        """Rotates a page counter-clockwise by increments of 90 degrees.
+
+        Stability: Added in v1.1, will exist for all future v1.x releases.
+        @param angle Angle to rotate the page.  Must be an increment of 90 deg."""
+        assert angle % 90 == 0
+        self._rotate(-angle)
+        return self
+
+    def _rotate(self, angle):
+        current_angle = self.get(b'/Rotate', 0)
+        self[NameObject(b'/Rotate')] = NumberObject(current_angle + angle)
 
     def merge_transformed_page(self, page2, ctm):
         """This is similar to mergePage, but a transformation matrix is
@@ -231,9 +231,9 @@ class PageObject(DictionaryObject):
         original_content = self.get_contents()
         if original_content is not None:
             new_content = _add_transformation_matrix(
-                original_content, self.pdf, ctm)
-            new_content = _push_pop_graphics_state(new_content, self.pdf)
-            self[NameObject(CONTENT_KEY)] = new_content
+                original_content, self.parent, ctm)
+            new_content = _push_pop_graphics_state(new_content, self.parent)
+            self[NameObject(_CONTENT_KEY)] = new_content
 
     ##
     # Scales a page by the given factors by appling a transformation
@@ -283,8 +283,8 @@ class PageObject(DictionaryObject):
         content = self.get_contents()
         if content is not None:
             if not isinstance(content, _ContentStreamObject):
-                content = _ContentStreamObject(content, self.pdf)
-            self[NameObject(CONTENT_KEY)] = content.flate_encode()
+                content = _ContentStreamObject(content, self.parent)
+            self[NameObject(_CONTENT_KEY)] = content.flate_encode()
 
     ##
     # Locate all text drawing commands, in the order they are provided in the
@@ -299,9 +299,9 @@ class PageObject(DictionaryObject):
     # @return a unicode string object
     def extract_text(self):
         text = u""
-        content = self[CONTENT_KEY].get_object()
+        content = self[_CONTENT_KEY].get_object()
         if not isinstance(content, _ContentStreamObject):
-            content = _ContentStreamObject(content, self.pdf)
+            content = _ContentStreamObject(content, self.parent)
         # Note: we check all strings are TextStringObjects.  ByteStringObjects
         # are strings where the byte->string encoding was unknown, so adding
         # them to the text here would be gibberish.

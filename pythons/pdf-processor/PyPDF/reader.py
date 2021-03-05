@@ -9,18 +9,14 @@ import struct
 from io import BufferedReader, BytesIO
 
 import PyPDF.compound as _c
-import PyPDF.utils as utils
+import PyPDF.utils as _u
 import PyPDF.keys as _k
 from PyPDF.generic import (
-    NameObject, NumberObject,  BooleanObject, TextStringObject,
+    NameObject, NumberObject, BooleanObject, TextStringObject,
     IndirectObject, ByteStringObject,
     DictionaryObject, ArrayObject,
     StreamObject, DocumentInformation, Destination,
     create_string_object, read_object,
-)
-from PyPDF.utils import (
-    seek_token, read_until_whitespace,
-    algorithm_33_1, algorithm_34, algorithm_35,
 )
 
 
@@ -208,9 +204,9 @@ class PdfFileReader(object):
             stream_data = BytesIO(obj_stm.get_data())
             for i in range(obj_stm[b'/N']):
                 objnum = NumberObject.read_from_stream(stream_data)
-                seek_token(stream_data)
+                _u.seek_token(stream_data)
                 offset = NumberObject.read_from_stream(stream_data)
-                seek_token(stream_data)
+                _u.seek_token(stream_data)
                 t = stream_data.tell()
                 stream_data.seek(obj_stm[b'/First'] + offset, io.SEEK_SET)
                 obj = read_object(stream_data, self)
@@ -232,7 +228,7 @@ class PdfFileReader(object):
             # otherwise, decrypt here...
             pack1 = struct.pack("<i", indirect_reference.idnum)[:3]
             pack2 = struct.pack("<i", indirect_reference.generation)[:2]
-            key = utils.encrypt(self._decryption_key, pack1, pack2)
+            key = _u.encrypt(self._decryption_key, pack1, pack2)
             retval = self._decrypt_object(retval, key)
 
         self.cache_indirect_object(generation, idnum, retval)
@@ -250,14 +246,14 @@ class PdfFileReader(object):
         while not line:
             line = _read_backward_for_line(stream)
         if not line[:5] == b'%%EOF':
-            raise utils.PdfReadError("EOF marker not found")
+            raise _u.PdfReadError("EOF marker not found")
 
         # find startxref entry - the location of the xref table
         line = _read_backward_for_line(stream)
         startxref = int(line)
         line = _read_backward_for_line(stream)
         if not line[:9] == b'startxref':
-            raise utils.PdfReadError("Token 'startxref' not found")
+            raise _u.PdfReadError("Token 'startxref' not found")
 
         # read all cross reference tables and their trailers
         self._xref = {}
@@ -293,13 +289,13 @@ class PdfFileReader(object):
         # standard cross-reference table
         ref = stream.read(4)
         if not ref[:3] == b'ref':
-            raise utils.PdfReadError("xref table read error")
-        seek_token(stream)
+            raise _u.PdfReadError("xref table read error")
+        _u.seek_token(stream)
         while 1:
             num = read_object(stream, self)
-            seek_token(stream)
+            _u.seek_token(stream)
             size = read_object(stream, self)
-            seek_token(stream)
+            _u.seek_token(stream)
             cnt = 0
             while cnt < size:
                 line = stream.read(20)
@@ -327,14 +323,14 @@ class PdfFileReader(object):
                     self._xref[generation][num] = offset
                 cnt += 1
                 num += 1
-            seek_token(stream)
+            _u.seek_token(stream)
             trailertag = stream.read(7)
             if not trailertag == b'trailer':
                 # more xrefs!
                 stream.seek(-7, io.SEEK_CUR)
             else:
                 break
-        seek_token(stream)
+        _u.seek_token(stream)
         new_trailer = read_object(stream, self)
         for key, value in new_trailer.items():
             if key not in self._trailer:
@@ -360,17 +356,17 @@ class PdfFileReader(object):
                 keylen = 5
             else:
                 keylen = encrypt[b'/Length'].get_object() / 8
-            key = algorithm_33_1(password, rev, keylen)
+            key = _u.algorithm_33_1(password, rev, keylen)
             real_o = encrypt[b'/O'].get_object()
             if rev == 2:
-                userpass = utils.rc4_encrypt(key, real_o)
+                userpass = _u.rc4_encrypt(key, real_o)
             else:
                 val = real_o
                 for i in range(19, -1, -1):
                     new_key = ''
                     for j in range(len(key)):
                         new_key += chr(ord(key[j:j + 1]) ^ i)
-                    val = utils.rc4_encrypt(new_key, val)
+                    val = _u.rc4_encrypt(new_key, val)
                 userpass = val
             owner_password, key = self._authenticate_user_password(userpass)
             if owner_password:
@@ -388,20 +384,22 @@ class PdfFileReader(object):
         u = None
         key = None
         if rev == 2:
-            u, key = algorithm_34(password, owner_entry, p_entry, id1_entry)
+            u, key = _u.algorithm_34(password, owner_entry, p_entry, id1_entry)
         elif rev >= 3:
-            u, key = algorithm_35(password, rev,
-                                  encrypt[b'/Length'].get_object() / 8, owner_entry,
-                                  p_entry, id1_entry,
-                                  encrypt.get(b'/EncryptMetadata', BooleanObject(False)).get_object())
+            u, key = _u.algorithm_35(
+                password, rev,
+                encrypt[b'/Length'].get_object() / 8, owner_entry,
+                p_entry, id1_entry,
+                encrypt.get(b'/EncryptMetadata', BooleanObject(False)).get_object()
+            )
         real_u = encrypt[b'/U'].get_object().original_bytes
         return u == real_u, key
 
     def _decrypt_object(self, obj, key):
         if isinstance(obj, ByteStringObject) or isinstance(obj, TextStringObject):
-            obj = create_string_object(utils.rc4_encrypt(key, obj.original_bytes))
+            obj = create_string_object(_u.rc4_encrypt(key, obj.original_bytes))
         elif isinstance(obj, StreamObject):
-            obj.set_data(utils.rc4_encrypt(key, obj.get_data()))
+            obj.set_data(_u.rc4_encrypt(key, obj.get_data()))
         elif isinstance(obj, DictionaryObject):
             for dictkey, value in obj.items():
                 obj[dictkey] = self._decrypt_object(value, key)
@@ -433,7 +431,7 @@ class PdfFileReader(object):
                 outline = self._named_dests[dest]
                 outline[NameObject(b'/Title')] = title
             else:
-                raise utils.PdfReadError("Unexpected destination %r" % dest)
+                raise _u.PdfReadError("Unexpected destination %r" % dest)
         return outline
 
     def _flatten(self, pages=None, inherit=None, indirect_ref=None):
@@ -476,7 +474,7 @@ class PdfFileReader(object):
         stream.seek(-1, io.SEEK_CUR)
         idnum, generation = _read_object_header(stream)
         xrefstream = read_object(stream, self)
-        utils.debug(xrefstream)
+        _u.debug(xrefstream)
         assert xrefstream[_k.TYPE_KEY] == b'/XRef'
         self.cache_indirect_object(generation, idnum, xrefstream)
         stream_data = BytesIO(xrefstream.get_data())
@@ -532,7 +530,7 @@ class PdfFileReader(object):
 
 def _convert_to_int(d, size):
     if size > 8:
-        raise utils.PdfReadError("invalid size in convertToInt")
+        raise _u.PdfReadError("invalid size in convertToInt")
     d = "\x00\x00\x00\x00\x00\x00\x00\x00" + d
     d = d[-8:]
     return struct.unpack(">q", d)[0]
@@ -558,11 +556,11 @@ def _read_object_header(stream):
     cross-reference table should put us in the right spot to read the
     object header.  In reality... some files have stupid cross reference
     tables that are off by whitespace bytes."""
-    seek_token(stream)
-    idnum = read_until_whitespace(stream)
-    generation = read_until_whitespace(stream)
+    _u.seek_token(stream)
+    idnum = _u.read_until_whitespace(stream)
+    generation = _u.read_until_whitespace(stream)
     _obj = stream.read(3)
-    seek_token(stream)
+    _u.seek_token(stream)
     return int(idnum), int(generation)
 
 

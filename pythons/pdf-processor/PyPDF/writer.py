@@ -71,6 +71,20 @@ class PdfFileWriter(object):
         self._write_trailer_to(stream)
         stream.write(_u.s2b('\nstartxref\n%s\n%%%%EOF\n' % xref_location))
 
+    def add_blank_page(self, width=None, height=None):
+        page = _c.create_blank_page(self, width, height)
+        self.add_page(page)
+        return page
+
+    def insert_blank_page(self, width=None, height=None, index=0):
+        if width is None or height is None and self.get_pages_count() > index:
+            oldpage = self.get_page(index)
+            width = oldpage.media_box.get_width()
+            height = oldpage.media_box.get_height()
+        page = _c.create_blank_page(self, width, height)
+        self.insert_page(page, index)
+        return page
+
     def get_object(self, ido):
         if not ido.parent == self:
             raise ValueError("PyPDF must be self")
@@ -90,20 +104,6 @@ class PdfFileWriter(object):
     def get_pages_count(self):
         pages = self._pages.get_object()
         return int(pages[NameObject(b'/Count')])
-
-    def add_blank_page(self, width=None, height=None):
-        page = _c.create_blank_page(self, width, height)
-        self.add_page(page)
-        return page
-
-    def insert_blank_page(self, width=None, height=None, index=0):
-        if width is None or height is None and self.get_pages_count() > index:
-            oldpage = self.get_page(index)
-            width = oldpage.media_box.get_width()
-            height = oldpage.media_box.get_height()
-        page = _c.create_blank_page(self, width, height)
-        self.insert_page(page, index)
-        return page
 
     def encrypt(self, user_pwd, owner_pwd=None, use_128bit=True):
         """Encrypt this PDF file with the PDF Standard encryption handler.

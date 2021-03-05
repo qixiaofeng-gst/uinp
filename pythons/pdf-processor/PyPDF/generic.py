@@ -5,8 +5,8 @@ Implementation of generic PDF objects (dictionary, number, string, and so on)
 
 import io
 import re
-import PyPDF.filters as filters
-import PyPDF.utils as utils
+import PyPDF.filters as _f
+import PyPDF.utils as _u
 import PyPDF.keys as _k
 import decimal
 import codecs
@@ -44,7 +44,7 @@ def read_object(stream, pdf_reader):
         # comment
         while tok not in b'\r\n':
             tok = stream.read(1)
-        utils.seek_token(stream)
+        _u.seek_token(stream)
         return read_object(stream, pdf_reader)
     else:
         # number object OR indirect reference
@@ -74,7 +74,7 @@ class NullObject(PdfObject):
     def read_from_stream(stream):
         nulltxt = stream.read(4)
         if not nulltxt == b'null':
-            raise utils.PdfReadError("error reading null object")
+            raise _u.PdfReadError("error reading null object")
         return NullObject()
 
 
@@ -115,7 +115,7 @@ class ArrayObject(list, PdfObject):
         arr = ArrayObject()
         tmp = stream.read(1)
         if tmp not in b'[':
-            raise utils.PdfReadError("error reading array")
+            raise _u.PdfReadError("error reading array")
         while True:
             # skip leading whitespace
             tok = stream.read(1)
@@ -155,7 +155,7 @@ class IndirectObject(PdfObject):
         return not self.__eq__(other)
 
     def write_to_stream(self, stream):
-        stream.write(bytes('%s %s R' % (self.idnum, self.generation), utils.ENCODING_UTF8))
+        stream.write(bytes('%s %s R' % (self.idnum, self.generation), _u.ENCODING_UTF8))
 
     @staticmethod
     def read_from_stream(stream, pdf):
@@ -173,7 +173,7 @@ class IndirectObject(PdfObject):
             generation += tok
         r = stream.read(1)
         if r not in b'R':
-            raise utils.PdfReadError("error reading indirect object reference")
+            raise _u.PdfReadError("error reading indirect object reference")
         return IndirectObject(int(idnum), int(generation), pdf)
 
 
@@ -190,7 +190,7 @@ class FloatObject(decimal.Decimal, PdfObject):
             return "%.5f" % self  # This adds useless extraneous zeros.
 
     def write_to_stream(self, stream):
-        stream.write(utils.s2b(repr(self)))
+        stream.write(_u.s2b(repr(self)))
 
 
 class NumberObject(int, PdfObject):
@@ -198,7 +198,7 @@ class NumberObject(int, PdfObject):
         int.__init__(value)
 
     def write_to_stream(self, stream):
-        stream.write(bytes(repr(self), utils.ENCODING_UTF8))
+        stream.write(bytes(repr(self), _u.ENCODING_UTF8))
 
     @staticmethod
     def read_from_stream(stream):
@@ -210,7 +210,7 @@ class NumberObject(int, PdfObject):
                 break
             name += tok
         if name.find(b'.') > -1:
-            return FloatObject(name.decode(utils.ENCODING_UTF8))
+            return FloatObject(name.decode(_u.ENCODING_UTF8))
         else:
             return NumberObject(name)
 
@@ -228,7 +228,7 @@ class ByteStringObject(str, PdfObject):
     def write_to_stream(self, stream, encryption_key):
         bytearr = self
         if encryption_key:
-            bytearr = utils.rc4_encrypt(encryption_key, bytearr)
+            bytearr = _u.rc4_encrypt(encryption_key, bytearr)
         stream.write(b'<')
         stream.write(bytearr.encode("hex"))
         stream.write(b'>')
@@ -257,9 +257,9 @@ class TextStringObject(str, PdfObject):
         # would have been used to create this object, based upon the autodetect
         # method.
         if self.autodetect_utf16:
-            return codecs.BOM_UTF16_BE + self.encode(utils.ENCODING_UTF16BE)
+            return codecs.BOM_UTF16_BE + self.encode(_u.ENCODING_UTF16BE)
         elif self.autodetect_pdfdocencoding:
-            return utils.encode_pdf_doc_encoding(self)
+            return _u.encode_pdf_doc_encoding(self)
         else:
             raise Exception("no information about original bytes")
 
@@ -268,20 +268,20 @@ class TextStringObject(str, PdfObject):
         # nicer to look at in the PDF file.  Sadly, we take a performance hit
         # here for trying...
         try:
-            bytearr = utils.encode_pdf_doc_encoding(self)
+            bytearr = _u.encode_pdf_doc_encoding(self)
         except UnicodeEncodeError:
-            bytearr = codecs.BOM_UTF16_BE + self.encode(utils.ENCODING_UTF16BE)
+            bytearr = codecs.BOM_UTF16_BE + self.encode(_u.ENCODING_UTF16BE)
         if encryption_key:
-            bytearr = utils.rc4_encrypt(encryption_key, bytearr)
+            bytearr = _u.rc4_encrypt(encryption_key, bytearr)
             obj = ByteStringObject(bytearr)
             obj.write_to_stream(stream, None)
         else:
             stream.write(b'(')
             for c in bytearr:
                 if not c.isalnum() and not c == ' ':
-                    stream.write(utils.s2b("\\%03o" % ord(c)))
+                    stream.write(_u.s2b("\\%03o" % ord(c)))
                 else:
-                    stream.write(utils.s2b(c))
+                    stream.write(_u.s2b(c))
             stream.write(b')')
 
 
@@ -296,10 +296,10 @@ class NameObject(bytes, PdfObject):
     def read_from_stream(stream):
         name = stream.read(1)
         if name not in b'/':
-            raise utils.PdfReadError("name read error")
+            raise _u.PdfReadError("name read error")
         while True:
             tok = stream.read(1)
-            if tok.isspace() or tok in utils.DELIMITERS:
+            if tok.isspace() or tok in _u.DELIMITERS:
                 stream.seek(-1, io.SEEK_CUR)
                 break
             name += tok
@@ -385,23 +385,23 @@ class DictionaryObject(dict, PdfObject):
     def read_from_stream(stream, pdf_object):
         tmp = stream.read(2)
         if not tmp == b'<<':
-            raise utils.PdfReadError("dictionary read error")
+            raise _u.PdfReadError("dictionary read error")
         data = {}
         while True:
-            tok = utils.read_non_whitespace(stream)
+            tok = _u.read_non_whitespace(stream)
             if tok in b'>':
                 stream.read(1)
                 break
             stream.seek(-1, io.SEEK_CUR)
             key = read_object(stream, pdf_object)
-            utils.seek_token(stream)
+            _u.seek_token(stream)
             value = read_object(stream, pdf_object)
             if key in data:
                 # multiple definitions of key not permitted
-                raise utils.PdfReadError("multiple definitions in dictionary")
+                raise _u.PdfReadError("multiple definitions in dictionary")
             data[key] = value
         pos = stream.tell()
-        s = utils.read_non_whitespace(stream)
+        s = _u.read_non_whitespace(stream)
         if s in b's' and stream.read(5) == b'tream':
             eol = stream.read(1)
             # odd PDF file output has spaces after 'stream' keyword but before EOL.
@@ -420,7 +420,7 @@ class DictionaryObject(dict, PdfObject):
                 length = pdf_object.get_object(length)
                 stream.seek(t, io.SEEK_SET)
             data[_STREAM_KEY] = stream.read(length)
-            e = utils.read_non_whitespace(stream)
+            e = _u.read_non_whitespace(stream)
             ndstream = stream.read(8)
             if (e + ndstream) != b'endstream':
                 # (sigh) - the odd PDF file has a length that is too long, so
@@ -437,7 +437,7 @@ class DictionaryObject(dict, PdfObject):
                     data[_STREAM_KEY] = data[_STREAM_KEY][:-1]
                 else:
                     stream.seek(pos, io.SEEK_SET)
-                    raise utils.PdfReadError("Unable to find 'endstream' marker after stream.")
+                    raise _u.PdfReadError("Unable to find 'endstream' marker after stream.")
         else:
             stream.seek(pos, io.SEEK_SET)
         if _STREAM_KEY in data:
@@ -461,7 +461,7 @@ class StreamObject(DictionaryObject):
         stream.write(b'\nstream\n')
         data = self._data
         if encryption_key is not None:
-            data = utils.rc4_encrypt(encryption_key, data)
+            data = _u.rc4_encrypt(encryption_key, data)
         stream.write(data)
         stream.write(b'\nendstream')
 
@@ -479,7 +479,7 @@ class StreamObject(DictionaryObject):
             f = NameObject(b'/FlateDecode')
         retval = _EncodedStreamObject()
         retval[NameObject(b'/Filter')] = f
-        retval._data = filters.FlateDecode.encode(self._data)
+        retval._data = _f.FlateDecode.encode(self._data)
         return retval
 
     def get_data(self):
@@ -530,7 +530,7 @@ class _EncodedStreamObject(StreamObject):
             return decoded.get_data()
 
     def set_data(self, data):
-        raise utils.PdfReadError("Creating EncodedStreamObject is not currently supported")
+        raise _u.PdfReadError("Creating EncodedStreamObject is not currently supported")
 
 
 class DocumentInformation(DictionaryObject):
@@ -583,13 +583,13 @@ class Destination(DictionaryObject):
         elif position_type in [b'/Fit', b'FitB']:
             pass
         else:
-            raise utils.PdfReadError("Unknown Destination Type: %r" % position_type)
+            raise _u.PdfReadError("Unknown Destination Type: %r" % position_type)
 
 
 def create_string_object(string):
     if isinstance(string, bytes):
         if string.startswith(codecs.BOM_UTF16_BE):
-            retval = TextStringObject(string.decode(utils.ENCODING_UTF16))
+            retval = TextStringObject(string.decode(_u.ENCODING_UTF16))
             retval.autodetect_utf16 = True
             return retval
         else:
@@ -598,7 +598,7 @@ def create_string_object(string):
             # possible... and the only way to check if that's possible is
             # to try.  Some strings are strings, some are just byte arrays.
             try:
-                retval = TextStringObject(utils.decode_pdf_doc_encoding(string))
+                retval = TextStringObject(_u.decode_pdf_doc_encoding(string))
                 retval.autodetect_pdfdocencoding = True
                 return retval
             except UnicodeDecodeError:
@@ -610,11 +610,11 @@ def create_string_object(string):
 
 
 def read_hex_string_from_stream(stream):
-    return create_string_object(utils.read_hex_bytes_from(stream))
+    return create_string_object(_u.read_hex_bytes_from(stream))
 
 
 def read_string_from_stream(stream):
-    return create_string_object(utils.read_bytes_from(stream))
+    return create_string_object(_u.read_bytes_from(stream))
 
 
 def is_plain_object(obj):
@@ -629,11 +629,11 @@ def _decode_stream_data(stream):
     data = stream.bytes_data
     for filterType in filters_in_steam:
         if filterType == b'/FlateDecode':
-            data = filters.FlateDecode.decode(data, stream.get(b'/DecodeParms'))
+            data = _f.FlateDecode.decode(data, stream.get(b'/DecodeParms'))
         elif filterType == b'/ASCIIHexDecode':
-            data = filters.ASCIIHexDecode.decode(data)
+            data = _f.ASCIIHexDecode.decode(data)
         elif filterType == b'/ASCII85Decode':
-            data = filters.ASCII85Decode.decode(data)
+            data = _f.ASCII85Decode.decode(data)
         elif filterType == b'/Crypt':
             decode_params = stream.get(b'/DecodeParams', {})
             if b'/Name' not in decode_params and _k.TYPE_KEY not in decode_params:
