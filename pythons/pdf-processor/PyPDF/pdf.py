@@ -16,6 +16,7 @@ from PyPDF.generic import (
     NameObject, DictionaryObject, NumberObject, ArrayObject, BooleanObject, PageObject,
     IndirectObject, ByteStringObject, StreamObject, TextStringObject, DocumentInformation, Destination,
     create_string_object, read_object, is_plain_object, create_blank_page,
+    RESOURCES_KEY,
 )
 from PyPDF.utils import (
     seek_token, read_until_whitespace,
@@ -440,7 +441,7 @@ class PdfFileReader(object):
 
     def _flatten(self, pages=None, inherit=None, indirect_ref=None):
         inheritable_page_attributes = (
-            NameObject(b'/Resources'), NameObject(b'/MediaBox'),
+            NameObject(RESOURCES_KEY), NameObject(b'/MediaBox'),
             NameObject(b'/CropBox'), NameObject(b'/Rotate')
         )
         if inherit is None:

@@ -14,6 +14,8 @@ import decimal
 import codecs
 
 _STREAM_KEY = "__streamdata__"
+_CONTENT_KEY = b'/Contents'
+RESOURCES_KEY = b'/Resources'
 
 
 def read_object(stream, pdf_reader):
@@ -832,8 +834,8 @@ class PageObject(DictionaryObject):
     def get_contents(self):
         """Returns the /Contents object, or None if it doesn't exist.
         /Contents is optionnal, as described in PDF Reference  7.7.3.3"""
-        if b'/Contents' in self:
-            return self[b'/Contents'].get_object()
+        if _CONTENT_KEY in self:
+            return self[_CONTENT_KEY].get_object()
         else:
             return None
 
@@ -856,8 +858,8 @@ class PageObject(DictionaryObject):
         # rename.
         new_resources = DictionaryObject()
         rename = {}
-        original_resources = self[b'/Resources'].get_object()
-        page2_resources = page2[b'/Resources'].get_object()
+        original_resources = self[RESOURCES_KEY].get_object()
+        page2_resources = page2[RESOURCES_KEY].get_object()
 
         for res in b'/ExtGState', b'/Font', b'/XObject', b'/ColorSpace', b'/Pattern', b'/Shading', b'/Properties':
             new, newrename = _merge_resources(original_resources, page2_resources, res)
@@ -888,8 +890,8 @@ class PageObject(DictionaryObject):
             new_content_array.append(page2_content)
 
         utils.debug('-' * 16)
-        self[NameObject(b'/Contents')] = _ContentStream(new_content_array, self.pdf)
-        self[NameObject(b'/Resources')] = new_resources
+        self[NameObject(_CONTENT_KEY)] = _ContentStream(new_content_array, self.pdf)
+        self[NameObject(RESOURCES_KEY)] = new_resources
 
     ##
     # This is similar to mergePage, but a transformation matrix is
@@ -1003,7 +1005,7 @@ class PageObject(DictionaryObject):
             new_content = _add_transformation_matrix(
                 original_content, self.pdf, ctm)
             new_content = _push_pop_gs(new_content, self.pdf)
-            self[NameObject(b'/Contents')] = new_content
+            self[NameObject(_CONTENT_KEY)] = new_content
 
     ##
     # Scales a page by the given factors by appling a transformation
@@ -1054,7 +1056,7 @@ class PageObject(DictionaryObject):
         if content is not None:
             if not isinstance(content, _ContentStream):
                 content = _ContentStream(content, self.pdf)
-            self[NameObject(b'/Contents')] = content.flate_encode()
+            self[NameObject(_CONTENT_KEY)] = content.flate_encode()
 
     ##
     # Locate all text drawing commands, in the order they are provided in the
@@ -1069,7 +1071,7 @@ class PageObject(DictionaryObject):
     # @return a unicode string object
     def extract_text(self):
         text = u""
-        content = self[b'/Contents'].get_object()
+        content = self[_CONTENT_KEY].get_object()
         if not isinstance(content, _ContentStream):
             content = _ContentStream(content, self.pdf)
         # Note: we check all strings are TextStringObjects.  ByteStringObjects
@@ -1171,7 +1173,7 @@ def create_blank_page(_pdf=None, width=None, height=None):
     # Creates a new page (cf PDF Reference  7.7.3.3)
     page.__setitem__(NameObject(b'/Type'), NameObject(b'/Page'))
     page.__setitem__(NameObject(b'/Parent'), NullObject())
-    page.__setitem__(NameObject(b'/Resources'), DictionaryObject())
+    page.__setitem__(NameObject(RESOURCES_KEY), DictionaryObject())
     if width is None or height is None:
         if _pdf is not None and _pdf.get_pages_count() > 0:
             lastpage = _pdf.get_page(_pdf.get_pages_count() - 1)
