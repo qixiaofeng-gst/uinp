@@ -17,6 +17,7 @@ _STREAM_KEY = "__streamdata__"
 _CONTENT_KEY = b'/Contents'
 _IMAGE_KEY = b'INLINE IMAGE'
 RESOURCES_KEY = b'/Resources'
+TYPE_KEY = b'/Type'
 
 
 def read_object(stream, pdf_reader):
@@ -141,10 +142,10 @@ class IndirectObject(PdfObject):
     def __init__(self, idnum, generation, pdf):
         self.idnum = idnum
         self.generation = generation
-        self.pdf = pdf
+        self.parent = pdf
 
     def get_object(self):
-        return self.pdf.get_object(self).get_object()
+        return self.parent.get_object(self).get_object()
 
     def __repr__(self):
         return 'IndirectObject(%r, %r, %s)' % (self.idnum, self.generation, type(self.get_object()))
@@ -154,7 +155,7 @@ class IndirectObject(PdfObject):
                 isinstance(other, IndirectObject) and
                 self.idnum == other.idnum and
                 self.generation == other.generation and
-                self.pdf is other.pdf)
+                self.parent is other.parent)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -772,7 +773,7 @@ class Destination(DictionaryObject):
         DictionaryObject.__init__(self)
         self[NameObject(b'/Title')] = title
         self[NameObject(b'/Page')] = page
-        self[NameObject(b'/Type')] = position_type
+        self[NameObject(TYPE_KEY)] = position_type
 
         # from table 8.2 of the PDF 1.6 reference.
         if position_type == b'/XYZ':
@@ -903,7 +904,7 @@ class PageObject(DictionaryObject):
     #              transformation matrix
     def merge_transformed_page(self, page2, ctm):
         self.merge_page(page2, lambda page2_content: _add_transformation_matrix(
-            page2_content, page2.pdf, ctm
+            page2_content, page2.parent, ctm
         ))
 
     ##
@@ -1172,7 +1173,7 @@ def create_blank_page(_pdf=None, width=None, height=None):
     page = PageObject(_pdf)
 
     # Creates a new page (cf PDF Reference  7.7.3.3)
-    page.__setitem__(NameObject(b'/Type'), NameObject(b'/Page'))
+    page.__setitem__(NameObject(TYPE_KEY), NameObject(b'/Page'))
     page.__setitem__(NameObject(b'/Parent'), NullObject())
     page.__setitem__(NameObject(RESOURCES_KEY), DictionaryObject())
     if width is None or height is None:
@@ -1263,7 +1264,7 @@ def _get_rectangle(this, name, defaults):
             if retval is not None:
                 break
     if isinstance(retval, IndirectObject):
-        retval = this.pdf.get_object(retval)
+        retval = this.parent.get_object(retval)
     retval = RectangleObject(retval)
     _set_rectangle(this, name, retval)
     return retval
@@ -1306,7 +1307,7 @@ def _decode_stream_data(stream):
             data = filters.ASCII85Decode.decode(data)
         elif filterType == b'/Crypt':
             decode_params = stream.get(b'/DecodeParams', {})
-            if b'/Name' not in decode_params and b'/Type' not in decode_params:
+            if b'/Name' not in decode_params and TYPE_KEY not in decode_params:
                 pass
             else:
                 raise NotImplementedError("/Crypt filter with /Name or /Type not supported yet")

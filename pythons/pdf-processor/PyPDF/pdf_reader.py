@@ -6,20 +6,21 @@ It may be a solid base for future PDF file work in Python.
 """
 import io
 import struct
-import time
-import random
-from hashlib import md5
 from io import BufferedReader, BytesIO
 
 import PyPDF.utils as utils
 from PyPDF.generic import (
     NameObject, DictionaryObject, NumberObject, ArrayObject, BooleanObject, PageObject,
     IndirectObject, ByteStringObject, StreamObject, TextStringObject, DocumentInformation, Destination,
-    create_string_object, read_object, is_plain_object, create_blank_page,
-    RESOURCES_KEY,
+    create_string_object, read_object,
+    RESOURCES_KEY, TYPE_KEY,
 )
 from PyPDF.utils import (
     seek_token, read_until_whitespace,
+    algorithm_33_1, algorithm_34, algorithm_35,
+)
+from PyPDF.keys import (
+    KIDS_KEY
 )
 
 
@@ -113,9 +114,9 @@ class PdfFileReader(object):
         if tree is None:
             return retval
 
-        if b'/Kids' in tree:
+        if KIDS_KEY in tree:
             # recurse down the tree
-            for kid in tree[b'/Kids']:
+            for kid in tree[KIDS_KEY]:
                 self.get_named_destinations(kid.get_object(), retval)
 
         if b'/Names' in tree:
@@ -202,7 +203,7 @@ class PdfFileReader(object):
             # read the entire object stream into memory
             stmnum, idx = self._xref_obj_stream[indirect_reference.idnum]
             obj_stm = IndirectObject(stmnum, 0, self).get_object()
-            assert obj_stm[b'/Type'] == b'/ObjStm'
+            assert obj_stm[TYPE_KEY] == b'/ObjStm'
             assert idx < obj_stm[b'/N']
             stream_data = BytesIO(obj_stm.get_data())
             for i in range(obj_stm[b'/N']):
@@ -231,7 +232,7 @@ class PdfFileReader(object):
             # otherwise, decrypt here...
             pack1 = struct.pack("<i", indirect_reference.idnum)[:3]
             pack2 = struct.pack("<i", indirect_reference.generation)[:2]
-            key = _encrypt(self._decryption_key, pack1, pack2)
+            key = utils.encrypt(self._decryption_key, pack1, pack2)
             retval = self._decrypt_object(retval, key)
 
         self.cache_indirect_object(generation, idnum, retval)
@@ -359,7 +360,7 @@ class PdfFileReader(object):
                 keylen = 5
             else:
                 keylen = encrypt[b'/Length'].get_object() / 8
-            key = _alg33_1(password, rev, keylen)
+            key = algorithm_33_1(password, rev, keylen)
             real_o = encrypt[b'/O'].get_object()
             if rev == 2:
                 userpass = utils.rc4_encrypt(key, real_o)
@@ -387,12 +388,12 @@ class PdfFileReader(object):
         u = None
         key = None
         if rev == 2:
-            u, key = _alg34(password, owner_entry, p_entry, id1_entry)
+            u, key = algorithm_34(password, owner_entry, p_entry, id1_entry)
         elif rev >= 3:
-            u, key = _alg35(password, rev,
-                            encrypt[b'/Length'].get_object() / 8, owner_entry,
-                            p_entry, id1_entry,
-                            encrypt.get(b'/EncryptMetadata', BooleanObject(False)).get_object())
+            u, key = algorithm_35(password, rev,
+                                  encrypt[b'/Length'].get_object() / 8, owner_entry,
+                                  p_entry, id1_entry,
+                                  encrypt.get(b'/EncryptMetadata', BooleanObject(False)).get_object())
         real_u = encrypt[b'/U'].get_object().original_bytes
         return u == real_u, key
 
@@ -446,12 +447,12 @@ class PdfFileReader(object):
             self._flattened_pages = []
             catalog = self._trailer[b'/Root'].get_object()
             pages = catalog[b'/Pages'].get_object()
-        t = pages[b'/Type']
+        t = pages[TYPE_KEY]
         if t == b'/Pages':
             for attr in inheritable_page_attributes:
                 if attr in pages:
                     inherit[attr] = pages[attr]
-            for page in pages[b'/Kids']:
+            for page in pages[KIDS_KEY]:
                 addt = {}
                 if isinstance(page, IndirectObject):
                     addt['indirect_ref'] = page
@@ -476,7 +477,7 @@ class PdfFileReader(object):
         idnum, generation = read_object_header(stream)
         xrefstream = read_object(stream, self)
         utils.debug(xrefstream)
-        assert xrefstream[b'/Type'] == b'/XRef'
+        assert xrefstream[TYPE_KEY] == b'/XRef'
         self.cache_indirect_object(generation, idnum, xrefstream)
         stream_data = BytesIO(xrefstream.get_data())
         idx_pairs = xrefstream.get(b'/Index', [0, xrefstream.get(b'/Size')])
@@ -529,6 +530,14 @@ class PdfFileReader(object):
             return None
 
 
+def convert_to_int(d, size):
+    if size > 8:
+        raise utils.PdfReadError("invalid size in convertToInt")
+    d = "\x00\x00\x00\x00\x00\x00\x00\x00" + d
+    d = d[-8:]
+    return struct.unpack(">q", d)[0]
+
+
 def generate_pairs(array):
     i = 0
     while True:
@@ -571,440 +580,3 @@ def read_backward_for_line(stream: BufferedReader):
         else:
             line = x + line
     return line
-
-
-class PdfFileWriter(object):
-    """
-    This class supports writing PDF files out, given pages produced
-    by another class (typically PdfFileReader).
-    """
-
-    def __init__(self):
-        self._id = None
-        self._encrypt = None
-        self._encrypt_key = None
-        self._stack = []
-        self._objects = []  # array of indirect objects
-
-        # The root of our page tree node.
-        pages = DictionaryObject()
-        pages.update({
-            NameObject(b'/Type'): NameObject(b'/Pages'),
-            NameObject(b'/Count'): NumberObject(0),
-            NameObject(b'/Kids'): ArrayObject(),
-        })
-        self._pages = self._add_object(pages)
-
-        # info object
-        info = DictionaryObject()
-        info.update({
-            NameObject(b'/Producer'): create_string_object(b'PyPDF - Refactored by xiaofeng.qi')
-        })
-        self._info = self._add_object(info)
-
-        # root object
-        root = DictionaryObject()
-        root.update({
-            NameObject(b'/Type'): NameObject(b'/Catalog'),
-            NameObject(b'/Pages'): self._pages,
-        })
-        self._root = self._add_object(root)
-
-    def get_object(self, ido):
-        if not ido.pdf == self:
-            raise ValueError("PyPDF must be self")
-        return self._objects[ido.idnum - 1]
-
-    def add_page(self, page):
-        self._add_page(page, list.append)
-
-    def insert_page(self, page, index=0):
-        self._add_page(page, lambda l, p: l.insert(index, p))
-
-    def get_page(self, page_number):
-        """Retrieves a page by number from this PDF file."""
-        pages = self._pages.get_object()
-        return pages[b'/Kids'][page_number].get_object()
-
-    def get_pages_count(self):
-        pages = self._pages.get_object()
-        return int(pages[NameObject(b'/Count')])
-
-    def add_blank_page(self, width=None, height=None):
-        page = create_blank_page(self, width, height)
-        self.add_page(page)
-        return page
-
-    def insert_blank_page(self, width=None, height=None, index=0):
-        if width is None or height is None and self.get_pages_count() > index:
-            oldpage = self.get_page(index)
-            width = oldpage.media_box.get_width()
-            height = oldpage.media_box.get_height()
-        page = create_blank_page(self, width, height)
-        self.insert_page(page, index)
-        return page
-
-    def encrypt(self, user_pwd, owner_pwd=None, use_128bit=True):
-        """Encrypt this PDF file with the PDF Standard encryption handler.
-
-        user_pwd - The "user password", which allows for opening and reading
-                the PDF file with the restrictions provided.
-        owner_pwd - The "owner password", which allows for opening the PDF
-                files without any restrictions.  By default, the owner password is the
-                same as the user password.
-        use_128bit - Boolean argument as to whether to use 128bit
-                encryption.  When false, 40bit encryption will be used.  By default, this
-                flag is on."""
-        if owner_pwd is None:
-            owner_pwd = user_pwd
-        if use_128bit:
-            v = 2
-            rev = 3
-            keylen = 128 / 8
-        else:
-            v = 1
-            rev = 2
-            keylen = 40 / 8
-        # permit everything:
-        p = -1
-        o = ByteStringObject(_alg33(owner_pwd, user_pwd, rev, keylen))
-        id_1 = md5(bytes(repr(time.time()), utils.ENCODING_UTF8)).digest()
-        id_2 = md5(bytes(repr(random.random()), utils.ENCODING_UTF8)).digest()
-        self._id = ArrayObject((ByteStringObject(id_1), ByteStringObject(id_2)))
-        if rev == 2:
-            u, key = _alg34(user_pwd, o, p, id_1)
-        else:
-            assert rev == 3
-            u, key = _alg35(user_pwd, rev, keylen, o, p, id_1, False)
-        encrypt = DictionaryObject()
-        encrypt[NameObject(b'/Filter')] = NameObject(b'/Standard')
-        encrypt[NameObject(b'/V')] = NumberObject(v)
-        if v == 2:
-            encrypt[NameObject(b'/Length')] = NumberObject(keylen * 8)
-        encrypt[NameObject(b'/R')] = NumberObject(rev)
-        encrypt[NameObject(b'/O')] = ByteStringObject(o)
-        encrypt[NameObject(b'/U')] = ByteStringObject(u)
-        encrypt[NameObject(b'/P')] = NumberObject(p)
-        self._encrypt = self._add_object(encrypt)
-        self._encrypt_key = key
-
-    def write(self, stream):
-        """Writes the collection of pages added to this object out as a PDF file.
-
-        Stability: Added in v1.0, will exist for all v1.x releases.
-
-        stream - An object to write the file to.  The object must support
-                 the write method, and the tell method, similar to a file object."""
-        external_reference_map = self._build_external_reference_map()
-        self._stack = []
-        self._sweep_indirect_references(external_reference_map, self._root)
-        self._stack = []
-
-        # Begin writing:
-        object_positions = self._write_objects_to(stream)
-        xref_location = self._write_cross_reference_table(stream, object_positions)
-        self._write_trailer_to(stream)
-        stream.write(utils.s2b('\nstartxref\n%s\n%%%%EOF\n' % xref_location))
-
-    def _write_cross_reference_table(self, stream, object_positions):
-        xref_location = stream.tell()
-        stream.write(b'xref\n')
-        stream.write(utils.s2b("0 %s\n" % (len(self._objects) + 1)))
-        stream.write(utils.s2b("%010d %05d f \n" % (0, 65535)))
-        for offset in object_positions:
-            stream.write(utils.s2b("%010d %05d n \n" % (offset, 0)))
-        return xref_location
-
-    def _write_objects_to(self, stream):
-        object_positions = []
-        stream.write(b'%PDF-1.3\n')
-        for i in range(len(self._objects)):
-            idnum = (i + 1)
-            obj = self._objects[i]
-            object_positions.append(stream.tell())
-            stream.write(utils.s2b(str(idnum) + " 0 obj\n"))
-            key = None
-            if (self._encrypt is not None) and (not (idnum == self._encrypt.idnum)):
-                pack1 = struct.pack("<i", i + 1)[:3]
-                pack2 = struct.pack("<i", 0)[:2]
-                key = _encrypt(self._encrypt_key, pack1, pack2)
-            if is_plain_object(obj):
-                obj.write_to_stream(stream)
-            else:
-                obj.write_to_stream(stream, key)
-            stream.write(b'\nendobj\n')
-        return object_positions
-
-    def _add_object(self, obj):
-        self._objects.append(obj)
-        return IndirectObject(len(self._objects), 0, self)
-
-    def _add_page(self, page, callback_add):
-        """Common method for inserting or adding a page to this PDF file.
-
-        page - The page to add to the document.  This argument should be
-                    an instance of {@link #PageObject PageObject}.
-        callback_add - The function which will insert the page in the dictionnary.
-                      Takes: page list, page to add."""
-        assert page[b'/Type'] == b'/Page'
-        page[NameObject(b'/Parent')] = self._pages
-        page = self._add_object(page)
-        pages = self._pages.get_object()
-        callback_add(pages[b'/Kids'], page)
-        pages[NameObject(b'/Count')] = NumberObject(pages[b'/Count'] + 1)
-
-    def _build_external_reference_map(self):
-        """PDF objects sometimes have circular references to their /Page objects
-        inside their object tree (for example, annotations).  Those will be
-        indirect references to objects that we've recreated in this PDF.  To
-        address this problem, PageObject's store their original object
-        reference number, and we add it to the external reference map before
-        we sweep for indirect references.  This forces self-page-referencing
-        trees to reference the correct new object location, rather than
-        copying in a new copy of the page object."""
-        external_reference_map = {}
-        for ido_index in range(len(self._objects)):
-            ido = self._objects[ido_index]
-            if isinstance(ido, PageObject) and ido.indirect_ref is not None:
-                utils.debug(type(ido), ido.indirect_ref)
-                data = ido.indirect_ref
-                if data.pdf not in external_reference_map:
-                    external_reference_map[data.pdf] = {}
-                if data.generation not in external_reference_map[data.pdf]:
-                    external_reference_map[data.pdf][data.generation] = {}
-                external_reference_map[data.pdf][data.generation][data.idnum] = IndirectObject(ido_index + 1, 0, self)
-        return external_reference_map
-
-    def _write_trailer_to(self, stream):
-        stream.write(b'trailer\n')
-        trailer = DictionaryObject()
-        trailer.update({
-            NameObject(b'/Size'): NumberObject(len(self._objects) + 1),
-            NameObject(b'/Root'): self._root,
-            NameObject(b'/Info'): self._info,
-        })
-        if self._id is not None:
-            trailer[NameObject(b'/ID')] = self._id
-        if self._encrypt is not None:
-            trailer[NameObject(b'/Encrypt')] = self._encrypt
-        trailer.write_to_stream(stream)
-
-    def _sweep_indirect_references(self, extern_map, data):
-        if isinstance(data, DictionaryObject):
-            for key, value in data.items():
-                _origvalue = value
-                value = self._sweep_indirect_references(extern_map, value)
-                if isinstance(value, StreamObject):
-                    # a dictionary value is a stream.  streams must be indirect
-                    # objects, so we need to change this value.
-                    value = self._add_object(value)
-                data[key] = value
-            return data
-        elif isinstance(data, ArrayObject):
-            for i in range(len(data)):
-                value = self._sweep_indirect_references(extern_map, data[i])
-                if isinstance(value, StreamObject):
-                    # an array value is a stream.  streams must be indirect
-                    # objects, so we need to change this value
-                    value = self._add_object(value)
-                data[i] = value
-            return data
-        elif isinstance(data, IndirectObject):
-            # internal indirect references are fine
-            if data.pdf == self:
-                if data.idnum in self._stack:
-                    return data
-                else:
-                    self._stack.append(data.idnum)
-                    realdata = self.get_object(data)
-                    self._sweep_indirect_references(extern_map, realdata)
-                    self._stack.pop()
-                    return data
-            else:
-                newobj = extern_map.get(data.pdf, {}).get(data.generation, {}).get(data.idnum, None)
-                if newobj is None:
-                    newobj = data.pdf.get_object(data)
-                    self._objects.append(None)  # placeholder
-                    idnum = len(self._objects)
-                    newobj_ido = IndirectObject(idnum, 0, self)
-                    if data.pdf not in extern_map:
-                        extern_map[data.pdf] = {}
-                    if data.generation not in extern_map[data.pdf]:
-                        extern_map[data.pdf][data.generation] = {}
-                    extern_map[data.pdf][data.generation][data.idnum] = newobj_ido
-                    newobj = self._sweep_indirect_references(extern_map, newobj)
-                    self._objects[idnum - 1] = newobj
-                    return newobj_ido
-                return newobj
-        else:
-            return data
-
-
-def convert_to_int(d, size):
-    if size > 8:
-        raise utils.PdfReadError("invalid size in convertToInt")
-    d = "\x00\x00\x00\x00\x00\x00\x00\x00" + d
-    d = d[-8:]
-    return struct.unpack(">q", d)[0]
-
-
-# ref: pdf1.8 spec section 3.5.2 algorithm 3.2
-_encryption_padding = '\x28\xbf\x4e\x5e\x4e\x75\x8a\x41\x64\x00\x4e\x56' + \
-                      '\xff\xfa\x01\x08\x2e\x2e\x00\xb6\xd0\x68\x3e\x80\x2f\x0c' + \
-                      '\xa9\xfe\x64\x53\x69\x7a'
-
-
-# Implementation of algorithm 3.2 of the PDF standard security handler,
-# section 3.5.2 of the PDF 1.6 reference.
-def _alg32(password, rev, keylen, owner_entry, p_entry, id1_entry, metadata_encrypt=True):
-    # 1. Pad or truncate the password string to exactly 32 bytes.  If the
-    # password string is more than 32 bytes long, use only its first 32 bytes;
-    # if it is less than 32 bytes long, pad it by appending the required number
-    # of additional bytes from the beginning of the padding string
-    # (_encryption_padding).
-    password = (password + _encryption_padding)[:32]
-    # 2. Initialize the MD5 hash function and pass the result of step 1 as
-    # input to this function.
-    m = md5(password)
-    # 3. Pass the value of the encryption dictionary's /O entry to the MD5 hash
-    # function.
-    m.update(owner_entry)
-    # 4. Treat the value of the /P entry as an unsigned 4-byte integer and pass
-    # these bytes to the MD5 hash function, low-order byte first.
-    p_entry = struct.pack('<i', p_entry)
-    m.update(p_entry)
-    # 5. Pass the first element of the file's file identifier array to the MD5
-    # hash function.
-    m.update(id1_entry)
-    # 6. (Revision 3 or greater) If document metadata is not being encrypted,
-    # pass 4 bytes with the value 0xFFFFFFFF to the MD5 hash function.
-    if rev >= 3 and not metadata_encrypt:
-        m.update(b'\xff\xff\xff\xff')
-    # 7. Finish the hash.
-    md5_hash = m.digest()
-    # 8. (Revision 3 or greater) Do the following 50 times: Take the output
-    # from the previous MD5 hash and pass the first n bytes of the output as
-    # input into a new MD5 hash, where n is the number of bytes of the
-    # encryption key as defined by the value of the encryption dictionary's
-    # /Length entry.
-    if rev >= 3:
-        for i in range(50):
-            md5_hash = md5(md5_hash[:keylen]).digest()
-    # 9. Set the encryption key to the first n bytes of the output from the
-    # final MD5 hash, where n is always 5 for revision 2 but, for revision 3 or
-    # greater, depends on the value of the encryption dictionary's /Length
-    # entry.
-    return md5_hash[:keylen]
-
-
-# Implementation of algorithm 3.3 of the PDF standard security handler,
-# section 3.5.2 of the PDF 1.6 reference.
-def _alg33(owner_pwd, user_pwd, rev, keylen):
-    # steps 1 - 4
-    key = _alg33_1(owner_pwd, rev, keylen)
-    # 5. Pad or truncate the user password string as described in step 1 of
-    # algorithm 3.2.
-    user_pwd = (user_pwd + _encryption_padding)[:32]
-    # 6. Encrypt the result of step 5, using an RC4 encryption function with
-    # the encryption key obtained in step 4.
-    val = utils.rc4_encrypt(key, user_pwd)
-    # 7. (Revision 3 or greater) Do the following 19 times: Take the output
-    # from the previous invocation of the RC4 function and pass it as input to
-    # a new invocation of the function; use an encryption key generated by
-    # taking each byte of the encryption key obtained in step 4 and performing
-    # an XOR operation between that byte and the single-byte value of the
-    # iteration counter (from 1 to 19).
-    if rev >= 3:
-        for i in range(1, 20):
-            new_key = ''
-            for j in range(len(key)):
-                new_key += chr(ord(key[j:j + 1]) ^ i)
-            val = utils.rc4_encrypt(new_key, val)
-    # 8. Store the output from the final invocation of the RC4 as the value of
-    # the /O entry in the encryption dictionary.
-    return val
-
-
-# Steps 1-4 of algorithm 3.3
-def _alg33_1(password, rev, keylen):
-    # 1. Pad or truncate the owner password string as described in step 1 of
-    # algorithm 3.2.  If there is no owner password, use the user password
-    # instead.
-    password = (password + _encryption_padding)[:32]
-    # 2. Initialize the MD5 hash function and pass the result of step 1 as
-    # input to this function.
-    m = md5(password)
-    # 3. (Revision 3 or greater) Do the following 50 times: Take the output
-    # from the previous MD5 hash and pass it as input into a new MD5 hash.
-    md5_hash = m.digest()
-    if rev >= 3:
-        for i in range(50):
-            md5_hash = md5(md5_hash).digest()
-    # 4. Create an RC4 encryption key using the first n bytes of the output
-    # from the final MD5 hash, where n is always 5 for revision 2 but, for
-    # revision 3 or greater, depends on the value of the encryption
-    # dictionary's /Length entry.
-    key = md5_hash[:keylen]
-    return key
-
-
-# Implementation of algorithm 3.4 of the PDF standard security handler,
-# section 3.5.2 of the PDF 1.6 reference.
-def _alg34(password, owner_entry, p_entry, id1_entry):
-    # 1. Create an encryption key based on the user password string, as
-    # described in algorithm 3.2.
-    key = _alg32(password, 2, 5, owner_entry, p_entry, id1_entry)
-    # 2. Encrypt the 32-byte padding string shown in step 1 of algorithm 3.2,
-    # using an RC4 encryption function with the encryption key from the
-    # preceding step.
-    u = utils.rc4_encrypt(key, _encryption_padding)
-    # 3. Store the result of step 2 as the value of the /U entry in the
-    # encryption dictionary.
-    return u, key
-
-
-# Implementation of algorithm 3.4 of the PDF standard security handler,
-# section 3.5.2 of the PDF 1.6 reference.
-def _alg35(password, rev, keylen, owner_entry, p_entry, id1_entry, _metadata_encrypt):
-    # 1. Create an encryption key based on the user password string, as
-    # described in Algorithm 3.2.
-    key = _alg32(password, rev, keylen, owner_entry, p_entry, id1_entry)
-    # 2. Initialize the MD5 hash function and pass the 32-byte padding string
-    # shown in step 1 of Algorithm 3.2 as input to this function. 
-    m = md5()
-    m.update(bytes(_encryption_padding, utils.ENCODING_UTF8))
-    # 3. Pass the first element of the file's file identifier array (the value
-    # of the ID entry in the document's trailer dictionary; see Table 3.13 on
-    # page 73) to the hash function and finish the hash.  (See implementation
-    # note 25 in Appendix H.) 
-    m.update(id1_entry)
-    md5_hash = m.digest()
-    # 4. Encrypt the 16-byte result of the hash, using an RC4 encryption
-    # function with the encryption key from step 1. 
-    val = utils.rc4_encrypt(key, md5_hash)
-    # 5. Do the following 19 times: Take the output from the previous
-    # invocation of the RC4 function and pass it as input to a new invocation
-    # of the function; use an encryption key generated by taking each byte of
-    # the original encryption key (obtained in step 2) and performing an XOR
-    # operation between that byte and the single-byte value of the iteration
-    # counter (from 1 to 19). 
-    for _i in range(1, 20):
-        new_key = ''
-        for j in range(len(key)):
-            new_key += chr(ord(key[j:j + 1]) ^ _i)
-        val = utils.rc4_encrypt(new_key, val)
-    # 6. Append 16 bytes of arbitrary padding to the output from the final
-    # invocation of the RC4 function and store the 32-byte result as the value
-    # of the U entry in the encryption dictionary. 
-    # (implementator note: I don't know what "arbitrary padding" is supposed to
-    # mean, so I have used null bytes.  This seems to match a few other
-    # people's implementations)
-    return val + ('\x00' * 16), key
-
-
-def _encrypt(encrypt_key, pack1, pack2):
-    key = encrypt_key + pack1 + pack2
-    assert len(key) == (len(encrypt_key) + 5)
-    md5_hash = md5(key).digest()
-    key = md5_hash[:min(16, len(encrypt_key) + 5)]
-    return key

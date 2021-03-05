@@ -1,4 +1,5 @@
-from PyPDF.pdf import PdfFileReader, PdfFileWriter
+from PyPDF.pdf_reader import PdfFileReader
+from PyPDF.pdf_writer import PdfFileWriter
 import PyPDF.utils as utils
 
 if __name__ == "__main__":
