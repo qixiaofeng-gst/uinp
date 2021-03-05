@@ -126,7 +126,7 @@ class PdfFileReader(object):
                 val = names[i + 1].get_object()
                 if isinstance(val, DictionaryObject) and b'/D' in val:
                     val = val[b'/D']
-                dest = build_destination(key, val)
+                dest = _build_destination(key, val)
                 if dest is not None:
                     retval[key] = dest
 
@@ -219,7 +219,7 @@ class PdfFileReader(object):
             return self._resolved_objects[0][indirect_reference.idnum]
         start = self._xref[indirect_reference.generation][indirect_reference.idnum]
         self._stream.seek(start, io.SEEK_SET)
-        idnum, generation = read_object_header(self._stream)
+        idnum, generation = _read_object_header(self._stream)
         assert idnum == indirect_reference.idnum
         assert generation == indirect_reference.generation
         retval = read_object(self._stream, self)
@@ -248,14 +248,14 @@ class PdfFileReader(object):
         stream.seek(-1, io.SEEK_END)
         line = ''
         while not line:
-            line = read_backward_for_line(stream)
+            line = _read_backward_for_line(stream)
         if not line[:5] == b'%%EOF':
             raise utils.PdfReadError("EOF marker not found")
 
         # find startxref entry - the location of the xref table
-        line = read_backward_for_line(stream)
+        line = _read_backward_for_line(stream)
         startxref = int(line)
-        line = read_backward_for_line(stream)
+        line = _read_backward_for_line(stream)
         if not line[:9] == b'startxref':
             raise utils.PdfReadError("Token 'startxref' not found")
 
@@ -427,7 +427,7 @@ class PdfFileReader(object):
         # if destination found, then create outline
         if dest:
             if isinstance(dest, ArrayObject):
-                outline = build_destination(title, dest)
+                outline = _build_destination(title, dest)
             # FIXME elif dest in isinstance(dest, unicode) and self._namedDests:
             elif dest in isinstance(dest, str) and self._named_dests:
                 outline = self._named_dests[dest]
@@ -474,7 +474,7 @@ class PdfFileReader(object):
     def _parse_1_5_cross_reference_table(self, stream):
         # PDF 1.5+ Cross-Reference Stream
         stream.seek(-1, io.SEEK_CUR)
-        idnum, generation = read_object_header(stream)
+        idnum, generation = _read_object_header(stream)
         xrefstream = read_object(stream, self)
         utils.debug(xrefstream)
         assert xrefstream[TYPE_KEY] == b'/XRef'
@@ -482,7 +482,7 @@ class PdfFileReader(object):
         stream_data = BytesIO(xrefstream.get_data())
         idx_pairs = xrefstream.get(b'/Index', [0, xrefstream.get(b'/Size')])
         entry_sizes = xrefstream.get(b'/W')
-        for num, size in generate_pairs(idx_pairs):
+        for num, size in _generate_pairs(idx_pairs):
             cnt = 0
             xref_type = None
             byte_offset = None
@@ -491,7 +491,7 @@ class PdfFileReader(object):
             while cnt < size:
                 for i in range(len(entry_sizes)):
                     d = stream_data.read(entry_sizes[i])
-                    di = convert_to_int(d, entry_sizes[i])
+                    di = _convert_to_int(d, entry_sizes[i])
                     if i == 0:
                         xref_type = di
                     elif i == 1:
@@ -530,7 +530,7 @@ class PdfFileReader(object):
             return None
 
 
-def convert_to_int(d, size):
+def _convert_to_int(d, size):
     if size > 8:
         raise utils.PdfReadError("invalid size in convertToInt")
     d = "\x00\x00\x00\x00\x00\x00\x00\x00" + d
@@ -538,7 +538,7 @@ def convert_to_int(d, size):
     return struct.unpack(">q", d)[0]
 
 
-def generate_pairs(array):
+def _generate_pairs(array):
     i = 0
     while True:
         yield array[i], array[i + 1]
@@ -547,13 +547,13 @@ def generate_pairs(array):
             break
 
 
-def build_destination(title, array):
+def _build_destination(title, array):
     page, typ = array[0:2]
     array = array[2:]
     return Destination(title, page, typ, *array)
 
 
-def read_object_header(stream):
+def _read_object_header(stream):
     """Should never be necessary to read out whitespace, since the
     cross-reference table should put us in the right spot to read the
     object header.  In reality... some files have stupid cross reference
@@ -566,7 +566,7 @@ def read_object_header(stream):
     return int(idnum), int(generation)
 
 
-def read_backward_for_line(stream: BufferedReader):
+def _read_backward_for_line(stream: BufferedReader):
     line = b''
     while True:
         x = stream.read(1)

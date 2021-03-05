@@ -219,20 +219,6 @@ class PdfFileWriter(object):
                 )
         return external_reference_map
 
-    def _write_trailer_to(self, stream):
-        stream.write(b'trailer\n')
-        trailer = DictionaryObject()
-        trailer.update({
-            NameObject(b'/Size'): NumberObject(len(self._objects) + 1),
-            NameObject(b'/Root'): self._root,
-            NameObject(b'/Info'): self._info,
-        })
-        if self._id is not None:
-            trailer[NameObject(b'/ID')] = self._id
-        if self._encrypt is not None:
-            trailer[NameObject(b'/Encrypt')] = self._encrypt
-        trailer.write_to_stream(stream)
-
     def _scan_indirect_references(self, extern_map, data):
         if isinstance(data, DictionaryObject):
             for key, value in data.items():
@@ -282,3 +268,17 @@ class PdfFileWriter(object):
                 return newobj
         else:
             return data
+
+    def _write_trailer_to(self, stream):
+        stream.write(b'trailer\n')
+        trailer = DictionaryObject()
+        trailer.update({
+            NameObject(b'/Size'): NumberObject(len(self._objects) + 1),
+            NameObject(b'/Root'): self._root,
+            NameObject(b'/Info'): self._info,
+        })
+        if self._id is not None:
+            trailer[NameObject(b'/ID')] = self._id
+        if self._encrypt is not None:
+            trailer[NameObject(b'/Encrypt')] = self._encrypt
+        trailer.write_to_stream(stream)
