@@ -9,9 +9,7 @@ from PyPDF.generic import (
     read_object,
 )
 
-RESOURCES_KEY = b'/Resources'
-_IMAGE_KEY = b'INLINE IMAGE'
-_CONTENT_KEY = b'/Contents'
+_IMAGE_OPERATOR = b'INLINE IMAGE'
 
 
 def _create_rectangle_accessor(name, fallback):
@@ -42,8 +40,8 @@ class PageObject(DictionaryObject):
     def get_contents(self):
         """Returns the /Contents object, or None if it doesn't exist.
         /Contents is optionnal, as described in PDF Reference  7.7.3.3"""
-        if _CONTENT_KEY in self:
-            return self[_CONTENT_KEY].get_object()
+        if _k.CONTENT in self:
+            return self[_k.CONTENT].get_object()
         else:
             return None
 
@@ -66,8 +64,8 @@ class PageObject(DictionaryObject):
         # rename.
         new_resources = DictionaryObject()
         rename = {}
-        original_resources = self[RESOURCES_KEY].get_object()
-        page2_resources = page2[RESOURCES_KEY].get_object()
+        original_resources = self[_k.RESOURCES].get_object()
+        page2_resources = page2[_k.RESOURCES].get_object()
 
         for res in b'/ExtGState', b'/Font', b'/XObject', b'/ColorSpace', b'/Pattern', b'/Shading', b'/Properties':
             new, newrename = _merge_resources(original_resources, page2_resources, res)
@@ -83,7 +81,6 @@ class PageObject(DictionaryObject):
         )
 
         new_content_array = ArrayObject()
-
         original_content = self.get_contents()
         if original_content is not None:
             new_content_array.append(_push_pop_graphics_state(original_content, self.parent))
@@ -92,14 +89,12 @@ class PageObject(DictionaryObject):
         if page2_content is not None:
             if page2transformation is not None:
                 page2_content = page2transformation(page2_content)
-            page2_content = _content_stream_rename(
-                page2_content, rename, self.parent)
+            page2_content = _content_stream_rename(page2_content, rename, self.parent)
             page2_content = _push_pop_graphics_state(page2_content, self.parent)
             new_content_array.append(page2_content)
 
-        utils.debug('-' * 16)
-        self[NameObject(_CONTENT_KEY)] = _ContentStreamObject(new_content_array, self.parent)
-        self[NameObject(RESOURCES_KEY)] = new_resources
+        self[NameObject(_k.CONTENT)] = _ContentStreamObject(new_content_array, self.parent)
+        self[NameObject(_k.RESOURCES)] = new_resources
 
     def rotate_clockwise(self, angle):
         """Rotates a page clockwise by increments of 90 degrees.
@@ -120,8 +115,8 @@ class PageObject(DictionaryObject):
         return self
 
     def _rotate(self, angle):
-        current_angle = self.get(b'/Rotate', 0)
-        self[NameObject(b'/Rotate')] = NumberObject(current_angle + angle)
+        current_angle = self.get(_k.ROTATE, 0)
+        self[NameObject(_k.ROTATE)] = NumberObject(current_angle + angle)
 
     def merge_transformed_page(self, page2, ctm):
         """This is similar to mergePage, but a transformation matrix is
@@ -233,7 +228,7 @@ class PageObject(DictionaryObject):
             new_content = _add_transformation_matrix(
                 original_content, self.parent, ctm)
             new_content = _push_pop_graphics_state(new_content, self.parent)
-            self[NameObject(_CONTENT_KEY)] = new_content
+            self[NameObject(_k.CONTENT)] = new_content
 
     ##
     # Scales a page by the given factors by appling a transformation
@@ -284,7 +279,7 @@ class PageObject(DictionaryObject):
         if content is not None:
             if not isinstance(content, _ContentStreamObject):
                 content = _ContentStreamObject(content, self.parent)
-            self[NameObject(_CONTENT_KEY)] = content.flate_encode()
+            self[NameObject(_k.CONTENT)] = content.flate_encode()
 
     ##
     # Locate all text drawing commands, in the order they are provided in the
@@ -299,7 +294,7 @@ class PageObject(DictionaryObject):
     # @return a unicode string object
     def extract_text(self):
         text = u""
-        content = self[_CONTENT_KEY].get_object()
+        content = self[_k.CONTENT].get_object()
         if not isinstance(content, _ContentStreamObject):
             content = _ContentStreamObject(content, self.parent)
         # Note: we check all strings are TextStringObjects.  ByteStringObjects
@@ -334,7 +329,7 @@ class PageObject(DictionaryObject):
     # intended to be displayed or printed.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    media_box = _create_rectangle_accessor(b'/MediaBox', ())
+    media_box = _create_rectangle_accessor(_k.MEDIA_BOX, ())
 
     ##
     # A rectangle (RectangleObject), expressed in default user space units,
@@ -344,7 +339,7 @@ class PageObject(DictionaryObject):
     # implementation-defined manner.  Default value: same as MediaBox.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    crop_box = _create_rectangle_accessor(b'/CropBox', (b'/MediaBox',))
+    crop_box = _create_rectangle_accessor(_k.CROP_BOX, (_k.MEDIA_BOX,))
 
     ##
     # A rectangle (RectangleObject), expressed in default user space units,
@@ -352,14 +347,14 @@ class PageObject(DictionaryObject):
     # when output in a production enviroment.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    bleed_box = _create_rectangle_accessor(b'/BleedBox', (b'/CropBox', b'/MediaBox'))
+    bleed_box = _create_rectangle_accessor(b'/BleedBox', (_k.CROP_BOX, _k.MEDIA_BOX))
 
     ##
     # A rectangle (RectangleObject), expressed in default user space units,
     # defining the intended dimensions of the finished page after trimming.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    trim_box = _create_rectangle_accessor(b'/TrimBox', (b'/CropBox', b'/MediaBox'))
+    trim_box = _create_rectangle_accessor(b'/TrimBox', (_k.CROP_BOX, _k.MEDIA_BOX))
 
     ##
     # A rectangle (RectangleObject), expressed in default user space units,
@@ -367,7 +362,7 @@ class PageObject(DictionaryObject):
     # page's creator.
     # <p>
     # Stability: Added in v1.4, will exist for all future v1.x releases.
-    art_box = _create_rectangle_accessor(b'/ArtBox', (b'/CropBox', b'/MediaBox'))
+    art_box = _create_rectangle_accessor(b'/ArtBox', (_k.CROP_BOX, _k.MEDIA_BOX))
 
 
 class _ContentStreamObject(DecodedStreamObject):
@@ -414,7 +409,7 @@ class _ContentStreamObject(DecodedStreamObject):
                     # mechanism is required, of course... thanks buddy...
                     assert operands == []
                     ii = self.__read_inline_image(stream)
-                    self.operations.append((ii, _IMAGE_KEY))
+                    self.operations.append((ii, _IMAGE_OPERATOR))
                 else:
                     self.operations.append((operands, operator))
                     operands = []
@@ -454,7 +449,7 @@ class _ContentStreamObject(DecodedStreamObject):
     def _data(self):
         newdata = io.BytesIO()
         for operands, operator in self.operations:
-            if operator == _IMAGE_KEY:
+            if operator == _IMAGE_OPERATOR:
                 newdata.write(b'BI')
                 dicttext = io.BytesIO()
                 operands[b'settings'].write_to_stream(dicttext)
@@ -554,9 +549,9 @@ def create_blank_page(_pdf=None, width=None, height=None):
     page = PageObject(_pdf)
 
     # Creates a new page (cf PDF Reference  7.7.3.3)
-    page.__setitem__(NameObject(_k.TYPE_KEY), NameObject(b'/Page'))
+    page.__setitem__(NameObject(_k.TYPE), NameObject(b'/Page'))
     page.__setitem__(NameObject(b'/Parent'), NullObject())
-    page.__setitem__(NameObject(RESOURCES_KEY), DictionaryObject())
+    page.__setitem__(NameObject(_k.RESOURCES), DictionaryObject())
     if width is None or height is None:
         if _pdf is not None and _pdf.get_pages_count() > 0:
             lastpage = _pdf.get_page(_pdf.get_pages_count() - 1)
@@ -564,7 +559,7 @@ def create_blank_page(_pdf=None, width=None, height=None):
             height = lastpage.media_box.get_height()
         else:
             raise utils.PageSizeNotDefinedError()
-    page.__setitem__(NameObject(b'/MediaBox'), RectangleObject([0, 0, width, height]))
+    page.__setitem__(NameObject(_k.MEDIA_BOX), RectangleObject([0, 0, width, height]))
     return page
 
 

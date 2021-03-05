@@ -19,6 +19,13 @@ from PyPDF.generic import (
     create_string_object, read_object,
 )
 
+_inheritable_page_attributes = (
+    NameObject(_k.RESOURCES),
+    NameObject(_k.MEDIA_BOX),
+    NameObject(_k.CROP_BOX),
+    NameObject(_k.ROTATE)
+)
+
 
 class PdfFileReader(object):
     def __init__(self, stream):
@@ -31,13 +38,16 @@ class PdfFileReader(object):
                  and seek methods similar to a file object."""
         self._xref = {}
         self._xref_obj_stream = {}
-        self._trailer = None
-        self._named_dests = None
-        self._flattened_pages = None
-        self._resolved_objects = {}
-        self._read_cross_reference(stream)
+        self._trailer = DictionaryObject()
         self._stream: BufferedReader = stream
+        self._read_cross_reference()
+
+        self._resolved_objects = {}
+        self._named_dests = None
         self._override_encryption = False
+
+        self._flattened_pages = []
+        self._flatten(self._trailer[_k.ROOT].get_object()[_k.PAGES].get_object(), dict())
 
     def get_document_info(self):
         """Retrieves the PDF file's document information dictionary, if it exists.
@@ -48,9 +58,9 @@ class PdfFileReader(object):
         Stability: Added in v1.6, will exist for all future v1.x releases.
 
         return - Returns a DocumentInformation instance, or None if none exists."""
-        if b'/Info' not in self._trailer:
+        if _k.INFO not in self._trailer:
             return None
-        obj = self._trailer[b'/Info']
+        obj = self._trailer[_k.INFO]
         retval = DocumentInformation()
         retval.update(obj)
         return retval
@@ -65,7 +75,7 @@ class PdfFileReader(object):
         Can also return None if no metadata was found on the document root."""
         try:
             self._override_encryption = True
-            return self._trailer[b'/Root'].get_xmp_metadata()
+            return self._trailer[_k.ROOT].get_xmp_metadata()
         finally:
             self._override_encryption = False
 
@@ -74,8 +84,6 @@ class PdfFileReader(object):
         <p>
         Stability: Added in v1.0, will exist for all v1.x releases.
         @return Returns an integer."""
-        if self._flattened_pages is None:
-            self._flatten()
         return len(self._flattened_pages)
 
     def get_page(self, page_number):
@@ -83,10 +91,6 @@ class PdfFileReader(object):
 
         Stability: Added in v1.0, will exist for all v1.x releases.
         @return Returns a {@link #PageObject PageObject} instance."""
-        # ensure that we're not trying to access an encrypted PDF
-        # assert not self.trailer.has_key("/Encrypt")
-        if self._flattened_pages is None:
-            self._flatten()
         return self._flattened_pages[page_number]
 
     def get_named_destinations(self, tree=None, retval=None):
@@ -97,26 +101,26 @@ class PdfFileReader(object):
         destinations}."""
         if retval is None:
             retval = {}
-            catalog = self._trailer[b'/Root']
+            catalog = self._trailer[_k.ROOT]
 
             # get the name tree
-            if b'/Dests' in catalog:
-                tree = catalog[b'/Dests']
-            elif b'/Names' in catalog:
-                names = catalog[b'/Names']
-                if b'/Dests' in names:
-                    tree = names[b'/Dests']
+            if _k.DESTS in catalog:
+                tree = catalog[_k.DESTS]
+            elif _k.NAMES in catalog:
+                names = catalog[_k.NAMES]
+                if _k.DESTS in names:
+                    tree = names[_k.DESTS]
 
         if tree is None:
             return retval
 
-        if _k.KIDS_KEY in tree:
+        if _k.KIDS in tree:
             # recurse down the tree
-            for kid in tree[_k.KIDS_KEY]:
+            for kid in tree[_k.KIDS]:
                 self.get_named_destinations(kid.get_object(), retval)
 
-        if b'/Names' in tree:
-            names = tree[b'/Names']
+        if _k.NAMES in tree:
+            names = tree[_k.NAMES]
             for i in range(0, len(names), 2):
                 key = names[i].get_object()
                 val = names[i + 1].get_object()
@@ -135,7 +139,7 @@ class PdfFileReader(object):
         @return Returns a nested list of {@link #Destination destinations}."""
         if outlines is None:
             outlines = []
-            catalog = self._trailer[b'/Root']
+            catalog = self._trailer[_k.ROOT]
 
             # get the outline dictionary and named destinations
             if b'/Outlines' in catalog:
@@ -199,7 +203,7 @@ class PdfFileReader(object):
             # read the entire object stream into memory
             stmnum, idx = self._xref_obj_stream[indirect_reference.idnum]
             obj_stm = IndirectObject(stmnum, 0, self).get_object()
-            assert obj_stm[_k.TYPE_KEY] == b'/ObjStm'
+            assert obj_stm[_k.TYPE] == b'/ObjStm'
             assert idx < obj_stm[b'/N']
             stream_data = BytesIO(obj_stm.get_data())
             for i in range(obj_stm[b'/N']):
@@ -231,52 +235,49 @@ class PdfFileReader(object):
             key = _u.encrypt(self._decryption_key, pack1, pack2)
             retval = self._decrypt_object(retval, key)
 
-        self.cache_indirect_object(generation, idnum, retval)
+        self._cache_indirect_object(generation, idnum, retval)
         return retval
 
-    def cache_indirect_object(self, generation, idnum, obj):
+    def _cache_indirect_object(self, generation, idnum, obj):
         if generation not in self._resolved_objects:
             self._resolved_objects[generation] = {}
         self._resolved_objects[generation][idnum] = obj
 
-    def _read_cross_reference(self, stream):
+    def _read_cross_reference(self):
         # start at the end:
-        stream.seek(-1, io.SEEK_END)
+        self._stream.seek(-1, io.SEEK_END)
         line = ''
         while not line:
-            line = _read_backward_for_line(stream)
+            line = _read_backward_for_line(self._stream)
         if not line[:5] == b'%%EOF':
             raise _u.PdfReadError("EOF marker not found")
 
         # find startxref entry - the location of the xref table
-        line = _read_backward_for_line(stream)
+        line = _read_backward_for_line(self._stream)
         startxref = int(line)
-        line = _read_backward_for_line(stream)
+        line = _read_backward_for_line(self._stream)
         if not line[:9] == b'startxref':
             raise _u.PdfReadError("Token 'startxref' not found")
 
         # read all cross reference tables and their trailers
-        self._xref = {}
-        self._xref_obj_stream = {}
-        self._trailer = DictionaryObject()
         while 1:
             # load the xref table
-            stream.seek(startxref, io.SEEK_SET)
-            x = stream.read(1)
+            self._stream.seek(startxref, io.SEEK_SET)
+            x = self._stream.read(1)
             if x in b'x':
-                startxref = self._parse_standard_cross_reference_table(stream)
+                startxref = self._parse_standard_cross_reference_table()
                 if startxref is None:
                     break
             elif x.isdigit():
-                startxref = self._parse_1_5_cross_reference_table(stream)
+                startxref = self._parse_1_5_cross_reference_table()
                 if startxref is None:
                     break
             else:
                 # bad xref character at startxref.  Let's see if we can find
                 # the xref table nearby, as we've observed this error with an
                 # off-by-one before.
-                stream.seek(-11, io.SEEK_CUR)
-                tmp = stream.read(20)
+                self._stream.seek(-11, io.SEEK_CUR)
+                tmp = self._stream.read(20)
                 xref_loc = tmp.find(b'xref')
                 if xref_loc != -1:
                     startxref -= (10 - xref_loc)
@@ -285,20 +286,20 @@ class PdfFileReader(object):
                     # no xref table found at specified location
                     assert False
 
-    def _parse_standard_cross_reference_table(self, stream):
+    def _parse_standard_cross_reference_table(self):
         # standard cross-reference table
-        ref = stream.read(4)
+        ref = self._stream.read(4)
         if not ref[:3] == b'ref':
             raise _u.PdfReadError("xref table read error")
-        _u.seek_token(stream)
+        _u.seek_token(self._stream)
         while 1:
-            num = read_object(stream, self)
-            _u.seek_token(stream)
-            size = read_object(stream, self)
-            _u.seek_token(stream)
+            num = read_object(self._stream, self)
+            _u.seek_token(self._stream)
+            size = read_object(self._stream, self)
+            _u.seek_token(self._stream)
             cnt = 0
             while cnt < size:
-                line = stream.read(20)
+                line = self._stream.read(20)
                 # It's very clear in section 3.4.3 of the PDF spec
                 # that all cross-reference table lines are a fixed
                 # 20 bytes.  However... some malformed PDF files
@@ -308,7 +309,7 @@ class PdfFileReader(object):
                 # the next xref entry, t means we've bled into the
                 # text "trailer"):
                 if line[-1] in b'0123456789t':
-                    stream.seek(-1, io.SEEK_CUR)
+                    self._stream.seek(-1, io.SEEK_CUR)
                 offset, generation = line[:16].split(b' ')
                 offset, generation = int(offset), int(generation)
                 if generation not in self._xref:
@@ -323,15 +324,15 @@ class PdfFileReader(object):
                     self._xref[generation][num] = offset
                 cnt += 1
                 num += 1
-            _u.seek_token(stream)
-            trailertag = stream.read(7)
+            _u.seek_token(self._stream)
+            trailertag = self._stream.read(7)
             if not trailertag == b'trailer':
                 # more xrefs!
-                stream.seek(-7, io.SEEK_CUR)
+                self._stream.seek(-7, io.SEEK_CUR)
             else:
                 break
-        _u.seek_token(stream)
-        new_trailer = read_object(stream, self)
+        _u.seek_token(self._stream)
+        new_trailer = read_object(self._stream, self)
         for key, value in new_trailer.items():
             if key not in self._trailer:
                 self._trailer[key] = value
@@ -340,8 +341,66 @@ class PdfFileReader(object):
         else:
             return None
 
+    def _parse_1_5_cross_reference_table(self):
+        # PDF 1.5+ Cross-Reference Stream
+        self._stream.seek(-1, io.SEEK_CUR)
+        idnum, generation = _read_object_header(self._stream)
+        xrefstream = read_object(self._stream, self)
+        _u.debug(xrefstream)
+        assert xrefstream[_k.TYPE] == b'/XRef'
+        self._cache_indirect_object(generation, idnum, xrefstream)
+        stream_data = BytesIO(xrefstream.get_data())
+        idx_pairs = xrefstream.get(b'/Index', [0, xrefstream.get(_k.SIZE)])
+        entry_sizes = xrefstream.get(b'/W')
+        for num, size in _generate_pairs(idx_pairs):
+            cnt = 0
+            xref_type = None
+            byte_offset = None
+            objstr_num = None
+            obstr_idx = None
+            while cnt < size:
+                for i in range(len(entry_sizes)):
+                    d = stream_data.read(entry_sizes[i])
+                    di = _convert_to_int(d, entry_sizes[i])
+                    if i == 0:
+                        xref_type = di
+                    elif i == 1:
+                        if xref_type == 0:
+                            _next_free_object = di
+                        elif xref_type == 1:
+                            byte_offset = di
+                        elif xref_type == 2:
+                            objstr_num = di
+                    elif i == 2:
+                        if xref_type == 0:
+                            _next_generation = di
+                        elif xref_type == 1:
+                            generation = di
+                        elif xref_type == 2:
+                            obstr_idx = di
+                if xref_type == 0:
+                    pass
+                elif xref_type == 1:
+                    if generation not in self._xref:
+                        self._xref[generation] = {}
+                    if num not in self._xref[generation]:
+                        self._xref[generation][num] = byte_offset
+                elif xref_type == 2:
+                    if num not in self._xref_obj_stream:
+                        self._xref_obj_stream[num] = [objstr_num, obstr_idx]
+                cnt += 1
+                num += 1
+        trailer_keys = _k.ROOT, _k.ENCRYPT, _k.INFO, _k.ID
+        for key in trailer_keys:
+            if key in xrefstream and key not in self._trailer:
+                self._trailer[NameObject(key)] = xrefstream.raw_get(key)
+        if b'/Prev' in xrefstream:
+            return xrefstream[b'/Prev']
+        else:
+            return None
+
     def _decrypt(self, password):
-        encrypt = self._trailer[b'/Encrypt'].get_object()
+        encrypt = self._trailer[_k.ENCRYPT].get_object()
         if not encrypt[b'/Filter'] == b'/Standard':
             raise NotImplementedError("only Standard PDF encryption handler is available")
         if not (encrypt[b'/V'] in (1, 2)):
@@ -375,11 +434,11 @@ class PdfFileReader(object):
         return 0
 
     def _authenticate_user_password(self, password):
-        encrypt = self._trailer[b'/Encrypt'].get_object()
+        encrypt = self._trailer[_k.ENCRYPT].get_object()
         rev = encrypt[b'/R'].get_object()
         owner_entry = encrypt[b'/O'].get_object().original_bytes
         p_entry = encrypt[b'/P'].get_object()
-        id_entry = self._trailer[b'/ID'].get_object()
+        id_entry = self._trailer[_k.ID].get_object()
         id1_entry = id_entry[0].get_object()
         u = None
         key = None
@@ -434,27 +493,17 @@ class PdfFileReader(object):
                 raise _u.PdfReadError("Unexpected destination %r" % dest)
         return outline
 
-    def _flatten(self, pages=None, inherit=None, indirect_ref=None):
-        inheritable_page_attributes = (
-            NameObject(_c.RESOURCES_KEY), NameObject(b'/MediaBox'),
-            NameObject(b'/CropBox'), NameObject(b'/Rotate')
-        )
-        if inherit is None:
-            inherit = dict()
-        if pages is None:
-            self._flattened_pages = []
-            catalog = self._trailer[b'/Root'].get_object()
-            pages = catalog[b'/Pages'].get_object()
-        t = pages[_k.TYPE_KEY]
-        if t == b'/Pages':
-            for attr in inheritable_page_attributes:
+    def _flatten(self, pages, inherit, indirect_ref=None):
+        t = pages[_k.TYPE]
+        if t == _k.PAGES:
+            for attr in _inheritable_page_attributes:
                 if attr in pages:
                     inherit[attr] = pages[attr]
-            for page in pages[_k.KIDS_KEY]:
-                addt = {}
-                if isinstance(page, IndirectObject):
-                    addt['indirect_ref'] = page
-                self._flatten(page.get_object(), inherit, **addt)
+            for page in pages[_k.KIDS]:
+                self._flatten(
+                    page.get_object(), inherit,
+                    indirect_ref=page if isinstance(page, IndirectObject) else None,
+                )
         elif t == b'/Page':
             for attr, value in inherit.items():
                 # if the page has it's own value, it does not inherit the
@@ -467,65 +516,7 @@ class PdfFileReader(object):
 
     @property
     def _is_encrypted(self):
-        return b'/Encrypt' in self._trailer
-
-    def _parse_1_5_cross_reference_table(self, stream):
-        # PDF 1.5+ Cross-Reference Stream
-        stream.seek(-1, io.SEEK_CUR)
-        idnum, generation = _read_object_header(stream)
-        xrefstream = read_object(stream, self)
-        _u.debug(xrefstream)
-        assert xrefstream[_k.TYPE_KEY] == b'/XRef'
-        self.cache_indirect_object(generation, idnum, xrefstream)
-        stream_data = BytesIO(xrefstream.get_data())
-        idx_pairs = xrefstream.get(b'/Index', [0, xrefstream.get(b'/Size')])
-        entry_sizes = xrefstream.get(b'/W')
-        for num, size in _generate_pairs(idx_pairs):
-            cnt = 0
-            xref_type = None
-            byte_offset = None
-            objstr_num = None
-            obstr_idx = None
-            while cnt < size:
-                for i in range(len(entry_sizes)):
-                    d = stream_data.read(entry_sizes[i])
-                    di = _convert_to_int(d, entry_sizes[i])
-                    if i == 0:
-                        xref_type = di
-                    elif i == 1:
-                        if xref_type == 0:
-                            _next_free_object = di
-                        elif xref_type == 1:
-                            byte_offset = di
-                        elif xref_type == 2:
-                            objstr_num = di
-                    elif i == 2:
-                        if xref_type == 0:
-                            _next_generation = di
-                        elif xref_type == 1:
-                            generation = di
-                        elif xref_type == 2:
-                            obstr_idx = di
-                if xref_type == 0:
-                    pass
-                elif xref_type == 1:
-                    if generation not in self._xref:
-                        self._xref[generation] = {}
-                    if num not in self._xref[generation]:
-                        self._xref[generation][num] = byte_offset
-                elif xref_type == 2:
-                    if num not in self._xref_obj_stream:
-                        self._xref_obj_stream[num] = [objstr_num, obstr_idx]
-                cnt += 1
-                num += 1
-        trailer_keys = b'/Root', b'/Encrypt', b'/Info', b'/ID'
-        for key in trailer_keys:
-            if key in xrefstream and key not in self._trailer:
-                self._trailer[NameObject(key)] = xrefstream.raw_get(key)
-        if b'/Prev' in xrefstream:
-            return xrefstream[b'/Prev']
-        else:
-            return None
+        return _k.ENCRYPT in self._trailer
 
 
 def _convert_to_int(d, size):

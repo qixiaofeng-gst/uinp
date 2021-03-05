@@ -135,6 +135,7 @@ class ArrayObject(list, PdfObject):
 class IndirectObject(PdfObject):
     def __init__(self, idnum, generation, pdf):
         self.idnum = idnum
+        # XXX Seems that generation is always 0.
         self.generation = generation
         self.parent = pdf
 
@@ -567,7 +568,7 @@ class Destination(DictionaryObject):
         DictionaryObject.__init__(self)
         self[NameObject(b'/Title')] = title
         self[NameObject(b'/Page')] = page
-        self[NameObject(_k.TYPE_KEY)] = position_type
+        self[NameObject(_k.TYPE)] = position_type
 
         # from table 8.2 of the PDF 1.6 reference.
         if position_type == b'/XYZ':
@@ -636,7 +637,7 @@ def _decode_stream_data(stream):
             data = _f.ASCII85Decode.decode(data)
         elif filterType == b'/Crypt':
             decode_params = stream.get(b'/DecodeParams', {})
-            if b'/Name' not in decode_params and _k.TYPE_KEY not in decode_params:
+            if b'/Name' not in decode_params and _k.TYPE not in decode_params:
                 pass
             else:
                 raise NotImplementedError("/Crypt filter with /Name or /Type not supported yet")

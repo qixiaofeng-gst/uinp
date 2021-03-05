@@ -23,15 +23,14 @@ class PdfFileWriter(object):
         self._id = None
         self._encrypt = None
         self._encrypt_key = None
-        self._stack = []
         self._objects = []  # array of indirect objects
 
         # The root of our page tree node.
         pages = DictionaryObject()
         pages.update({
-            NameObject(_k.TYPE_KEY): NameObject(b'/Pages'),
-            NameObject(b'/Count'): NumberObject(0),
-            NameObject(_k.KIDS_KEY): ArrayObject(),
+            NameObject(_k.TYPE): NameObject(_k.PAGES),
+            NameObject(_k.COUNT): NumberObject(0),
+            NameObject(_k.KIDS): ArrayObject(),
         })
         self._pages = self._add_object(pages)
 
@@ -45,8 +44,8 @@ class PdfFileWriter(object):
         # root object
         root = DictionaryObject()
         root.update({
-            NameObject(_k.TYPE_KEY): NameObject(b'/Catalog'),
-            NameObject(b'/Pages'): self._pages,
+            NameObject(_k.TYPE): NameObject(b'/Catalog'),
+            NameObject(_k.PAGES): self._pages,
         })
         self._root = self._add_object(root)
 
@@ -60,9 +59,7 @@ class PdfFileWriter(object):
         _u.debug(len(self._objects))
         external_reference_map = self._build_external_reference_map()
         _u.debug(len(self._objects))
-        self._stack = []
-        self._scan_indirect_references(external_reference_map, self._root)
-        self._stack = []
+        self._scan_indirect_references(external_reference_map, self._root, [])
         _u.debug(len(self._objects))
 
         # Begin writing:
@@ -99,11 +96,11 @@ class PdfFileWriter(object):
     def get_page(self, page_number):
         """Retrieves a page by number from this PDF file."""
         pages = self._pages.get_object()
-        return pages[_k.KIDS_KEY][page_number].get_object()
+        return pages[_k.KIDS][page_number].get_object()
 
     def get_pages_count(self):
         pages = self._pages.get_object()
-        return int(pages[NameObject(b'/Count')])
+        return int(pages[NameObject(_k.COUNT)])
 
     def encrypt(self, user_pwd, owner_pwd=None, use_128bit=True):
         """Encrypt this PDF file with the PDF Standard encryption handler.
@@ -189,12 +186,12 @@ class PdfFileWriter(object):
                     an instance of {@link #PageObject PageObject}.
         callback_add - The function which will insert the page in the dictionnary.
                       Takes: page list, page to add."""
-        assert page[_k.TYPE_KEY] == b'/Page'
+        assert page[_k.TYPE] == b'/Page'
         page[NameObject(b'/Parent')] = self._pages
         page = self._add_object(page)
         pages = self._pages.get_object()
-        callback_add(pages[_k.KIDS_KEY], page)
-        pages[NameObject(b'/Count')] = NumberObject(pages[b'/Count'] + 1)
+        callback_add(pages[_k.KIDS], page)
+        pages[NameObject(_k.COUNT)] = NumberObject(pages[_k.COUNT] + 1)
 
     def _build_external_reference_map(self):
         """PDF objects sometimes have circular references to their /Page objects
@@ -220,11 +217,11 @@ class PdfFileWriter(object):
                 )
         return external_reference_map
 
-    def _scan_indirect_references(self, extern_map, data):
+    def _scan_indirect_references(self, extern_map, data, stack):
         if isinstance(data, DictionaryObject):
             for key, value in data.items():
                 _origvalue = value
-                value = self._scan_indirect_references(extern_map, value)
+                value = self._scan_indirect_references(extern_map, value, stack)
                 if isinstance(value, StreamObject):
                     # A dictionary value is a stream.
                     # Streams must be indirect objects, so we need to change this value.
@@ -233,7 +230,7 @@ class PdfFileWriter(object):
             return data
         elif isinstance(data, ArrayObject):
             for i in range(len(data)):
-                value = self._scan_indirect_references(extern_map, data[i])
+                value = self._scan_indirect_references(extern_map, data[i], stack)
                 if isinstance(value, StreamObject):
                     # an array value is a stream.  streams must be indirect
                     # objects, so we need to change this value
@@ -243,13 +240,13 @@ class PdfFileWriter(object):
         elif isinstance(data, IndirectObject):
             # internal indirect references are fine
             if data.parent == self:
-                if data.idnum in self._stack:
+                if data.idnum in stack:
                     return data
                 else:
-                    self._stack.append(data.idnum)
+                    stack.append(data.idnum)
                     realdata = self.get_object(data)
-                    self._scan_indirect_references(extern_map, realdata)
-                    self._stack.pop()
+                    self._scan_indirect_references(extern_map, realdata, stack)
+                    stack.pop()
                     return data
             else:
                 newobj = extern_map.get(data.parent, {}).get(data.generation, {}).get(data.idnum, None)
@@ -263,7 +260,7 @@ class PdfFileWriter(object):
                     if data.generation not in extern_map[data.parent]:
                         extern_map[data.parent][data.generation] = {}
                     extern_map[data.parent][data.generation][data.idnum] = newobj_ido
-                    newobj = self._scan_indirect_references(extern_map, newobj)
+                    newobj = self._scan_indirect_references(extern_map, newobj, stack)
                     self._objects[idnum - 1] = newobj
                     return newobj_ido
                 return newobj
@@ -274,12 +271,12 @@ class PdfFileWriter(object):
         stream.write(b'trailer\n')
         trailer = DictionaryObject()
         trailer.update({
-            NameObject(b'/Size'): NumberObject(len(self._objects) + 1),
-            NameObject(b'/Root'): self._root,
-            NameObject(b'/Info'): self._info,
+            NameObject(_k.SIZE): NumberObject(len(self._objects) + 1),
+            NameObject(_k.ROOT): self._root,
+            NameObject(_k.INFO): self._info,
         })
         if self._id is not None:
-            trailer[NameObject(b'/ID')] = self._id
+            trailer[NameObject(_k.ID)] = self._id
         if self._encrypt is not None:
-            trailer[NameObject(b'/Encrypt')] = self._encrypt
+            trailer[NameObject(_k.ENCRYPT)] = self._encrypt
         trailer.write_to_stream(stream)
