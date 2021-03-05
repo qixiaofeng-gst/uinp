@@ -1,8 +1,5 @@
 Next TODO:
-- 接收声音指令的对接。
-- 设计 EmotionRecord。
-- https://www.javatpoint.com/spring-boot-tutorial
-- 自研麦克风阵列给本体组建立 Issue。
+- synchronized & volatile(atomic access), interleave preventing and happens-before relation.
 - IntelliJ IDEA 相关：
   - POM 错误 “找不到插件”： https://stackoverflow.com/questions/20496239/maven-plugins-can-not-be-found-in-intellij
 - UDP stuff:
@@ -13,8 +10,6 @@ Next TODO:
   - https://jaxenter.com/docker-logging-gotchas-137049.html
   - https://superuser.com/questions/1482221/docker-logs-is-missing-log-entires-which-are-showing-in-docker-attach
 - Docker auto-start: https://stackoverflow.com/questions/30449313/how-do-i-make-a-docker-container-start-automatically-on-system-boot
-- 队长队长。
-- 如果要自动部署某版本的脚本，数据和代码的部署都不可少，现在的直接挂载网络磁盘的方式至少不适用于小黄机器带走演示的场景。
 - 橙II：80.248
 - 橙狗：200.50. 切换到 HachiDev 之后 80.58：HachiBot.dev2020, HachiBot.robot
 - Start OpenGL playground with emacs.
