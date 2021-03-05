@@ -1,12 +1,12 @@
 import io
 import math
 import PyPDF.utils as utils
+import PyPDF.keys as _k
 from PyPDF.generic import (
     NameObject, NumberObject, TextStringObject, FloatObject, NullObject, IndirectObject,
     DictionaryObject, ArrayObject,
     DecodedStreamObject,
     read_object,
-    TYPE_KEY,
 )
 
 CONTENT_KEY = b'/Contents'
@@ -554,7 +554,7 @@ def create_blank_page(_pdf=None, width=None, height=None):
     page = PageObject(_pdf)
 
     # Creates a new page (cf PDF Reference  7.7.3.3)
-    page.__setitem__(NameObject(TYPE_KEY), NameObject(b'/Page'))
+    page.__setitem__(NameObject(_k.TYPE_KEY), NameObject(b'/Page'))
     page.__setitem__(NameObject(b'/Parent'), NullObject())
     page.__setitem__(NameObject(RESOURCES_KEY), DictionaryObject())
     if width is None or height is None:

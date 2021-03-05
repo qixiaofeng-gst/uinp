@@ -8,22 +8,19 @@ import io
 import struct
 from io import BufferedReader, BytesIO
 
-import PyPDF.compound as _page
+import PyPDF.compound as _c
 import PyPDF.utils as utils
+import PyPDF.keys as _k
 from PyPDF.generic import (
     NameObject, NumberObject,  BooleanObject, TextStringObject,
     IndirectObject, ByteStringObject,
     DictionaryObject, ArrayObject,
     StreamObject, DocumentInformation, Destination,
     create_string_object, read_object,
-    TYPE_KEY,
 )
 from PyPDF.utils import (
     seek_token, read_until_whitespace,
     algorithm_33_1, algorithm_34, algorithm_35,
-)
-from PyPDF.keys import (
-    KIDS_KEY
 )
 
 
@@ -117,9 +114,9 @@ class PdfFileReader(object):
         if tree is None:
             return retval
 
-        if KIDS_KEY in tree:
+        if _k.KIDS_KEY in tree:
             # recurse down the tree
-            for kid in tree[KIDS_KEY]:
+            for kid in tree[_k.KIDS_KEY]:
                 self.get_named_destinations(kid.get_object(), retval)
 
         if b'/Names' in tree:
@@ -206,7 +203,7 @@ class PdfFileReader(object):
             # read the entire object stream into memory
             stmnum, idx = self._xref_obj_stream[indirect_reference.idnum]
             obj_stm = IndirectObject(stmnum, 0, self).get_object()
-            assert obj_stm[TYPE_KEY] == b'/ObjStm'
+            assert obj_stm[_k.TYPE_KEY] == b'/ObjStm'
             assert idx < obj_stm[b'/N']
             stream_data = BytesIO(obj_stm.get_data())
             for i in range(obj_stm[b'/N']):
@@ -441,7 +438,7 @@ class PdfFileReader(object):
 
     def _flatten(self, pages=None, inherit=None, indirect_ref=None):
         inheritable_page_attributes = (
-            NameObject(_page.RESOURCES_KEY), NameObject(b'/MediaBox'),
+            NameObject(_c.RESOURCES_KEY), NameObject(b'/MediaBox'),
             NameObject(b'/CropBox'), NameObject(b'/Rotate')
         )
         if inherit is None:
@@ -450,12 +447,12 @@ class PdfFileReader(object):
             self._flattened_pages = []
             catalog = self._trailer[b'/Root'].get_object()
             pages = catalog[b'/Pages'].get_object()
-        t = pages[TYPE_KEY]
+        t = pages[_k.TYPE_KEY]
         if t == b'/Pages':
             for attr in inheritable_page_attributes:
                 if attr in pages:
                     inherit[attr] = pages[attr]
-            for page in pages[KIDS_KEY]:
+            for page in pages[_k.KIDS_KEY]:
                 addt = {}
                 if isinstance(page, IndirectObject):
                     addt['indirect_ref'] = page
@@ -466,7 +463,7 @@ class PdfFileReader(object):
                 # parent's value:
                 if attr not in pages:
                     pages[attr] = value
-            page_obj = _page.PageObject(self, indirect_ref)
+            page_obj = _c.PageObject(self, indirect_ref)
             page_obj.update(pages)
             self._flattened_pages.append(page_obj)
 
@@ -480,7 +477,7 @@ class PdfFileReader(object):
         idnum, generation = _read_object_header(stream)
         xrefstream = read_object(stream, self)
         utils.debug(xrefstream)
-        assert xrefstream[TYPE_KEY] == b'/XRef'
+        assert xrefstream[_k.TYPE_KEY] == b'/XRef'
         self.cache_indirect_object(generation, idnum, xrefstream)
         stream_data = BytesIO(xrefstream.get_data())
         idx_pairs = xrefstream.get(b'/Index', [0, xrefstream.get(b'/Size')])

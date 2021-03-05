@@ -3,16 +3,13 @@ import random
 import struct as _s
 import PyPDF.utils as _u
 import PyPDF.compound as _c
+import PyPDF.keys as _k
 from hashlib import md5 as _md5
 from PyPDF.generic import (
     NameObject, NumberObject, IndirectObject, ByteStringObject,
     ArrayObject, DictionaryObject,
     StreamObject,
     create_string_object, is_plain_object,
-    TYPE_KEY,
-)
-from PyPDF.keys import (
-    KIDS_KEY
 )
 
 
@@ -32,9 +29,9 @@ class PdfFileWriter(object):
         # The root of our page tree node.
         pages = DictionaryObject()
         pages.update({
-            NameObject(TYPE_KEY): NameObject(b'/Pages'),
+            NameObject(_k.TYPE_KEY): NameObject(b'/Pages'),
             NameObject(b'/Count'): NumberObject(0),
-            NameObject(KIDS_KEY): ArrayObject(),
+            NameObject(_k.KIDS_KEY): ArrayObject(),
         })
         self._pages = self._add_object(pages)
 
@@ -48,7 +45,7 @@ class PdfFileWriter(object):
         # root object
         root = DictionaryObject()
         root.update({
-            NameObject(TYPE_KEY): NameObject(b'/Catalog'),
+            NameObject(_k.TYPE_KEY): NameObject(b'/Catalog'),
             NameObject(b'/Pages'): self._pages,
         })
         self._root = self._add_object(root)
@@ -88,7 +85,7 @@ class PdfFileWriter(object):
     def get_page(self, page_number):
         """Retrieves a page by number from this PDF file."""
         pages = self._pages.get_object()
-        return pages[KIDS_KEY][page_number].get_object()
+        return pages[_k.KIDS_KEY][page_number].get_object()
 
     def get_pages_count(self):
         pages = self._pages.get_object()
@@ -192,11 +189,11 @@ class PdfFileWriter(object):
                     an instance of {@link #PageObject PageObject}.
         callback_add - The function which will insert the page in the dictionnary.
                       Takes: page list, page to add."""
-        assert page[TYPE_KEY] == b'/Page'
+        assert page[_k.TYPE_KEY] == b'/Page'
         page[NameObject(b'/Parent')] = self._pages
         page = self._add_object(page)
         pages = self._pages.get_object()
-        callback_add(pages[KIDS_KEY], page)
+        callback_add(pages[_k.KIDS_KEY], page)
         pages[NameObject(b'/Count')] = NumberObject(pages[b'/Count'] + 1)
 
     def _build_external_reference_map(self):

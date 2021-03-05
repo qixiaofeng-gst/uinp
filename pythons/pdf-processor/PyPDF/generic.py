@@ -7,11 +7,11 @@ import io
 import re
 import PyPDF.filters as filters
 import PyPDF.utils as utils
+import PyPDF.keys as _k
 import decimal
 import codecs
 
 _STREAM_KEY = "__streamdata__"
-TYPE_KEY = b'/Type'
 
 
 def read_object(stream, pdf_reader):
@@ -567,7 +567,7 @@ class Destination(DictionaryObject):
         DictionaryObject.__init__(self)
         self[NameObject(b'/Title')] = title
         self[NameObject(b'/Page')] = page
-        self[NameObject(TYPE_KEY)] = position_type
+        self[NameObject(_k.TYPE_KEY)] = position_type
 
         # from table 8.2 of the PDF 1.6 reference.
         if position_type == b'/XYZ':
@@ -636,7 +636,7 @@ def _decode_stream_data(stream):
             data = filters.ASCII85Decode.decode(data)
         elif filterType == b'/Crypt':
             decode_params = stream.get(b'/DecodeParams', {})
-            if b'/Name' not in decode_params and TYPE_KEY not in decode_params:
+            if b'/Name' not in decode_params and _k.TYPE_KEY not in decode_params:
                 pass
             else:
                 raise NotImplementedError("/Crypt filter with /Name or /Type not supported yet")
