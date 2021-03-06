@@ -220,6 +220,8 @@ class PdfFileWriter(object):
 
     def _scan_indirect_references(self, extern_map, data, stack, scan_depth=0):
         def quick_debug(*args):
+            if scan_depth > 0:
+                return
             _u.debug('-' * (12 - scan_depth) * 5 + ' {:2}'.format(scan_depth), *args)
 
         if isinstance(data, DictionaryObject):

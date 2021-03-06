@@ -17,3 +17,5 @@ ROTATE = b'/Rotate'
 DESTS = b'/Dests'
 NAMES = b'/Names'
 ENCRYPT = b'/Encrypt'
+
+FLATE_DECODE = b'/FlateDecode'

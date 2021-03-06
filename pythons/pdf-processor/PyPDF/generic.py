@@ -464,20 +464,22 @@ class StreamObject(DictionaryObject):
         if encryption_key is not None:
             data = _u.rc4_encrypt(encryption_key, data)
         stream.write(data)
+        _u.debug('here we go', len(data), self)
+        _u.stacktrace_debug()
         stream.write(b'\nendstream')
 
     def flate_encode(self):
         if b'/Filter' in self:
             f = self[b'/Filter']
             if isinstance(f, ArrayObject):
-                f.insert(0, NameObject(b'/FlateDecode'))
+                f.insert(0, NameObject(_k.FLATE_DECODE))
             else:
                 newf = ArrayObject()
-                newf.append(NameObject(b'/FlateDecode'))
+                newf.append(NameObject(_k.FLATE_DECODE))
                 newf.append(f)
                 f = newf
         else:
-            f = NameObject(b'/FlateDecode')
+            f = NameObject(_k.FLATE_DECODE)
         retval = _EncodedStreamObject()
         retval[NameObject(b'/Filter')] = f
         retval._data = _f.FlateDecode.encode(self._data)
@@ -629,7 +631,7 @@ def _decode_stream_data(stream):
         filters_in_steam = (filters_in_steam,)
     data = stream.bytes_data
     for filterType in filters_in_steam:
-        if filterType == b'/FlateDecode':
+        if filterType == _k.FLATE_DECODE:
             data = _f.FlateDecode.decode(data, stream.get(b'/DecodeParms'))
         elif filterType == b'/ASCIIHexDecode':
             data = _f.ASCIIHexDecode.decode(data)

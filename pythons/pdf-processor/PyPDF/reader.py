@@ -505,13 +505,14 @@ class PdfFileReader(object):
                     indirect_ref=page if isinstance(page, IndirectObject) else None,
                 )
         elif target_type == _k.PAGE:
+            page = pages
             for attr, value in inherit.items():
                 # if the page has it's own value, it does not inherit the
                 # parent's value:
-                if attr not in pages:
-                    pages[attr] = value
+                if attr not in page:
+                    page[attr] = value
             page_obj = _c.PageObject(self, indirect_ref)
-            page_obj.update(pages)  # FIXME XXX The page absorbed all pages attributes?
+            page_obj.update(page)
             self._flattened_pages.append(page_obj)
 
     @property
