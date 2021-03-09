@@ -11,8 +11,8 @@ import PyPDF.keys as _k
 import decimal
 import codecs
 import zlib
-import cv2
-import numpy
+import cv2 as _cv
+import numpy as _np
 
 _STREAM_KEY = "__streamdata__"
 
@@ -455,11 +455,11 @@ class DictionaryObject(dict, PdfObject):
 _IM_COUNT = 0
 
 
-def _mean(array_1d: numpy.ndarray):
+def _mean(array_1d: _np.ndarray):
     return array_1d.mean()
 
 
-def _scan_from_edge(raw: numpy.ndarray, threshold, iterator, callback_get_component_line):
+def _scan_from_edge(raw: _np.ndarray, threshold, iterator, callback_get_component_line):
     line_count = 0
     for i in iterator:
         if (
@@ -483,7 +483,7 @@ def _get_vertical_component_line(nparray, line_index, component_index):
     return nparray[:, line_index, component_index]
 
 
-def scan_margins(raw: numpy.ndarray, threshold=250):
+def scan_margins(raw: _np.ndarray, threshold=250):
     return (
         _scan_from_edge(raw, threshold, range(len(raw)), _get_horizontal_component_line),  # Top
         _scan_from_edge(raw, threshold, reversed(range(len(raw))), _get_horizontal_component_line),  # Bottom
@@ -501,25 +501,32 @@ class StreamObject(DictionaryObject):
     def write_to_stream(self, stream, encryption_key=None):
         self[NameObject(b'/Length')] = NumberObject(len(self._data))
         DictionaryObject.write_to_stream(self, stream, encryption_key)
-        _u.debug('Wierdo', self[b'/Length'])
-
         del self[b'/Length']
         stream.write(b'\nstream\n')
         data = self._data
         if encryption_key is not None:
             data = _u.rc4_encrypt(encryption_key, data)
-        stream.write(data)
         if b'/Subtype' in self and self[b'/Subtype'] == b'/Image':
             global _IM_COUNT
             width = self[b'/Width']
             height = self[b'/Height']
-            raw: numpy.ndarray = numpy.frombuffer(zlib.decompress(data), dtype=numpy.uint8)
-            raw = raw.reshape((height, width, 3))
+            raw: _np.ndarray = _np.frombuffer(zlib.decompress(data), dtype=_np.uint8)
+            raw = raw.reshape((height, width, -1))
+            component_count = len(raw[0][0])
             top_margin, bottom_margin, left_margin, right_margin = scan_margins(raw, 254)
-            raw = raw[top_margin:(height - bottom_margin), left_margin:(width - right_margin), :3]
-            _u.debug('here we go', len(data), len(raw), width * height * 3)
-            cv2.imwrite('output/page_{}.jpg'.format(_IM_COUNT), raw)
+            raw = raw[top_margin:(height - bottom_margin), left_margin:(width - right_margin), :]
+            new_width = len(raw[0])
+            new_height = len(raw)
+            _u.debug(
+                'here we go',
+                len(data), len(raw), width * height * component_count,
+                len(zlib.compress(raw.reshape(new_width * new_height * component_count).tobytes())),
+            )
+            _cv.imwrite('output/page_{}.jpg'.format(_IM_COUNT), raw)
             _IM_COUNT += 1
+        else:
+            pass
+        stream.write(data)
         _u.debug('here we go', len(data), self)
         stream.write(b'\nendstream')
 
