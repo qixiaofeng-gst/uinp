@@ -57,7 +57,7 @@ def read_object(stream, pdf_reader):
         peek = stream.read(20)
         stream.seek(-len(peek), io.SEEK_CUR)  # reset to start
         if re.match(br'(\d+)\s(\d+)\sR[^a-zA-Z]', peek) is not None:
-            return IndirectObject.read_from_stream(stream, pdf_reader)
+            return IndirectObjectReference.read_from_stream(stream, pdf_reader)
         else:
             return NumberObject.read_from_stream(stream)
 
@@ -135,7 +135,7 @@ class ArrayObject(list, PdfObject):
         return arr
 
 
-class IndirectObject(PdfObject):
+class IndirectObjectReference(PdfObject):
     def __init__(self, idnum, generation, pdf):
         self.idnum = idnum
         # XXX Seems that generation is always 0.
@@ -150,7 +150,7 @@ class IndirectObject(PdfObject):
 
     def __eq__(self, other):
         return (other is not None and
-                isinstance(other, IndirectObject) and
+                isinstance(other, IndirectObjectReference) and
                 self.idnum == other.idnum and
                 self.generation == other.generation and
                 self.parent is other.parent)
@@ -178,7 +178,7 @@ class IndirectObject(PdfObject):
         r = stream.read(1)
         if r not in b'R':
             raise _u.PdfReadError("error reading indirect object reference")
-        return IndirectObject(int(idnum), int(generation), pdf)
+        return IndirectObjectReference(int(idnum), int(generation), pdf)
 
 
 class FloatObject(decimal.Decimal, PdfObject):
@@ -419,7 +419,7 @@ class DictionaryObject(dict, PdfObject):
             # this is a stream object, not a dictionary
             assert b'/Length' in data
             length = data[b'/Length']
-            if isinstance(length, IndirectObject):
+            if isinstance(length, IndirectObjectReference):
                 t = stream.tell()
                 length = pdf_object.get_object(length)
                 stream.seek(t, io.SEEK_SET)
@@ -495,15 +495,15 @@ def scan_margins(raw: _np.ndarray, threshold=250):
 class StreamObject(DictionaryObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._data = None
+        self._bytes_data = None
         self.decodedSelf = None
 
     def write_to_stream(self, stream, encryption_key=None):
-        self[NameObject(b'/Length')] = NumberObject(len(self._data))
+        self[NameObject(b'/Length')] = NumberObject(len(self._bytes_data))
         DictionaryObject.write_to_stream(self, stream, encryption_key)
         del self[b'/Length']
         stream.write(b'\nstream\n')
-        data = self._data
+        data = self._bytes_data
         if encryption_key is not None:
             data = _u.rc4_encrypt(encryption_key, data)
         if b'/Subtype' in self and self[b'/Subtype'] == b'/Image':
@@ -518,16 +518,20 @@ class StreamObject(DictionaryObject):
             new_width = len(raw[0])
             new_height = len(raw)
             _u.debug(
-                'here we go',
-                len(data), len(raw), width * height * component_count,
-                len(zlib.compress(raw.reshape(new_width * new_height * component_count).tobytes())),
+                'length of data:', len(data),
+                '| expected length:', width * height * component_count,
+                '| chopped length:', len(zlib.compress(
+                    raw.reshape(new_width * new_height * component_count).tobytes()
+                )),
+                '| self:', self,
             )
+            # _u.stacktrace_debug()
             _cv.imwrite('output/page_{}.jpg'.format(_IM_COUNT), raw)
             _IM_COUNT += 1
         else:
+            _u.debug(data, '-' * 16)
             pass
         stream.write(data)
-        _u.debug('here we go', len(data), self)
         stream.write(b'\nendstream')
 
     def flate_encode(self):
@@ -544,14 +548,14 @@ class StreamObject(DictionaryObject):
             f = NameObject(_k.FLATE_DECODE)
         retval = _EncodedStreamObject()
         retval[NameObject(b'/Filter')] = f
-        retval._data = _f.FlateDecode.encode(self._data)
+        retval._bytes_data = _f.FlateDecode.encode(self._bytes_data)
         return retval
 
     def get_data(self):
-        return self._data
+        return self._bytes_data
 
     def set_data(self, data):
-        self._data = data
+        self._bytes_data = data
 
 
 def initialize_from_dictionary(data):
@@ -559,7 +563,7 @@ def initialize_from_dictionary(data):
         retval = _EncodedStreamObject()
     else:
         retval = DecodedStreamObject()
-    retval._data = data[_STREAM_KEY]
+    retval._bytes_data = data[_STREAM_KEY]
     del data[_STREAM_KEY]
     del data[b'/Length']
     retval.update(data)
@@ -577,7 +581,7 @@ class _EncodedStreamObject(StreamObject):
 
     @property
     def bytes_data(self):
-        return self._data
+        return self._bytes_data
 
     def get_data(self):
         if self.decodedSelf is not None:
@@ -587,7 +591,7 @@ class _EncodedStreamObject(StreamObject):
             # assert self.decodedSelf is not None
             # create decoded object
             decoded = DecodedStreamObject()
-            decoded._data = _decode_stream_data(self)
+            decoded._bytes_data = _decode_stream_data(self)
             for key, value in self.items():
                 if key not in (b'/Length', b'/Filter', b'/DecodeParms'):
                     decoded[key] = value
@@ -710,4 +714,4 @@ def _decode_stream_data(stream):
     return data
 
 
-_PLAIN_OBJECTS = (IndirectObject, NumberObject, NameObject, FloatObject, BooleanObject)
+_PLAIN_OBJECTS = (IndirectObjectReference, NumberObject, NameObject, FloatObject, BooleanObject)

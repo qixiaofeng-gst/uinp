@@ -3,7 +3,7 @@ import math
 import PyPDF.utils as utils
 import PyPDF.keys as _k
 from PyPDF.generic import (
-    NameObject, NumberObject, TextStringObject, FloatObject, NullObject, IndirectObject,
+    NameObject, NumberObject, TextStringObject, FloatObject, NullObject, IndirectObjectReference,
     DictionaryObject, ArrayObject,
     DecodedStreamObject,
     read_object,
@@ -572,7 +572,7 @@ def _get_rectangle(this, name, defaults):
             retval = this.get(d)
             if retval is not None:
                 break
-    if isinstance(retval, IndirectObject):
+    if isinstance(retval, IndirectObjectReference):
         retval = this.parent.get_object(retval)
     retval = RectangleObject(retval)
     _set_rectangle(this, name, retval)

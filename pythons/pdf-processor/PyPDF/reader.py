@@ -13,7 +13,7 @@ import PyPDF.utils as _u
 import PyPDF.keys as _k
 from PyPDF.generic import (
     NameObject, NumberObject, BooleanObject, TextStringObject,
-    IndirectObject, ByteStringObject,
+    IndirectObjectReference, ByteStringObject,
     DictionaryObject, ArrayObject,
     StreamObject, DocumentInformation, Destination,
     create_string_object, read_object,
@@ -194,7 +194,7 @@ class PdfFileReader(object):
         finally:
             self._override_encryption = False
 
-    def get_object(self, indirect_reference: IndirectObject):
+    def get_object(self, indirect_reference: IndirectObjectReference):
         retval = self._resolved_objects.get(indirect_reference.generation, {}).get(indirect_reference.idnum, None)
         if retval is not None:
             return retval
@@ -202,7 +202,7 @@ class PdfFileReader(object):
             # indirect reference to object in object stream
             # read the entire object stream into memory
             stmnum, idx = self._xref_obj_stream[indirect_reference.idnum]
-            obj_stm = IndirectObject(stmnum, 0, self).get_object()
+            obj_stm = IndirectObjectReference(stmnum, 0, self).get_object()
             assert obj_stm[_k.TYPE] == b'/ObjStm'
             assert idx < obj_stm[b'/N']
             stream_data = BytesIO(obj_stm.get_data())
@@ -502,7 +502,7 @@ class PdfFileReader(object):
             for page in pages[_k.KIDS]:
                 self._flatten(
                     page.get_object(), inherit,
-                    indirect_ref=page if isinstance(page, IndirectObject) else None,
+                    indirect_ref=page if isinstance(page, IndirectObjectReference) else None,
                 )
         elif target_type == _k.PAGE:
             page = pages

@@ -6,7 +6,7 @@ import PyPDF.compound as _c
 import PyPDF.keys as _k
 from hashlib import md5 as _md5
 from PyPDF.generic import (
-    NameObject, NumberObject, IndirectObject, ByteStringObject,
+    NameObject, NumberObject, IndirectObjectReference, ByteStringObject,
     ArrayObject, DictionaryObject,
     StreamObject,
     create_string_object, is_plain_object,
@@ -162,6 +162,9 @@ class PdfFileWriter(object):
         for i in range(len(self._objects)):
             idnum = (i + 1)
             obj = self._objects[i]
+            _u.debug('idnum: [{:4}]'.format(idnum), '| type:', type(obj), '| obj:', obj)
+            if b'/Type' in obj:
+                _u.debug('type:', obj[b'/Type'], '| obj:', obj)
             object_positions.append(stream.tell())
             stream.write(_u.s2b(str(idnum) + " 0 obj\n"))
             key = None
@@ -178,7 +181,7 @@ class PdfFileWriter(object):
 
     def _add_object(self, obj):
         self._objects.append(obj)
-        return IndirectObject(len(self._objects), 0, self)
+        return IndirectObjectReference(len(self._objects), 0, self)
 
     def _add_page(self, page, callback_add):
         """Common method for inserting or adding a page to this PDF file.
@@ -204,23 +207,30 @@ class PdfFileWriter(object):
         trees to reference the correct new object location, rather than
         copying in a new copy of the page object."""
         external_reference_map = {}
-        for ido_index in range(len(self._objects)):
-            ido = self._objects[ido_index]
-            if isinstance(ido, _c.PageObject) and ido.indirect_ref is not None:
-                _u.debug(type(ido), ido.indirect_ref)
-                data = ido.indirect_ref
+        for idor_index in range(len(self._objects)):
+            indirect_object_reference = self._objects[idor_index]
+            if (
+                    isinstance(indirect_object_reference, _c.PageObject) and
+                    indirect_object_reference.indirect_ref is not None
+            ):
+                # _u.debug(
+                #     'type:', type(indirect_object_reference),
+                #     '| indirect_ref:', indirect_object_reference.indirect_ref,
+                #     '| object itself:', indirect_object_reference,
+                # )
+                data = indirect_object_reference.indirect_ref
                 if data.parent not in external_reference_map:
                     external_reference_map[data.parent] = {}
                 if data.generation not in external_reference_map[data.parent]:
                     external_reference_map[data.parent][data.generation] = {}
-                external_reference_map[data.parent][data.generation][data.idnum] = IndirectObject(
-                    ido_index + 1, 0, self
+                external_reference_map[data.parent][data.generation][data.idnum] = IndirectObjectReference(
+                    idor_index + 1, 0, self
                 )
         return external_reference_map
 
     def _scan_indirect_references(self, extern_map, data, stack, scan_depth=0):
         def quick_debug(*args):
-            if scan_depth > 0:
+            if scan_depth < 100:
                 return
             _u.debug('-' * (12 - scan_depth) * 5 + ' {:2}'.format(scan_depth), *args)
 
@@ -246,7 +256,7 @@ class PdfFileWriter(object):
                     value = self._add_object(value)
                 data[i] = value
             return data
-        elif isinstance(data, IndirectObject):
+        elif isinstance(data, IndirectObjectReference):
             quick_debug('IDO')
             # internal indirect references are fine
             if data.parent == self:
@@ -264,7 +274,7 @@ class PdfFileWriter(object):
                     newobj = data.parent.get_object(data)
                     self._objects.append(None)  # placeholder
                     idnum = len(self._objects)
-                    newobj_ido = IndirectObject(idnum, 0, self)
+                    newobj_ido = IndirectObjectReference(idnum, 0, self)
                     if data.parent not in extern_map:
                         extern_map[data.parent] = {}
                     if data.generation not in extern_map[data.parent]:
