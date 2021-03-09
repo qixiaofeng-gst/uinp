@@ -1,6 +1,15 @@
 from PyPDF.reader import PdfFileReader
 from PyPDF.writer import PdfFileWriter
 import PyPDF.utils as utils
+"""
+TODO:
+1. Compress image back.
+2. Create proper size page from image. 
+
+Done:
+1. Image pages could be saved now.
+"""
+
 
 if __name__ == "__main__":
     with open("test_input_a.pdf", "rb") as file_a:

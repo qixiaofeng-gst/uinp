@@ -459,19 +459,37 @@ def _mean(array_1d: numpy.ndarray):
     return array_1d.mean()
 
 
-def scan_top_margin(raw: numpy.ndarray, threshold=250):
-    height = len(raw)
-    for i in range(height):
+def _scan_from_edge(raw: numpy.ndarray, threshold, iterator, callback_get_component_line):
+    line_count = 0
+    for i in iterator:
         if (
-                _mean(raw[i, :, 0]) < threshold or
-                _mean(raw[i, :, 1]) < threshold or
-                _mean(raw[i, :, 2]) < threshold
+                _mean(callback_get_component_line(raw, i, 0)) < threshold or
+                _mean(callback_get_component_line(raw, i, 1)) < threshold or
+                _mean(callback_get_component_line(raw, i, 2)) < threshold
         ):
-            if i > 1:
-                return i - 1
+            if line_count > 1:
+                return line_count - 1
             else:
                 return 0
+        line_count += 1
     return 0
+
+
+def _get_horizontal_component_line(nparray, line_index, component_index):
+    return nparray[line_index, :, component_index]
+
+
+def _get_vertical_component_line(nparray, line_index, component_index):
+    return nparray[:, line_index, component_index]
+
+
+def scan_margins(raw: numpy.ndarray, threshold=250):
+    return (
+        _scan_from_edge(raw, threshold, range(len(raw)), _get_horizontal_component_line),  # Top
+        _scan_from_edge(raw, threshold, reversed(range(len(raw))), _get_horizontal_component_line),  # Bottom
+        _scan_from_edge(raw, threshold, range(len(raw[0])), _get_vertical_component_line),  # Left
+        _scan_from_edge(raw, threshold, reversed(range(len(raw[0]))), _get_vertical_component_line),  # Right
+    )
 
 
 class StreamObject(DictionaryObject):
@@ -497,16 +515,12 @@ class StreamObject(DictionaryObject):
             height = self[b'/Height']
             raw: numpy.ndarray = numpy.frombuffer(zlib.decompress(data), dtype=numpy.uint8)
             raw = raw.reshape((height, width, 3))
-            top_margin = scan_top_margin(raw)
-            bottom_margin = 10
-            left_margin = 10
-            right_margin = 10
+            top_margin, bottom_margin, left_margin, right_margin = scan_margins(raw, 254)
             raw = raw[top_margin:(height - bottom_margin), left_margin:(width - right_margin), :3]
             _u.debug('here we go', len(data), len(raw), width * height * 3)
             cv2.imwrite('output/page_{}.jpg'.format(_IM_COUNT), raw)
             _IM_COUNT += 1
         _u.debug('here we go', len(data), self)
-        _u.stacktrace_debug()
         stream.write(b'\nendstream')
 
     def flate_encode(self):
