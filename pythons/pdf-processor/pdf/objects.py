@@ -10,10 +10,6 @@ class BaseObject(ABC):
     def write_to_stream(self, stream):
         ...
 
-
-class Loaded(BaseObject):
-    def read_from_stream(self, stream):
-        pass
-
-    def write_to_stream(self, stream):
-        pass
+    @abstractmethod
+    def probe(self, stream):
+        ...

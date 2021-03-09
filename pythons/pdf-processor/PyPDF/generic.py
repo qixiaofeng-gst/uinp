@@ -10,6 +10,9 @@ import PyPDF.utils as _u
 import PyPDF.keys as _k
 import decimal
 import codecs
+import zlib
+import cv2
+import numpy
 
 _STREAM_KEY = "__streamdata__"
 
@@ -449,6 +452,9 @@ class DictionaryObject(dict, PdfObject):
             return retval
 
 
+_IM_COUNT = 0
+
+
 class StreamObject(DictionaryObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -458,12 +464,23 @@ class StreamObject(DictionaryObject):
     def write_to_stream(self, stream, encryption_key=None):
         self[NameObject(b'/Length')] = NumberObject(len(self._data))
         DictionaryObject.write_to_stream(self, stream, encryption_key)
+        _u.debug('Wierdo', self[b'/Length'])
+
         del self[b'/Length']
         stream.write(b'\nstream\n')
         data = self._data
         if encryption_key is not None:
             data = _u.rc4_encrypt(encryption_key, data)
         stream.write(data)
+        if b'/Subtype' in self and self[b'/Subtype'] == b'/Image':
+            global _IM_COUNT
+            width = self[b'/Width']
+            height = self[b'/Height']
+            raw: numpy.ndarray = numpy.frombuffer(zlib.decompress(data), dtype=numpy.uint8)
+            raw = raw.reshape((height, width, 3))
+            _u.debug('here we go', len(data), len(raw), width * height * 3)
+            cv2.imwrite('output/page_{}.jpg'.format(_IM_COUNT), raw)
+            _IM_COUNT += 1
         _u.debug('here we go', len(data), self)
         _u.stacktrace_debug()
         stream.write(b'\nendstream')
