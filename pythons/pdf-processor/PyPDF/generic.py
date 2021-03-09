@@ -455,6 +455,25 @@ class DictionaryObject(dict, PdfObject):
 _IM_COUNT = 0
 
 
+def _mean(array_1d: numpy.ndarray):
+    return array_1d.mean()
+
+
+def scan_top_margin(raw: numpy.ndarray, threshold=250):
+    height = len(raw)
+    for i in range(height):
+        if (
+                _mean(raw[i, :, 0]) < threshold or
+                _mean(raw[i, :, 1]) < threshold or
+                _mean(raw[i, :, 2]) < threshold
+        ):
+            if i > 1:
+                return i - 1
+            else:
+                return 0
+    return 0
+
+
 class StreamObject(DictionaryObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -478,6 +497,11 @@ class StreamObject(DictionaryObject):
             height = self[b'/Height']
             raw: numpy.ndarray = numpy.frombuffer(zlib.decompress(data), dtype=numpy.uint8)
             raw = raw.reshape((height, width, 3))
+            top_margin = scan_top_margin(raw)
+            bottom_margin = 10
+            left_margin = 10
+            right_margin = 10
+            raw = raw[top_margin:(height - bottom_margin), left_margin:(width - right_margin), :3]
             _u.debug('here we go', len(data), len(raw), width * height * 3)
             cv2.imwrite('output/page_{}.jpg'.format(_IM_COUNT), raw)
             _IM_COUNT += 1
