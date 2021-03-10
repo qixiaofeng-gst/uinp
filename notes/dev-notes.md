@@ -253,6 +253,10 @@ Windows 下可创建快捷方式并添加参数
 * gpg 不提示密码的问题：https://unix.stackexchange.com/questions/395875/gpg-does-not-ask-for-password
   ~/.gnupg/gpg-agent.conf 中有两个值 default-cache-ttl（自上次使用计） 和 max-cache-ttl（总计）。
   conf 文件的配置格式：name value
+* PDF 文件中的默认尺寸单位是 point (72 points = 1")，要将 point 转换成 pixel，
+  需要依赖实际的 DPI(Dots Per Inch, 或者叫 PPI，Pixels Per Inch)。
+  * The visual resolution of the human eye is about 1 arc minute. At a viewing distance of 20", that
+    translates to about 170 DPI, which equals a dot pitch of around 0.14 mm.
 
 # Legacy for GST JoyCity project
 ```
