@@ -6,7 +6,7 @@ import PyPDF.compound as _c
 import PyPDF.keys as _k
 from hashlib import md5 as _md5
 from PyPDF.generic import (
-    NameObject, NumberObject, IndirectObjectReference, ByteStringObject,
+    NameObject, NumberObject, Reference, ByteStringObject,
     ArrayObject, DictionaryObject,
     StreamObject,
     create_string_object, is_plain_object,
@@ -181,7 +181,7 @@ class PdfFileWriter(object):
 
     def _add_object(self, obj):
         self._objects.append(obj)
-        return IndirectObjectReference(len(self._objects), 0, self)
+        return Reference(len(self._objects), 0, self)
 
     def _add_page(self, page, callback_add):
         """Common method for inserting or adding a page to this PDF file.
@@ -207,24 +207,24 @@ class PdfFileWriter(object):
         trees to reference the correct new object location, rather than
         copying in a new copy of the page object."""
         external_reference_map = {}
-        for idor_index in range(len(self._objects)):
-            indirect_object_reference = self._objects[idor_index]
+        for reference_index in range(len(self._objects)):
+            reference = self._objects[reference_index]
             if (
-                    isinstance(indirect_object_reference, _c.PageObject) and
-                    indirect_object_reference.indirect_ref is not None
+                    isinstance(reference, _c.PageObject) and
+                    reference.indirect_ref is not None
             ):
                 # _u.debug(
-                #     'type:', type(indirect_object_reference),
-                #     '| indirect_ref:', indirect_object_reference.indirect_ref,
-                #     '| object itself:', indirect_object_reference,
+                #     'type:', type(reference),
+                #     '| indirect_ref:', reference.indirect_ref,
+                #     '| object itself:', reference,
                 # )
-                data = indirect_object_reference.indirect_ref
+                data = reference.indirect_ref
                 if data.parent not in external_reference_map:
                     external_reference_map[data.parent] = {}
                 if data.generation not in external_reference_map[data.parent]:
                     external_reference_map[data.parent][data.generation] = {}
-                external_reference_map[data.parent][data.generation][data.idnum] = IndirectObjectReference(
-                    idor_index + 1, 0, self
+                external_reference_map[data.parent][data.generation][data.idnum] = Reference(
+                    reference_index + 1, 0, self
                 )
         return external_reference_map
 
@@ -256,7 +256,7 @@ class PdfFileWriter(object):
                     value = self._add_object(value)
                 data[i] = value
             return data
-        elif isinstance(data, IndirectObjectReference):
+        elif isinstance(data, Reference):
             quick_debug('IDO')
             # internal indirect references are fine
             if data.parent == self:
@@ -274,7 +274,7 @@ class PdfFileWriter(object):
                     newobj = data.parent.get_object(data)
                     self._objects.append(None)  # placeholder
                     idnum = len(self._objects)
-                    newobj_ido = IndirectObjectReference(idnum, 0, self)
+                    newobj_ido = Reference(idnum, 0, self)
                     if data.parent not in extern_map:
                         extern_map[data.parent] = {}
                     if data.generation not in extern_map[data.parent]:

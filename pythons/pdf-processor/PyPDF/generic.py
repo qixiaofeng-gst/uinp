@@ -57,7 +57,7 @@ def read_object(stream, pdf_reader):
         peek = stream.read(20)
         stream.seek(-len(peek), io.SEEK_CUR)  # reset to start
         if re.match(br'(\d+)\s(\d+)\sR[^a-zA-Z]', peek) is not None:
-            return IndirectObjectReference.read_from_stream(stream, pdf_reader)
+            return Reference.read_from_stream(stream, pdf_reader)
         else:
             return NumberObject.read_from_stream(stream)
 
@@ -135,7 +135,7 @@ class ArrayObject(list, PdfObject):
         return arr
 
 
-class IndirectObjectReference(PdfObject):
+class Reference(PdfObject):
     def __init__(self, idnum, generation, pdf):
         self.idnum = idnum
         # XXX Seems that generation is always 0.
@@ -146,11 +146,11 @@ class IndirectObjectReference(PdfObject):
         return self.parent.get_object(self).get_object()
 
     def __repr__(self):
-        return 'IndirectObject(%r, %r, %s)' % (self.idnum, self.generation, type(self.get_object()))
+        return 'Reference(%r, %r, %s)' % (self.idnum, self.generation, type(self.get_object()))
 
     def __eq__(self, other):
         return (other is not None and
-                isinstance(other, IndirectObjectReference) and
+                isinstance(other, Reference) and
                 self.idnum == other.idnum and
                 self.generation == other.generation and
                 self.parent is other.parent)
@@ -178,7 +178,7 @@ class IndirectObjectReference(PdfObject):
         r = stream.read(1)
         if r not in b'R':
             raise _u.PdfReadError("error reading indirect object reference")
-        return IndirectObjectReference(int(idnum), int(generation), pdf)
+        return Reference(int(idnum), int(generation), pdf)
 
 
 class FloatObject(decimal.Decimal, PdfObject):
@@ -419,7 +419,7 @@ class DictionaryObject(dict, PdfObject):
             # this is a stream object, not a dictionary
             assert b'/Length' in data
             length = data[b'/Length']
-            if isinstance(length, IndirectObjectReference):
+            if isinstance(length, Reference):
                 t = stream.tell()
                 length = pdf_object.get_object(length)
                 stream.seek(t, io.SEEK_SET)
@@ -714,4 +714,4 @@ def _decode_stream_data(stream):
     return data
 
 
-_PLAIN_OBJECTS = (IndirectObjectReference, NumberObject, NameObject, FloatObject, BooleanObject)
+_PLAIN_OBJECTS = (Reference, NumberObject, NameObject, FloatObject, BooleanObject)

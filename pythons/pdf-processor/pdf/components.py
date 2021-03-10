@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class BaseObject(ABC):
+class BaseComponent(ABC):
     @abstractmethod
     def read_from_stream(self, stream):
         ...
