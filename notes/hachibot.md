@@ -1,4 +1,5 @@
 Next TODO:
+- Implement the better emotion service, which can configure the limit of different behavior.
 - synchronized & volatile(atomic access), interleave preventing and happens-before relation.
 - IntelliJ IDEA 相关：
   - POM 错误 “找不到插件”： https://stackoverflow.com/questions/20496239/maven-plugins-can-not-be-found-in-intellij
