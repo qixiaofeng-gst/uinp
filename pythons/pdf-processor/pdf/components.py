@@ -1,10 +1,11 @@
+import pdf.tools as _t
 from abc import ABC, abstractmethod
 
 
 class BaseComponent(ABC):
     @staticmethod
     def read_component_from(stream):
-        for component_class in BaseComponent.__subclasses__():
+        for component_class in _t.get_descendants_recursively(BaseComponent):
             # noinspection PyUnresolvedReferences
             if component_class.probe(stream):
                 return component_class().read_from_stream(stream)

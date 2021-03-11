@@ -11,6 +11,7 @@ from io import BufferedReader, BytesIO
 import PyPDF.compound as _c
 import PyPDF.utils as _u
 import PyPDF.keys as _k
+import PyPDF.image_tools as _im
 from PyPDF.generic import (
     NameObject, NumberObject, BooleanObject, TextStringObject,
     Reference, ByteStringObject,
@@ -47,7 +48,8 @@ class PdfFileReader(object):
         self._override_encryption = False
 
         self._flattened_pages = []
-        self._flatten(self._trailer[_k.ROOT].get_object()[_k.PAGES].get_object(), dict())
+        self._flatten_pages(self._trailer[_k.ROOT].get_object()[_k.PAGES].get_object(), dict())
+        self._chopped_images()
 
     def get_document_info(self):
         """Retrieves the PDF file's document information dictionary, if it exists.
@@ -194,14 +196,14 @@ class PdfFileReader(object):
         finally:
             self._override_encryption = False
 
-    def get_object(self, indirect_reference: Reference):
-        retval = self._resolved_objects.get(indirect_reference.generation, {}).get(indirect_reference.idnum, None)
+    def get_object(self, reference: Reference):
+        retval = self._resolved_objects.get(reference.generation, {}).get(reference.idnum, None)
         if retval is not None:
             return retval
-        if indirect_reference.generation == 0 and indirect_reference.idnum in self._xref_obj_stream:
+        if reference.generation == 0 and reference.idnum in self._xref_obj_stream:
             # indirect reference to object in object stream
             # read the entire object stream into memory
-            stmnum, idx = self._xref_obj_stream[indirect_reference.idnum]
+            stmnum, idx = self._xref_obj_stream[reference.idnum]
             obj_stm = Reference(stmnum, 0, self).get_object()
             assert obj_stm[_k.TYPE] == b'/ObjStm'
             assert idx < obj_stm[b'/N']
@@ -216,12 +218,12 @@ class PdfFileReader(object):
                 obj = read_object(stream_data, self)
                 self._resolved_objects[0][objnum] = obj
                 stream_data.seek(t, io.SEEK_SET)
-            return self._resolved_objects[0][indirect_reference.idnum]
-        start = self._xref[indirect_reference.generation][indirect_reference.idnum]
+            return self._resolved_objects[0][reference.idnum]
+        start = self._xref[reference.generation][reference.idnum]
         self._stream.seek(start, io.SEEK_SET)
         idnum, generation = _read_object_header(self._stream)
-        assert idnum == indirect_reference.idnum
-        assert generation == indirect_reference.generation
+        assert idnum == reference.idnum
+        assert generation == reference.generation
         retval = read_object(self._stream, self)
 
         # override encryption is used for the /Encrypt dictionary
@@ -230,8 +232,8 @@ class PdfFileReader(object):
             if self._decryption_key is None:
                 raise Exception("file has not been decrypted")
             # otherwise, decrypt here...
-            pack1 = struct.pack("<i", indirect_reference.idnum)[:3]
-            pack2 = struct.pack("<i", indirect_reference.generation)[:2]
+            pack1 = struct.pack("<i", reference.idnum)[:3]
+            pack2 = struct.pack("<i", reference.generation)[:2]
             key = _u.encrypt(self._decryption_key, pack1, pack2)
             retval = self._decrypt_object(retval, key)
 
@@ -493,14 +495,14 @@ class PdfFileReader(object):
                 raise _u.PdfReadError("Unexpected destination %r" % dest)
         return outline
 
-    def _flatten(self, pages, inherit, indirect_ref=None):
+    def _flatten_pages(self, pages, inherit, indirect_ref=None):
         target_type = pages[_k.TYPE]
         if target_type == _k.PAGES:
             for attr in _inheritable_page_attributes:
                 if attr in pages:
                     inherit[attr] = pages[attr]
             for page in pages[_k.KIDS]:
-                self._flatten(
+                self._flatten_pages(
                     page.get_object(), inherit,
                     indirect_ref=page if isinstance(page, Reference) else None,
                 )
@@ -514,6 +516,17 @@ class PdfFileReader(object):
             page_obj = _c.PageObject(self, indirect_ref)
             page_obj.update(page)
             self._flattened_pages.append(page_obj)
+
+    def _chopped_images(self):
+        for page in self._flattened_pages:
+            _u.debug(page, page[_k.CONTENT])
+            # page[_k.RESOURCES]:
+            # _im.chop_off_image_empty_edges()
+            # if b'/Subtype' in self and self[b'/Subtype'] == b'/Image':
+            #     pass
+            # else:
+            #     # _u.debug(data)
+            #     pass
 
     @property
     def _is_encrypted(self):

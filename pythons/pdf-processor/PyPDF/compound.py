@@ -281,18 +281,17 @@ class PageObject(DictionaryObject):
                 content = _ContentStreamObject(content, self.parent)
             self[NameObject(_k.CONTENT)] = content.flate_encode()
 
-    ##
-    # Locate all text drawing commands, in the order they are provided in the
-    # content stream, and extract the text.  This works well for some PDF
-    # files, but poorly for others, depending on the generator used.  This will
-    # be refined in the future.  Do not rely on the order of text coming out of
-    # this function, as it will change if this function is made more
-    # sophisticated.
-    # <p>
-    # Stability: Added in v1.7, will exist for all future v1.x releases.  May
-    # be overhauled to provide more ordered text in the future.
-    # @return a unicode string object
     def extract_text(self):
+        """Locate all text drawing commands, in the order they are provided in the
+        content stream, and extract the text.  This works well for some PDF
+        files, but poorly for others, depending on the generator used.  This will
+        be refined in the future.  Do not rely on the order of text coming out of
+        this function, as it will change if this function is made more
+        sophisticated.
+
+        Stability: Added in v1.7, will exist for all future v1.x releases.  May
+        be overhauled to provide more ordered text in the future.
+        @return a unicode string object"""
         text = u""
         content = self[_k.CONTENT].get_object()
         if not isinstance(content, _ContentStreamObject):

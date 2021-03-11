@@ -10,9 +10,6 @@ import PyPDF.utils as _u
 import PyPDF.keys as _k
 import decimal
 import codecs
-import zlib
-import cv2 as _cv
-import numpy as _np
 
 _STREAM_KEY = "__streamdata__"
 
@@ -146,7 +143,7 @@ class Reference(PdfObject):
         return self.parent.get_object(self).get_object()
 
     def __repr__(self):
-        return 'Reference(%r, %r, %s)' % (self.idnum, self.generation, type(self.get_object()))
+        return 'Reference(%r, %r, %s)' % (self.idnum, self.generation, type(self.get_object()).__name__)
 
     def __eq__(self, other):
         return (other is not None and
@@ -310,6 +307,49 @@ class NameObject(bytes, PdfObject):
         return NameObject(name)
 
 
+def read_stream_object_with(data, pdf_object, stream):
+    pos = stream.tell()
+    s = _u.read_non_whitespace(stream)
+    if s in b's' and stream.read(5) == b'tream':
+        eol = stream.read(1)
+        # odd PDF file output has spaces after 'stream' keyword but before EOL.
+        # patch provided by Danial Sandler
+        while eol == b' ':
+            eol = stream.read(1)
+        assert eol in b'\n\r'
+        if eol in b'\r':
+            # read \n after
+            stream.read(1)
+        # this is a stream object, not a dictionary
+        assert b'/Length' in data
+        length = data[b'/Length']
+        if isinstance(length, Reference):
+            t = stream.tell()
+            length = pdf_object.get_object(length)
+            stream.seek(t, io.SEEK_SET)
+        data[_STREAM_KEY] = stream.read(length)
+        e = _u.read_non_whitespace(stream)
+        ndstream = stream.read(8)
+        if (e + ndstream) != b'endstream':
+            # (sigh) - the odd PDF file has a length that is too long, so
+            # we need to read backwards to find the "endstream" ending.
+            # ReportLab (unknown version) generates files with this bug,
+            # and Python users into PDF files tend to be our audience.
+            # we need to do this to correct the streamdata and chop off
+            # an extra character.
+            pos = stream.tell()
+            stream.seek(-10, io.SEEK_CUR)
+            end = stream.read(9)
+            if end == b'endstream':
+                # we found it by looking back one character further.
+                data[_STREAM_KEY] = data[_STREAM_KEY][:-1]
+            else:
+                stream.seek(pos, io.SEEK_SET)
+                raise _u.PdfReadError("Unable to find 'endstream' marker after stream.")
+    else:
+        stream.seek(pos, io.SEEK_SET)
+
+
 class DictionaryObject(dict, PdfObject):
     def __init__(self, *args, **kwargs):
         super(DictionaryObject, self).__init__()
@@ -343,15 +383,15 @@ class DictionaryObject(dict, PdfObject):
             raise ValueError("value must be PdfObject")
         return dict.__setitem__(self, key, value)
 
+    def __getitem__(self, key):
+        return dict.__getitem__(self, key).get_object()
+
     def setdefault(self, key, value=None):
         if not isinstance(key, PdfObject):
             raise ValueError("key must be PdfObject")
         if not isinstance(value, PdfObject):
             raise ValueError("value must be PdfObject")
         return dict.setdefault(self, key, value)
-
-    def __getitem__(self, key):
-        return dict.__getitem__(self, key).get_object()
 
     def get_xmp_metadata(self):
         """
@@ -404,92 +444,13 @@ class DictionaryObject(dict, PdfObject):
                 # multiple definitions of key not permitted
                 raise _u.PdfReadError("multiple definitions in dictionary")
             data[key] = value
-        pos = stream.tell()
-        s = _u.read_non_whitespace(stream)
-        if s in b's' and stream.read(5) == b'tream':
-            eol = stream.read(1)
-            # odd PDF file output has spaces after 'stream' keyword but before EOL.
-            # patch provided by Danial Sandler
-            while eol == b' ':
-                eol = stream.read(1)
-            assert eol in b'\n\r'
-            if eol in b'\r':
-                # read \n after
-                stream.read(1)
-            # this is a stream object, not a dictionary
-            assert b'/Length' in data
-            length = data[b'/Length']
-            if isinstance(length, Reference):
-                t = stream.tell()
-                length = pdf_object.get_object(length)
-                stream.seek(t, io.SEEK_SET)
-            data[_STREAM_KEY] = stream.read(length)
-            e = _u.read_non_whitespace(stream)
-            ndstream = stream.read(8)
-            if (e + ndstream) != b'endstream':
-                # (sigh) - the odd PDF file has a length that is too long, so
-                # we need to read backwards to find the "endstream" ending.
-                # ReportLab (unknown version) generates files with this bug,
-                # and Python users into PDF files tend to be our audience.
-                # we need to do this to correct the streamdata and chop off
-                # an extra character.
-                pos = stream.tell()
-                stream.seek(-10, io.SEEK_CUR)
-                end = stream.read(9)
-                if end == b'endstream':
-                    # we found it by looking back one character further.
-                    data[_STREAM_KEY] = data[_STREAM_KEY][:-1]
-                else:
-                    stream.seek(pos, io.SEEK_SET)
-                    raise _u.PdfReadError("Unable to find 'endstream' marker after stream.")
-        else:
-            stream.seek(pos, io.SEEK_SET)
+        read_stream_object_with(data, pdf_object, stream)
         if _STREAM_KEY in data:
             return initialize_from_dictionary(data)
         else:
             retval = DictionaryObject()
             retval.update(data)
             return retval
-
-
-_IM_COUNT = 0
-
-
-def _mean(array_1d: _np.ndarray):
-    return array_1d.mean()
-
-
-def _scan_from_edge(raw: _np.ndarray, threshold, iterator, callback_get_component_line):
-    line_count = 0
-    for i in iterator:
-        if (
-                _mean(callback_get_component_line(raw, i, 0)) < threshold or
-                _mean(callback_get_component_line(raw, i, 1)) < threshold or
-                _mean(callback_get_component_line(raw, i, 2)) < threshold
-        ):
-            if line_count > 1:
-                return line_count - 1
-            else:
-                return 0
-        line_count += 1
-    return 0
-
-
-def _get_horizontal_component_line(nparray, line_index, component_index):
-    return nparray[line_index, :, component_index]
-
-
-def _get_vertical_component_line(nparray, line_index, component_index):
-    return nparray[:, line_index, component_index]
-
-
-def scan_margins(raw: _np.ndarray, threshold=250):
-    return (
-        _scan_from_edge(raw, threshold, range(len(raw)), _get_horizontal_component_line),  # Top
-        _scan_from_edge(raw, threshold, reversed(range(len(raw))), _get_horizontal_component_line),  # Bottom
-        _scan_from_edge(raw, threshold, range(len(raw[0])), _get_vertical_component_line),  # Left
-        _scan_from_edge(raw, threshold, reversed(range(len(raw[0]))), _get_vertical_component_line),  # Right
-    )
 
 
 class StreamObject(DictionaryObject):
@@ -506,31 +467,6 @@ class StreamObject(DictionaryObject):
         data = self._bytes_data
         if encryption_key is not None:
             data = _u.rc4_encrypt(encryption_key, data)
-        if b'/Subtype' in self and self[b'/Subtype'] == b'/Image':
-            global _IM_COUNT
-            width = self[b'/Width']
-            height = self[b'/Height']
-            raw: _np.ndarray = _np.frombuffer(zlib.decompress(data), dtype=_np.uint8)
-            raw = raw.reshape((height, width, -1))
-            component_count = len(raw[0][0])
-            top_margin, bottom_margin, left_margin, right_margin = scan_margins(raw, 254)
-            raw = raw[top_margin:(height - bottom_margin), left_margin:(width - right_margin), :]
-            new_width = len(raw[0])
-            new_height = len(raw)
-            _u.debug(
-                'length of data:', len(data),
-                '| expected length:', width * height * component_count,
-                '| chopped length:', len(zlib.compress(
-                    raw.reshape(new_width * new_height * component_count).tobytes()
-                )),
-                '| self:', self,
-            )
-            # _u.stacktrace_debug()
-            _cv.imwrite('output/page_{}.jpg'.format(_IM_COUNT), raw)
-            _IM_COUNT += 1
-        else:
-            _u.debug(data, '-' * 16)
-            pass
         stream.write(data)
         stream.write(b'\nendstream')
 

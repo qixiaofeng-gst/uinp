@@ -56,12 +56,12 @@ class PdfFileWriter(object):
 
         stream - An object to write the file to.  The object must support
                  the write method, and the tell method, similar to a file object."""
-        _u.debug(self.get_pages_count())
-        _u.debug(len(self._objects))
+        # _u.debug(self.get_pages_count())
+        # _u.debug(len(self._objects))
         external_reference_map = self._build_external_reference_map()
-        _u.debug(len(self._objects))
+        # _u.debug(len(self._objects))
         self._scan_indirect_references(external_reference_map, self._root, [])
-        _u.debug(len(self._objects))
+        # _u.debug(len(self._objects))
 
         # Begin writing:
         object_positions = self._write_objects_to(stream)
@@ -154,17 +154,20 @@ class PdfFileWriter(object):
         stream.write(_u.s2b("%010d %05d f \n" % (0, 65535)))
         for offset in object_positions:
             stream.write(_u.s2b("%010d %05d n \n" % (offset, 0)))
+        _u.debug('Wrote cross reference table.')
         return xref_location
 
     def _write_objects_to(self, stream):
+        _u.debug('Writing objects...')
+        objects_count = len(self._objects)
         object_positions = []
         stream.write(b'%PDF-1.3\n')
-        for i in range(len(self._objects)):
+        for i in range(objects_count):
             idnum = (i + 1)
             obj = self._objects[i]
-            _u.debug('idnum: [{:4}]'.format(idnum), '| type:', type(obj), '| obj:', obj)
-            if b'/Type' in obj:
-                _u.debug('type:', obj[b'/Type'], '| obj:', obj)
+            # _u.debug('idnum: [{:4}]'.format(idnum), '| type:', type(obj).__name__, '| obj:', obj)
+            # if b'/Type' in obj:
+            #     _u.debug('type:', obj[b'/Type'], '| obj:', obj)
             object_positions.append(stream.tell())
             stream.write(_u.s2b(str(idnum) + " 0 obj\n"))
             key = None
@@ -177,6 +180,7 @@ class PdfFileWriter(object):
             else:
                 obj.write_to_stream(stream, key)
             stream.write(b'\nendobj\n')
+            _u.debug('Wrote {:4}/{} objects.'.format(i, objects_count))
         return object_positions
 
     def _add_object(self, obj):
