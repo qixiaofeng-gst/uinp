@@ -2,7 +2,7 @@
 """
 Implementation of stream filters for PDF.
 """
-from io import StringIO
+from io import BytesIO
 from PyPDF.utils import PdfReadError
 from zlib import decompress, compress
 
@@ -19,13 +19,13 @@ class FlateDecode(object):
             columns = decode_parms[b'/Columns']
             # PNG prediction:
             if 10 <= predictor <= 15:
-                output = StringIO()
+                output = BytesIO()
                 # PNG prediction can vary from row to row
                 rowlength = columns + 1
                 assert len(data) % rowlength == 0
                 prev_rowdata = (0,) * rowlength
-                for row in range(len(data) / rowlength):
-                    rowdata = [ord(x) for x in data[(row * rowlength):((row + 1) * rowlength)]]
+                for row in range(len(data) // rowlength):
+                    rowdata = [x for x in data[(row * rowlength):((row + 1) * rowlength)]]
                     filter_byte = rowdata[0]
                     if filter_byte == 0:
                         pass
@@ -39,7 +39,7 @@ class FlateDecode(object):
                         # unsupported PNG filter
                         raise PdfReadError("Unsupported PNG filter %r" % filter_byte)
                     prev_rowdata = rowdata
-                    output.write(''.join([chr(x) for x in rowdata[1:]]))
+                    output.write(b''.join([bytes([x]) for x in rowdata[1:]]))
                 data = output.getvalue()
             else:
                 # unsupported predictor

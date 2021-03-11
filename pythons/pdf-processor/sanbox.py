@@ -34,6 +34,8 @@ def test_merge():
 
 
 def test_process():
+    # with open("test_input_pm_v1.pdf", "rb") as file_b:  # CCITTFaxDecode
+    # with open("test_input_taocp_v1.pdf", "rb") as file_b:  # DCTDecode
     with open("test_input_b.pdf", "rb") as file_b:
         input2 = PdfFileReader(file_b)  # 325 pages
         with open("test_output.pdf", "wb") as file:

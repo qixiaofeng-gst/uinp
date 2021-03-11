@@ -6,7 +6,7 @@ It may be a solid base for future PDF file work in Python.
 """
 import io
 import struct
-from io import BufferedReader, BytesIO
+from io import BufferedReader, BytesIO, StringIO
 
 import re as _re
 import PyPDF.compound as _c
@@ -41,11 +41,11 @@ class PdfFileReader(object):
                  and seek methods similar to a file object."""
         self._xref = {}
         self._xref_obj_stream = {}
+        self._resolved_objects = {}
         self._trailer = DictionaryObject()
         self._stream: BufferedReader = stream
         self._read_cross_reference()
 
-        self._resolved_objects = {}
         self._named_dests = None
         self._override_encryption = False
 
@@ -350,9 +350,9 @@ class PdfFileReader(object):
         self._stream.seek(-1, io.SEEK_CUR)
         idnum, generation = _read_object_header(self._stream)
         xrefstream = read_object(self._stream, self)
-        _u.debug(xrefstream)
         assert xrefstream[_k.TYPE] == b'/XRef'
         self._cache_indirect_object(generation, idnum, xrefstream)
+        # _u.debug(xrefstream)
         stream_data = BytesIO(xrefstream.get_data())
         idx_pairs = xrefstream.get(b'/Index', [0, xrefstream.get(_k.SIZE)])
         entry_sizes = xrefstream.get(b'/W')
@@ -383,6 +383,7 @@ class PdfFileReader(object):
                         elif xref_type == 2:
                             obstr_idx = di
                 if xref_type == 0:
+                    _u.debug('Ignored xref_type == 0, do not know why.')
                     pass
                 elif xref_type == 1:
                     if generation not in self._xref:
@@ -525,7 +526,8 @@ class PdfFileReader(object):
             page = self._flattened_pages[i]
             bytes_data: bytes = page[_k.CONTENT].get_data()
             parts = _pattern_space.split(bytes_data)
-            the_image = page[_k.RESOURCES][b'/XObject'][parts[-5]]
+            _u.debug(parts, len(page[_k.RESOURCES][b'/XObject']))
+            the_image = page[_k.RESOURCES][b'/XObject'][_get_image_name_from(parts)]
             image_data = the_image.get_data()
             # _u.debug(the_image, len(image_data))
             if b'/Subtype' in the_image and the_image[b'/Subtype'] == b'/Image':
@@ -560,9 +562,9 @@ class PdfFileReader(object):
 def _convert_to_int(d, size):
     if size > 8:
         raise _u.PdfReadError("invalid size in convertToInt")
-    d = "\x00\x00\x00\x00\x00\x00\x00\x00" + d
+    d = b'\x00\x00\x00\x00\x00\x00\x00\x00' + d
     d = d[-8:]
-    return struct.unpack(">q", d)[0]
+    return struct.unpack('>q', d)[0]
 
 
 def _generate_pairs(array):
@@ -607,3 +609,14 @@ def _read_backward_for_line(stream: BufferedReader):
         else:
             line = x + line
     return line
+
+
+def _get_image_name_from(parts_list: list):
+    index = parts_list.index(b'Do')
+    for i in reversed(range(index)):
+        candidate = parts_list[i]
+        if 0 == len(candidate):
+            continue
+        else:
+            return candidate
+    raise ValueError('Invalid parts. Expecting "Do" operator preceding with a image name.')
