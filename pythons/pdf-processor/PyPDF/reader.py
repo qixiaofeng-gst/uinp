@@ -536,10 +536,21 @@ class PdfFileReader(object):
                 the_image[NameObject(b'/Width')] = NumberObject(width)
                 the_image[NameObject(b'/Height')] = NumberObject(height)
                 the_image._bytes_data = compressed_data
+
+                # We might need to insert this matrix in the below line: 1 0 0 1 0 100 cm
+                page[_k.CONTENT].set_data(
+                    b'q ' + _u.s2b(str(width)) + b' 0 0 ' + _u.s2b(str(height)) + b' 0 0 cm ' + parts[-5] + b' Do Q'
+                )
+                page[_k.MEDIA_BOX][2] = NumberObject(width)
+                page[_k.MEDIA_BOX][3] = NumberObject(height)
+                _u.debug(
+                    'Chopped empty edges for {:4}/{} image.'.format(i + 1, pages_count),
+                    page[_k.MEDIA_BOX], page[_k.MEDIA_BOX][2:], parts, width, height,
+                    page[_k.CONTENT].get_data(),
+                )
             else:
                 _u.debug(image_data)
                 pass
-            _u.debug('Chopping empty edges for {}/{} image.'.format(i, pages_count))
 
     @property
     def _is_encrypted(self):

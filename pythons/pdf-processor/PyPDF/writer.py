@@ -180,7 +180,7 @@ class PdfFileWriter(object):
             else:
                 obj.write_to_stream(stream, key)
             stream.write(b'\nendobj\n')
-            _u.debug('Wrote {:4}/{} objects.'.format(i, objects_count))
+            _u.debug('Wrote {:4}/{} objects.'.format(i + 1, objects_count))
         return object_positions
 
     def _add_object(self, obj):
