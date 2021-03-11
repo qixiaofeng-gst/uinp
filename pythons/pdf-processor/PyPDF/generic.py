@@ -639,6 +639,13 @@ def _decode_stream_data(stream):
             data = _f.ASCIIHexDecode.decode(data)
         elif filterType == b'/ASCII85Decode':
             data = _f.ASCII85Decode.decode(data)
+        elif filterType == b'/DCTDecode':
+            data = _f.DCTDecode.decode(data)
+        elif filterType == b'/JPXDecode':
+            data = _f.JPXDecode.decode(data)
+        elif filterType == b'/CCITTFaxDecode':
+            height = stream.get(b'/Height', ())
+            data = _f.CCITTFaxDecode.decode(data, stream.get(b'/DecodeParms'), height)
         elif filterType == b'/Crypt':
             decode_params = stream.get(b'/DecodeParams', {})
             if b'/Name' not in decode_params and _k.TYPE not in decode_params:

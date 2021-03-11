@@ -526,8 +526,8 @@ class PdfFileReader(object):
             page = self._flattened_pages[i]
             bytes_data: bytes = page[_k.CONTENT].get_data()
             parts = _pattern_space.split(bytes_data)
-            _u.debug(parts, len(page[_k.RESOURCES][b'/XObject']))
             the_image = page[_k.RESOURCES][b'/XObject'][_get_image_name_from(parts)]
+            _u.debug(parts, len(page[_k.RESOURCES][b'/XObject']), the_image)
             image_data = the_image.get_data()
             # _u.debug(the_image, len(image_data))
             if b'/Subtype' in the_image and the_image[b'/Subtype'] == b'/Image':

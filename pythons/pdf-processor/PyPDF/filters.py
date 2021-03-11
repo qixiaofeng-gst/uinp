@@ -2,6 +2,7 @@
 """
 Implementation of stream filters for PDF.
 """
+import struct
 from io import BytesIO
 from PyPDF.utils import PdfReadError
 from zlib import decompress, compress
@@ -124,6 +125,52 @@ class ASCII85Decode(object):
                 group = []
             x += 1
         return retval
+
+
+class DCTDecode(object):
+    @staticmethod
+    def decode(data, _decode_parms=None):
+        return data
+
+
+class JPXDecode(object):
+    @staticmethod
+    def decode(data, _decode_parms=None):
+        return data
+
+
+class CCITTFaxDecode(object):
+    @staticmethod
+    def decode(data, decode_parms=None, height=0):
+        ccit_tgroup = None
+        if decode_parms:
+            if decode_parms.get(b'/K', 1) == -1:
+                ccit_tgroup = 4
+            else:
+                ccit_tgroup = 3
+
+        width = decode_parms[b'/Columns']
+        img_size = len(data)
+        tiff_header_struct = b'<' + b'2s' + b'h' + b'l' + b'h' + b'hhll' * 8 + b'h'
+        tiff_header = struct.pack(
+            tiff_header_struct,
+            b'II',  # Byte order indication: Little endian
+            42,  # Version number (always 42)
+            8,  # Offset to first IFD
+            8,  # Number of tags in IFD
+            256, 4, 1, width,  # ImageWidth, LONG, 1, width
+            257, 4, 1, height,  # ImageLength, LONG, 1, length
+            258, 3, 1, 1,  # BitsPerSample, SHORT, 1, 1
+            259, 3, 1, ccit_tgroup,  # Compression, SHORT, 1, 4 = CCITT Group 4 fax encoding
+            262, 3, 1, 0,  # Thresholding, SHORT, 1, 0 = WhiteIsZero
+            273, 4, 1, struct.calcsize(tiff_header_struct),
+            # StripOffsets, LONG, 1, length of header
+            278, 4, 1, height,  # RowsPerStrip, LONG, 1, length
+            279, 4, 1, img_size,  # StripByteCounts, LONG, 1, size of image
+            0,  # last IFD
+        )
+
+        return tiff_header + data
 
 
 if __name__ == "__main__":
