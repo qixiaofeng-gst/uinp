@@ -6,7 +6,8 @@ import numpy as _np
 def chop_off_image_empty_edges(meta, data, image_index, should_output_chopped_images=False):
     width = meta[b'/Width']
     height = meta[b'/Height']
-    raw: _np.ndarray = _np.frombuffer(zlib.decompress(data), dtype=_np.uint8)
+    # raw: _np.ndarray = _np.frombuffer(zlib.decompress(data), dtype=_np.uint8)
+    raw: _np.ndarray = _np.frombuffer(data, dtype=_np.uint8)
     raw = raw.reshape((height, width, -1))
     component_count = len(raw[0][0])
     top_margin, bottom_margin, left_margin, right_margin = scan_margins(raw, 254)
@@ -15,14 +16,8 @@ def chop_off_image_empty_edges(meta, data, image_index, should_output_chopped_im
     new_height = len(raw)
     new_original_length = new_width * new_height * component_count
     compressed = zlib.compress(raw.reshape(new_original_length).tobytes())
+    # compressed = raw.reshape(new_original_length).tobytes()
     new_compressed_length = len(compressed)
-    # _u.debug(
-    #     'length of data:', len(data),
-    #     '| expected length:', width * height * component_count,
-    #     '| chopped length:', len(),
-    #     '| self:', self,
-    # )
-    # _u.stacktrace_debug()
     if should_output_chopped_images:
         _cv.imwrite('output/page_{}.jpg'.format(image_index), raw)
     return new_width, new_height, new_compressed_length, compressed

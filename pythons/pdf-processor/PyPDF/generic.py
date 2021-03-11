@@ -457,7 +457,7 @@ class StreamObject(DictionaryObject):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._bytes_data = None
-        self.decodedSelf = None
+        self._decoded_stream = None
 
     def write_to_stream(self, stream, encryption_key=None):
         self[NameObject(b'/Length')] = NumberObject(len(self._bytes_data))
@@ -513,16 +513,16 @@ class DecodedStreamObject(StreamObject):
 class _EncodedStreamObject(StreamObject):
     def __init__(self):
         super().__init__()
-        self.decodedSelf = None
+        self._decoded_stream = None
 
     @property
     def bytes_data(self):
         return self._bytes_data
 
     def get_data(self):
-        if self.decodedSelf is not None:
+        if self._decoded_stream is not None:
             # cached version of decoded object
-            return self.decodedSelf.get_data()
+            return self._decoded_stream.get_data()
         else:
             # assert self.decodedSelf is not None
             # create decoded object
@@ -531,7 +531,7 @@ class _EncodedStreamObject(StreamObject):
             for key, value in self.items():
                 if key not in (b'/Length', b'/Filter', b'/DecodeParms'):
                     decoded[key] = value
-            self.decodedSelf = decoded
+            self._decoded_stream = decoded
             return decoded.get_data()
 
     def set_data(self, data):

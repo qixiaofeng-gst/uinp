@@ -8,6 +8,7 @@ import io
 import struct
 from io import BufferedReader, BytesIO
 
+import re as _re
 import PyPDF.compound as _c
 import PyPDF.utils as _u
 import PyPDF.keys as _k
@@ -20,6 +21,7 @@ from PyPDF.generic import (
     create_string_object, read_object,
 )
 
+_pattern_space = _re.compile(b'\\s')
 _inheritable_page_attributes = (
     NameObject(_k.RESOURCES),
     NameObject(_k.MEDIA_BOX),
@@ -518,15 +520,26 @@ class PdfFileReader(object):
             self._flattened_pages.append(page_obj)
 
     def _chopped_images(self):
-        for page in self._flattened_pages:
-            _u.debug(page, page[_k.CONTENT])
-            # page[_k.RESOURCES]:
-            # _im.chop_off_image_empty_edges()
-            # if b'/Subtype' in self and self[b'/Subtype'] == b'/Image':
-            #     pass
-            # else:
-            #     # _u.debug(data)
-            #     pass
+        pages_count = len(self._flattened_pages)
+        for i in range(pages_count):
+            page = self._flattened_pages[i]
+            bytes_data: bytes = page[_k.CONTENT].get_data()
+            parts = _pattern_space.split(bytes_data)
+            the_image = page[_k.RESOURCES][b'/XObject'][parts[-5]]
+            image_data = the_image.get_data()
+            # _u.debug(the_image, len(image_data))
+            if b'/Subtype' in the_image and the_image[b'/Subtype'] == b'/Image':
+                (
+                    width, height, compressed_length, compressed_data,
+                ) = _im.chop_off_image_empty_edges(the_image, image_data, i + 1)
+                the_image[NameObject(b'/Length')] = NumberObject(compressed_length)
+                the_image[NameObject(b'/Width')] = NumberObject(width)
+                the_image[NameObject(b'/Height')] = NumberObject(height)
+                the_image._bytes_data = compressed_data
+            else:
+                _u.debug(image_data)
+                pass
+            _u.debug('Chopping empty edges for {}/{} image.'.format(i, pages_count))
 
     @property
     def _is_encrypted(self):
