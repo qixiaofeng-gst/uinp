@@ -1,4 +1,8 @@
 Next TODO:
+- https://github.com/toby0514/pdm2pcm
+- https://en.wikipedia.org/wiki/Pulse-density_modulation
+- https://github.com/wady101/PYNQ_Z2-Audio
+- http://www.pynq.io/
 - Implement the better emotion service, which can configure the limit of different behavior.
 - synchronized & volatile(atomic access), interleave preventing and happens-before relation.
 - IntelliJ IDEA 相关：
