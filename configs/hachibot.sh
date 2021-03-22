@@ -286,7 +286,7 @@ dk-login-ubt16() { ## Login into a container with /bin/bash.
 dk-speaker() {
     docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it --rm \
         --net=host --name=ai-speaker \
-        d.corp.hachibot.com/ai-speaker:1.5
+        d.corp.hachibot.com/ai-speaker:1.7
 }
 dk-xunfei() {
     docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 --privileged=true -it --rm \
@@ -295,7 +295,7 @@ dk-xunfei() {
         -v /etc/udev/rules.d:/etc/udev/rules.d \
         -v /hachi/prod/ai-xunfei-runtime/log:/root/.ros/log \
         -v /hachi/prod/ai-xunfei-runtime/audio:/hachi/workspace/audio \
-        d.corp.hachibot.com/ai-xunfei:1.5
+        d.corp.hachibot.com/ai-xunfei:1.7
 }
 dk-clear() {
     docker rmi $(docker images -f "dangling=true" -q)

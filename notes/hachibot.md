@@ -1,10 +1,16 @@
 Next TODO:
+- https://stackoverflow.com/questions/9981087/simple-c-sound-api
+- https://stackoverflow.com/questions/31674416/python-realtime-audio-streaming-with-pyaudio-or-something-else
+- https://www.alsa-project.org/wiki/Documentation
+- http://www.mpg123.de/
+- https://github.com/respeaker/mic_array
 - https://github.com/toby0514/pdm2pcm
 - https://en.wikipedia.org/wiki/Pulse-density_modulation
 - https://github.com/wady101/PYNQ_Z2-Audio
 - http://www.pynq.io/
 - Implement the better emotion service, which can configure the limit of different behavior.
 - synchronized & volatile(atomic access), interleave preventing and happens-before relation.
+- In multithreading world you should not ask: Why this should not work, but rather Why this is guarranteed to work.
 - IntelliJ IDEA 相关：
   - POM 错误 “找不到插件”： https://stackoverflow.com/questions/20496239/maven-plugins-can-not-be-found-in-intellij
 - UDP stuff:

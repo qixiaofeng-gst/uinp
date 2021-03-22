@@ -168,6 +168,7 @@ redux/mobox
 * 撤销上次提交并保留所有修改 `git reset --soft <revision-hash>`
 * 撤销所有进行中的修改（包括解决冲突的过程中） `git reset --hard HEAD`
 * 回退某个文件到历史版本 `git co <revision-hash> -- file/path`
+* 当解决冲突时，可使用 `git co --ours/theirs -- file/path` 来决定使用某方的版本
 * 查看 head 与前一 commit 的差异 `git diff head~1 head`
 * 关闭自动行尾转换 `git config --global core.autocrlf false`
 * 清理所有已删除分支 `git fetch --prune --all` 或者 `git remote prune origin`
