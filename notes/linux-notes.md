@@ -87,6 +87,13 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 ```
 * qaxel multithread download: `axel -a -n 12 http://url.to.download`, `-a` shows a progress bar.
 
+## 任务安排
+* crontab
+  - `crontab -e` to edit the crontab file
+  - minute hour day_of_mount month day_of_week
+  - e.g. `0 * * * *` means "at minute 0"
+  - Full line: `0 * * * * /home/user_name/task.sh`
+
 ## 驱动
 * 如果 nvidia-smi 突然说连不上显卡驱动了，可使用 `sudo apt install nvidia-driver-440` 来尝试重新安装。   
   如果显示驱动是已经安装好的，上面的指令会打印出版本号，比如 `450.80.02`。   
@@ -147,6 +154,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 例子 `sudo update-alternatives --config gcc`。
 * 系统级环境变量设置在 `/etc/profile.d/*.sh` 或 `/etc/environment`，推荐前者。
 * 文件系统的挂载配置在 /etc/fstab 中。修改后重新载入：`mount -a`。
+* 系统日志在 `/var/log/syslog` 路径。`dmesg | less` 可查看 kernel ring buffer，这里存的是 bootup 有关的信息。
 
 ## 应用程序
 * 通过 deb 文件安装 `sudo dpkg -i /path/to/deb/file && sudo apt install -f`。

@@ -40,6 +40,17 @@ Next TODO:
     - Polar form: MagX[] + PhaseX[] with graphs for human understanding
   - White noise contains an equal amount of all frequencies
   - May use zeros padding to make length of the DFT longer
+  - Four early mentioned windows:
+    - Rectangular window
+    - Hamming window
+    - Blackman window
+    - Flat-top window
+  - Understanding how information represent in signals is always the first step in successfull DSP:
+    - For some field, phase contains much of the information about the shape of the time domain waveform,  
+      with the magnitude playing a minor role
+    - Some signals have encoded their information in magnitude, with the phase playing a minor role,  
+      such as audio signals
+  - 
 - 我们的语音交互场景表现不好的原因：
   - 通常都出了一个波长的距离，低音人声（波长 1.1-4.25 米），女高音（波长 0.23-1.36 米），属于远场
   - 目前的混响处理通常都没有针对远场做处理，混响对识别效果的影响非常大
