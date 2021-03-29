@@ -92,6 +92,24 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   如果显示驱动是已经安装好的，上面的指令会打印出版本号，比如 `450.80.02`。   
   使用 `sudo apt install dkms` 确保 Dynamic Kernel Module Support 工具存在。
   使用 `sudo dkms install -m nvidia -v 450.80.02` 重新生成驱动模块，然后重启电脑。
+* U 盘格式化：
+  - Simple way:
+    - `df -h` check /dev/sda# or /dev/sdb#
+    - `sudo umount <dev/xxx>`
+    - `sudo mkfs.vfat <dev/xxx>`
+  - Advanced way for renaming:
+    - `sudo fdisk -l` show details of file system
+    - `sudo file <dev/xxx> -s`
+    - `sudo apt install mtools` install GNU tools for MSDOS file systems
+    - `vim /etc/mtools.conf` then add:  
+      drive u: file="/dev/sda1"
+    - `sudo minfo -v u:` to check details
+    - `sudo mlabel -i /dev/sda1 -s ::"LABEL HERE "` the label have to be 11 characters, no more no less
+  - GUI way:
+    - Open "Disks" application
+    - Select the flash drive in the panel on the left
+    - Press the unmount button(should look like a stop button)
+    - Click on the gears icon and choose "Edit filesystem"
 
 ## 启停
 * 卡死重启：按下 `Sys Rq` 键，通常该健与 `Prtscn` 共键，因此 `Alt + Prtscn` 即可，按住 `Sys Rq` 的时候输入 `reisub`：

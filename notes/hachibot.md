@@ -1,8 +1,50 @@
 Next TODO:
+- Hearing:
+  - Three parts:
+    - Loudness, a measure of sound wave intensity
+    - Pitch, the frequency of the fundamental component
+    - Timbre, harmonic content of the signal determine it
+  - Property:
+    - Base on the amplitude of the frequencies
+    - Very insensitive to phase
+  - Phenomena:
+    - Shape of the time domain waveform only indirectly relate to hearing
+    - Usually not consider time domain waveform in audio systems
+- 一个 8 度(octave)频率增长一倍, human hearing about 10 octaves
+- Audio information distribute in a logarithmical way:
+  - 50-100Hz carry as much audio information as 10K-20KHz
+  - Natural sounding speech requires about 3.2kHz, the frequency range is only 16% of human hearing(3.2KHz out of 20KHz)
+  - The signal of natual sounding speech contains 80% of the original sound information(8 out of 10 octaves)
+- Voice spectrogram, or voiceprint:
+  - Broke the audio signal into short segments, say 2 to 40 milliseconds
+  - Chose of the segment length is a tradeoff between frequency resolution(longer) and time resolution(shorter)
+- Its impulse response completely describe the characteristics of a linear system.
+- Signal and systems:
+  - Filter is system
+  - Impulse response can describe system
+  - We also call impulse response system/filter kernel 
+  - Below '*' means convolution
+  - Superposition is the foundation of DSP
+  - x[n] * \delta[n] = x[n]
+  - y[n] = h[n] * x[n]
+  - The central limit theorem implies that a pulse-like signal convolve with itself many times will produce a Gaussian
+  - Duality:
+    - Point vs Sinusoid
+      - A single point in the frequency domain corresponds to a sinusoid in the time domain
+      - A single point in the time domain corresponds to a sinusoid in the frequency domain
+    - Convolution vs multiplication
+      - Convolution in the frequency domain corresponds to multiplication in the time domain
+      - Convolution in the time domain corresponds to multiplication in the frequency domain
+  - Frequency domain representaion:
+    - Rectangular form: ReX[] + ImX[] is the best choice for caculation
+    - Polar form: MagX[] + PhaseX[] with graphs for human understanding
+  - White noise contains an equal amount of all frequencies
+  - May use zeros padding to make length of the DFT longer
 - 我们的语音交互场景表现不好的原因：
   - 通常都出了一个波长的距离，低音人声（波长 1.1-4.25 米），女高音（波长 0.23-1.36 米），属于远场
   - 目前的混响处理通常都没有针对远场做处理，混响对识别效果的影响非常大
   - 测向算法对噪声的鲁棒性很差，我们知道踏步是噪声，但是算法不知道
+  - 测向算法能取得稳定效果的前提是去噪
 - 音频信号前端基础：
   - 噪声抑制 NS
   - 混响抑制 Reverberation Cancellation/Suppression，统归去混响 Dereverberation
@@ -45,6 +87,7 @@ Next TODO:
   - 女低音 180-800Hz
   - 女高音 250-1500Hz
   - 女声波长短，更容易进入远场模式
+  - 高频部分在传播过程中能量消散更严重
 - https://stackoverflow.com/questions/9981087/simple-c-sound-api
 - https://stackoverflow.com/questions/31674416/python-realtime-audio-streaming-with-pyaudio-or-something-else
 - https://www.alsa-project.org/wiki/Documentation
