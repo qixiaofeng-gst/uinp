@@ -15,6 +15,10 @@ e() { ## Start emacs in terminal.
   emacs -nw $@
 }
 
+k() { ## Kill specific process.
+  kill -9 `ps aux | grep $1 | head -1 | awk '{print $2}'`
+}
+
 svn_mkdir() { ## Make directory on gsegment svn trunk.
   svn mkdir "http://earth.bao.ac.cn/svn/gsegment/trunk/$1" -m "Make $1"
 }
