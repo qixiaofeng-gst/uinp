@@ -31,7 +31,7 @@ int main() {
     SDL_Window *window = SDL_CreateWindow("OpenGL Test", 0, 0, WinWidth, WinHeight, g_base_flag);
     assert(window);
     SDL_GLContext context = SDL_GL_CreateContext(window);
-    (void) context; // XXX Should really use it.
+    SDL_GL_MakeCurrent(window, context);
 
     bool Running = true;
     while (Running) {
@@ -54,7 +54,7 @@ int main() {
         }
 
         glViewport(0, 0, WinWidth, WinHeight);
-        glClearColor(1.f, 0.f, 1.f, 0.f);
+        glClearColor(0.f, 0.f, 0.f, 0.f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         SDL_GL_SwapWindow(window);
