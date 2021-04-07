@@ -17,18 +17,38 @@ file(GLOB to-test "src/*.c")
 list(REMOVE_ITEM to-test ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c)
 file(GLOB tests "test/*.c")
 
-add_executable(canvas ${sources})
-target_link_libraries(canvas PRIVATE
-        SDL2 m)
-target_include_directories(canvas PRIVATE
-        include)
+add_executable(
+        canvas
+        ${sources}
+)
+target_link_libraries(
+        canvas PRIVATE
 
-add_executable(unit-test
+        SDL2
+        m
+)
+target_include_directories(
+        canvas PRIVATE
+
+        include
+)
+
+add_executable(
+        unit-test
+
         ${tests}
         ${to-test}
-        ../gomoku-c/test/testool.c)
-target_link_libraries(unit-test PRIVATE
-        SDL2 m)
-target_include_directories(unit-test PRIVATE
+        ../gomoku-c/test/testool.c
+)
+target_link_libraries(
+        unit-test PRIVATE
+
+        SDL2
+        m
+)
+target_include_directories(
+        unit-test PRIVATE
+
         include
-        ../gomoku-c/include)
+        ../gomoku-c/include
+)
