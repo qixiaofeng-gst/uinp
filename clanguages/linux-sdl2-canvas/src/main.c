@@ -69,6 +69,7 @@ int main() {
     Uint32 nextTicks = startTicks;
     Uint32 counter = 0;
     while (isRunning) {
+        printf("======= %d\n", counter);
         counter++;
         nextTicks += deltaTicks;
 
