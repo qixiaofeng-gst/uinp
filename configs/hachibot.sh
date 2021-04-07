@@ -287,7 +287,7 @@ dk-speaker() {
     docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it --rm \
         --net=host --name=ai-speaker \
         -v /hachi/catkin_ws/src/kaldi-speaker-recognizer/logs:/hachi/runtime/wave-data \
-        d.corp.hachibot.com/ai-speaker:1.10
+        d.corp.hachibot.com/ai-speaker:1.7.1
 }
 dk-xunfei() {
     docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 --privileged=true -it --rm \

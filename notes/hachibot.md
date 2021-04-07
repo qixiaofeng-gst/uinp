@@ -1,4 +1,5 @@
 Next TODO:
+- TODO Give nice names for ai-xunfei saved audio
 - Hearing:
   - Three parts:
     - Loudness, a measure of sound wave intensity
@@ -22,7 +23,7 @@ Next TODO:
 - Signal and systems:
   - Filter is system
   - Impulse response can describe system
-  - We also call impulse response system/filter kernel 
+  - We also call impulse response system/filter kernel
   - Below '*' means convolution
   - Superposition is the foundation of DSP
   - x[n] * \delta[n] = x[n]
@@ -50,7 +51,13 @@ Next TODO:
       with the magnitude playing a minor role
     - Some signals have encoded their information in magnitude, with the phase playing a minor role,  
       such as audio signals
-  - 
+  - Multirate techniques:
+    - If we want a finer resolution, e.g. interpolate a 50 sample signal into a 400 sample signal:
+      1. Take the 50 samples and add zeros to make the signal 64 samples long.
+      1. Use a 64 point DFT to find frequency spectrum, which will consist of a 33 point real part, and a 33 point imaginary part.
+      1. Pad the right side of the frequency spectrum with 224 zeros to take the frequency spectrum 257 points long.
+      1. Use a 512 point inverse DFT to transform the data back in to the time domain.   
+      The first 400 samples of the result are an interpolated version of the original 50 samples.
 - 我们的语音交互场景表现不好的原因：
   - 通常都出了一个波长的距离，低音人声（波长 1.1-4.25 米），女高音（波长 0.23-1.36 米），属于远场
   - 目前的混响处理通常都没有针对远场做处理，混响对识别效果的影响非常大
@@ -121,11 +128,25 @@ Next TODO:
   - https://jaxenter.com/docker-logging-gotchas-137049.html
   - https://superuser.com/questions/1482221/docker-logs-is-missing-log-entires-which-are-showing-in-docker-attach
 - Docker auto-start: https://stackoverflow.com/questions/30449313/how-do-i-make-a-docker-container-start-automatically-on-system-boot
-- 橙II：80.248
+- 橙II：80.248，橙III：200.67。
 - 橙狗：200.50. 切换到 HachiDev 之后 80.58：HachiBot.dev2020, HachiBot.robot
 - Start OpenGL playground with emacs.
 - 看看 python multiprocessing Pool 中有进程出错会导致什么。
 - A tiny program for passward handling (mask it).
+- `rostopic pub -1 /hachi/voice/command hachi_msgs/VoiceCommand '{voice_text: opendoor, command_id: 3, track_id: test-command, angle: 0}'`
+
+diff --git a/ai/speaker/src/hachi_msgs b/ai/speaker/src/hachi_msgs
+-Subproject commit be7febc0650d2b990a65d9de43cc240ca9f31943
++Subproject commit e98c9920e0b6a58186791e81c882323c175fc365
+
+diff --git a/ai/speaker/src/kaldi-speaker-recognizer b/ai/speaker/src/kaldi-speaker-recognizer
+-Subproject commit d707bf571c79dc08ce6a76b7e2594d8a1916a65e
++Subproject commit a424779f36cb0fb8a37116cdc8a2fb1bc3a45b3c
+
+diff --git a/ai/speaker/src/xf6mic-ros-node b/ai/speaker/src/xf6mic-ros-node
+-Subproject commit 4176556056bacd0b1686bb90cef275593da3e9f4
++Subproject commit c8d44c7cbc4efb0223f06d5206413a99839f2c30
+
 
 Begin Packet
 ------------
