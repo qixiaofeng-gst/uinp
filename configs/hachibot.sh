@@ -195,6 +195,15 @@ ssh-runner-to() {
 ssh-200-to() {
     sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-200-prefix).$1
 }
+ssh-respeaker() {
+    sshpass -p respeaker ssh -X respeaker@$(lan-200-prefix).81
+}
+scp-from-respeaker() {
+    sshpass -p respeaker scp $3 respeaker@$(lan-200-prefix).81:$1 $2
+}
+scp-to-respeaker() {
+    sshpass -p respeaker scp $3 $1 respeaker@$(lan-200-prefix).81:$2
+}
 ssh-tv-nuc() {
     sshpass -p $(cat ~/pass/hc) ssh -X ai@$(lan-server-prefix).31
 }
