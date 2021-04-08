@@ -131,7 +131,9 @@ ssh-pod1() {
 }
 ssh-orange-II() {
     sshpass -p $(cat ~/pass/hc) ssh runner@192.168.200.248
-    # sshpass -p $(cat ~/pass/hc) ssh runner@192.168.80.248
+}
+ssh-orange-III() {
+    sshpass -p $(cat ~/pass/hc) ssh runner@192.168.200.67
 }
 ssh-dog-blue() {
     sshpass -p $(cat ~/pass/hc) ssh -X hachi@$(lan-server-prefix).103

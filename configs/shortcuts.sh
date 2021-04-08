@@ -138,6 +138,7 @@ enhance_git() { ## Used to set several convenient alias for git.
     git config --global alias.r 'rev-parse HEAD'
     git config --global alias.d 'diff --stat'
     git config --global alias.l 'ls-tree --full-tree -r --name-only HEAD'
+    git config --global credential.helper 'cache --timeout=3600'
 }
 
 breakpoint() { ## Used to prompt work progress.

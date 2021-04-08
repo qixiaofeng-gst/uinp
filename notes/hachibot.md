@@ -129,7 +129,7 @@ Next TODO:
   - https://superuser.com/questions/1482221/docker-logs-is-missing-log-entires-which-are-showing-in-docker-attach
 - Docker auto-start: https://stackoverflow.com/questions/30449313/how-do-i-make-a-docker-container-start-automatically-on-system-boot
 - 橙II：80.248，橙III：200.67。
-- 橙狗：200.50. 切换到 HachiDev 之后 80.58：HachiBot.dev2020, HachiBot.robot
+- 橙狗：200.50. 切换到 HachiDev 之后 80.58：HachiBot.dev2020, HachiBot.robot; 192.168.200.1:admin:normal
 - Start OpenGL playground with emacs.
 - 看看 python multiprocessing Pool 中有进程出错会导致什么。
 - A tiny program for passward handling (mask it).

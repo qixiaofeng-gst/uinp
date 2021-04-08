@@ -135,7 +135,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 然后使用 `sudo update-grub` 更新 grub 信息。
 
 ## 系统管理
-* 查看系统版本信息 `lsb_release -a`。
+* 查看系统版本信息 `lsb_release -a`，使用 `arch`、`file /sbin/init`、`lscpu` 或 `uname -m` 来查看 architecture。
 * 查看已安装软件包 `dpkg -l`。
 * 查看已安装的包的相关文件路径 `dpkg -L <package-name>`。
 * 查看硬件信息 `lscpu/lshw/hwinfo/lspci/lsscsi/lsusb/lnxi/lsblk/df/fdisk/mount/free/dmidecode/hdparm`，
