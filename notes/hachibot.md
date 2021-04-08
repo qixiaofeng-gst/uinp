@@ -1,5 +1,5 @@
 Next TODO:
-- TODO Give nice names for ai-xunfei saved audio
+- TODO Take a look at Nvidia PhysX and Isaac SDK.
 - Hearing:
   - Three parts:
     - Loudness, a measure of sound wave intensity

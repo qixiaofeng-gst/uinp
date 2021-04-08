@@ -1,5 +1,6 @@
 TODO:
 1. Figure out how to use OpenGL in the window.
+   - Check http://lazyfoo.net/tutorials/SDL/51_SDL_and_modern_opengl/index.php
 1. Learn shader language in details.
 1. Debug the freezing problem.
 
