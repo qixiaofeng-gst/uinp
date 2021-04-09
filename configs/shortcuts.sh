@@ -1,7 +1,7 @@
 list() { ## Used to list all commands available in .bash_profile.
     local sps="        "
     while read line; do
-        if [[ $line =~ ^[a-z0-9_\-]+\(\)[[:blank:]]'{'[[:blank:]]'##' ]]; then
+        if [[ $line =~ ^[\-_a-z0-9]{1,64}'()'.[[:blank:]]*## ]]; then
             local name=$(expr "$line" : '\([a-z0-9_\-]\{1,32\}()[[:blank:]]{[[:blank:]]##\)')
             echo $(expr "$name" : '\([a-z0-9_\-]\{1,32\}\)')
             echo "${line/$name/$sps}"
