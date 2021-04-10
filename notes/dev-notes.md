@@ -157,6 +157,9 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 
 ## 系统管理
 * 查看系统版本信息 `lsb_release -a`，使用 `arch`、`file /sbin/init`、`lscpu` 或 `uname -m` 来查看 architecture。
+* Configure timezone:
+  * `timedatectl list-timezones`
+  * `sudo timedatectl set-timezone Asia/Shanghai`
 * 查看已安装软件包 `dpkg -l`。
 * 查看已安装的包的相关文件路径 `dpkg -L <package-name>`。
 * 查看硬件信息 `lscpu/lshw/hwinfo/lspci/lsscsi/lsusb/lnxi/lsblk/df/fdisk/mount/free/dmidecode/hdparm`，
@@ -418,11 +421,9 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 清理所有已删除分支 `git fetch --prune --all` 或者 `git remote prune origin`
 * 回退一个 commit `git revert <commit-hash>`
 * 推送本地工程到远程空工程
-  ```
-  git remote add origin git@blablabla:url
-  git pull origin master --allow-unrelated-histories
-  git push -u origin master
-  ```
+  - `git remote add origin git@blablabla:url`
+  - `git pull origin master --allow-unrelated-histories`
+  - `git push -u origin master`
 * 切换远程 URL `git remote set-url origin <url>`
 * 查看远程分支 `git branch -r` or `git branch -a`
 * 保存用户密码 `git config --global credential.helper store`，取消 `git config --global --unset credential.helper`。
