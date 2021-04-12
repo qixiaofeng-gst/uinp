@@ -295,10 +295,10 @@ dk-login-ubt16() { ## Login into a container with /bin/bash.
     docker exec -it ubuntu16 /bin/bash
 }
 dk-speaker() {
-    docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it --rm \
+    docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it \
         --net=host --name=ai-speaker \
         -v /hachi/catkin_ws/src/kaldi-speaker-recognizer/logs:/hachi/runtime/wave-data \
-        -v /home/qixiaofeng/Documents/hachy-repos/hachi-audio-frontend:/hachi/hachi-audio-frontend \
+        -v /hachi/catkin_ws/src/hachi-audio-frontend:/hachi/hachi-audio-frontend \
         d.corp.hachibot.com/ai-speaker:1.11 zsh
 }
 dk-xunfei() {

@@ -307,6 +307,8 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 移除所有 TAG=none 的镜像：`docker rmi $(docker images -f "dangling=true" -q)`
   * 登陆：`docker login <url>`
   * 查看完整容器 entry 命令：`docker ps --no-trunc`
+  * 查看镜像的形成过程：`docker history --no-trunc <IMAGE_ID>`
+  * 从一个修改过的容器创建镜像：`docker commit <container-name> <tag-name>`
 ## C/C++
 * C/C++ 当中，程序抛出异常退出前的打印，如果是 printf，要加 '\n'，不加则可能没有输出。
 * C on linux, `struct S a = *b;`, `b` pointed struct `S` is copied to `a`.
