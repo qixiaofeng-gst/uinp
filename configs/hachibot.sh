@@ -299,7 +299,8 @@ dk-speaker() {
         --net=host --name=ai-speaker \
         -v /hachi/catkin_ws/src/kaldi-speaker-recognizer/logs:/hachi/runtime/wave-data \
         -v /hachi/catkin_ws/src/hachi-audio-frontend:/hachi/hachi-audio-frontend \
-        d.corp.hachibot.com/ai-speaker:1.11 zsh
+        d.corp.hachibot.com/ai-speaker:1.11.respeaker
+        # "/bin/zsh" "-c" "source ~/.zshrc && bash /hachi/catkin_ws/src/kaldi-speaker-recognizer/startup.sh"
 }
 dk-xunfei() {
     docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 --privileged=true -it --rm \
