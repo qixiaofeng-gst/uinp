@@ -114,6 +114,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   - minute hour day_of_mount month day_of_week
   - e.g. `0 * * * *` means "at minute 0"
   - Full line: `0 * * * * /home/user_name/task.sh`
+  - `@reboot sleep 20 && /path/to/script`
 
 ## 驱动
 * 如果 nvidia-smi 突然说连不上显卡驱动了，可使用 `sudo apt install nvidia-driver-440` 来尝试重新安装。   
