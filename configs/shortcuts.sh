@@ -109,10 +109,6 @@ git_pl() { ## Used to pull current branch.
     git pull origin ${branch}
 }
 
-git_bc() { ## Update branch information for clearing.
-    git fetch --prune --all
-}
-
 git_up() { ## Used to update the git remote url.
     for url in $(git remote -v); do
         if [ 'git@github.com' == ${url:0:14} ]; then
@@ -130,6 +126,7 @@ setup_git() { ## Used to set my email and name for git.
 
 enhance_git() { ## Used to set several convenient alias for git.
     git config --global alias.b 'branch'
+    git config --global alias.bc 'fetch --prune --all'
     git config --global alias.st 'status'
     git config --global alias.ci 'commit -m'
     git config --global alias.co 'checkout'
