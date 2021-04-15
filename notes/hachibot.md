@@ -1,5 +1,6 @@
 Next TODO:
 - TODO Take a look at Nvidia PhysX and Isaac SDK.
+- ai-pod 找不到有线网卡时，找 ~/r8xxx 目录之下的 autorun.sh 脚本。
 - Hearing:
   - Three parts:
     - Loudness, a measure of sound wave intensity

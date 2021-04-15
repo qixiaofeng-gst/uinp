@@ -1,6 +1,6 @@
 export HACHY_BUILD=/var/local/local-build/for-raisim
 export NEW_RAISIM_BUILD=/var/local/local-build/for-new-raisim
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${NEW_RAISIM_BUILD}/lib
+export LD_LIBRARY_PATH=/opt/kaldi/src/lib:${NEW_RAISIM_BUILD}/lib:${LD_LIBRARY_PATH}
 export JAVA_HOME=/var/local/app-binaries/jdk-15.0.2
 export PATH=$PATH:/hachi/tools/apache-maven-3.6.3/bin
 

@@ -273,6 +273,9 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * `objdump -p <binary> | egrep 'RPATH|RUNPATH'`
   * `readelf -d <binary-or-library> | head -20`
   * `ldd <binary>`
+* RUNPATH 只管当前二进制文件的依赖，不管级联依赖（依赖的文件的依赖，以及更深层的依赖）。
+* 使用 cmake 使 RPATH 管全部的依赖：`set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags")` 可启用。
+* 如果 RUNPATH 和 RPATH 在依赖链中混合存在，可能会出现运行时找不到 so 文件的错误，一般将入口可执行文件的 RPATH 启用就好。
 * 将任意文件转换成 16 进制文本：`xxd <file-path>`，使用 `xxd -r <file-path>` 反向转换。类似工具还有 `hexdump`。
 * 查看程序崩溃后的 coredump 调用栈 `coredumpctl gdb _PID_`：
   * coredumpctl 使用 `apt install systemd-coredump` 安装。
@@ -356,12 +359,6 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 临时改源 `pip install -i <mirror-url> --trusted-host <domain-name> <module-name>==<version>`
 * 使用隐藏的方式解决 ‘declared with greater visibility than the type of its field’ 的问题将导致 so 文件报 ‘undefined referece’ 错误。
 * Duck-typing 其实是无类型，执行任何运算时只看对象是否拥有所需的操作符或方法。
-
-# cmake
-## RPATH vs RUNPATH
-* RUNPATH 只管当前二进制文件的依赖，不管级联依赖（依赖的文件的依赖，以及更深层的依赖）。
-* RPATH 管全部的依赖。使用 `set(CMAKE_EXE_LINKER_FLAGS "-Wl,--disable-new-dtags")` 可启用。
-* 如果 RUNPATH 和 RPATH 在依赖链中混合存在，可能会出现运行时找不到 so 文件的错误，一般将入口可执行文件的 RPATH 启用就好。
 
 # 编辑器
 ## Atom
