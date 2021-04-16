@@ -23,7 +23,7 @@ function lan-agx() {
     echo "$(lan-server-prefix).20"
 }
 function lan-respeaker() {
-    echo "$(lan-ip-prefix).220.168"
+    echo "$(lan-200-prefix).81"
 }
 function hostname-suffix() {
     echo "dl.hachibot.com"
