@@ -42,6 +42,8 @@ redux/mobox
   * `type <cmd>`
   * https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script
   * `command -v foo >/dev/null 2>&1 || { echo 'Requiring foo but missing it.'; exit 1; }`
+* `screen` command could be used to split terminal. Use `ctrl-a ?` to check help.
+* `stty` check the terminal line settings, `tput cols` and `tput lines` check columns and rows of terminal.
 
 ### 配置开发工具
 * 为 git 设置 ssh 密钥。
@@ -236,7 +238,9 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 查看某目录占用存储空间 `sudo du -s -h --exclude=./mnt/*`。
 * 检查文件属性指令 `file/wc`。
 * 文本文件内容相关 `more/less/cat/head/tail/sort/vi/vim/emacs/nano`。
-  - For vim: ctrl-s freeze vim, ctrl-q unfreeze it
+  - For vim:
+    - `ctrl-s` freeze vim, `ctrl-q` unfreeze it
+    - `:set lines=40` to adjust height
 * 进入 emacs 的命令行模式 `emacs -nw`。
 * 查看读写的性能 `dd if=/dev/input.file  of=/path/to/output.file  bs=block-size  count=number-of-blocks  oflag=dsync`。
 * 有时候 `du -sh` 命令非常慢，尤其是在文件数量特别多的情况下，可以使用这个命令来迂回： `ls -d */ | parallel du -s`。
@@ -322,6 +326,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 当 ld (linker) 程序不是直接被调用时，比如通过 gcc 调用，传给它的参数都需要用 `-Wl,` 作为前缀。
 * 在 compiler 的参数中 `-W` 开头的参数都是针对 warning 的。
 ## Python
+* `--user` 可以使 `pip` 将依赖安装到用户目录下。
 * 多版本依赖共存时，需要虚拟环境 venv：`python -m venv --help`。
 * Anaconda Usage:
   ```bash

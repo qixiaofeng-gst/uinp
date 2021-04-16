@@ -1,6 +1,6 @@
 export HACHY_BUILD=/var/local/local-build/for-raisim
 export NEW_RAISIM_BUILD=/var/local/local-build/for-new-raisim
-export LD_LIBRARY_PATH=/opt/kaldi/src/lib:${NEW_RAISIM_BUILD}/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=/opt/kaldi/src/lib:/opt/kaldi/tools/openfst/lib:${NEW_RAISIM_BUILD}/lib:${LD_LIBRARY_PATH}
 export JAVA_HOME=/var/local/app-binaries/jdk-15.0.2
 export PATH=$PATH:/hachi/tools/apache-maven-3.6.3/bin
 
@@ -21,6 +21,9 @@ function lan-ai6() {
 }
 function lan-agx() {
     echo "$(lan-server-prefix).20"
+}
+function lan-respeaker() {
+    echo "$(lan-ip-prefix).220.168"
 }
 function hostname-suffix() {
     echo "dl.hachibot.com"
@@ -196,13 +199,13 @@ ssh-200-to() {
     sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-200-prefix).$1
 }
 ssh-respeaker() {
-    sshpass -p respeaker ssh -X respeaker@$(lan-200-prefix).81
+    sshpass -p respeaker ssh -X respeaker@$(lan-respeaker)
 }
 scp-from-respeaker() {
-    sshpass -p respeaker scp $3 respeaker@$(lan-200-prefix).81:$1 $2
+    sshpass -p respeaker scp $3 respeaker@$(lan-respeaker):$1 $2
 }
 scp-to-respeaker() {
-    sshpass -p respeaker scp $3 $1 respeaker@$(lan-200-prefix).81:$2
+    sshpass -p respeaker scp $3 $1 respeaker@$(lan-respeaker):$2
 }
 ssh-tv-nuc() {
     sshpass -p $(cat ~/pass/hc) ssh -X ai@$(lan-server-prefix).31
