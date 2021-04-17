@@ -22,7 +22,7 @@ k() { ## Kill specific process.
 play_list() { ## Play wall wav files under current directory.
     # for f in `find . -name '*_10.wav'`; do; mv $f 10; done
     local wav_list=()
-    for wav_file in $(find . -name '*.wav'); do
+    for wav_file in $(find . -name '*.wav' | sort); do
         wav_list+=($wav_file)
     done
 
