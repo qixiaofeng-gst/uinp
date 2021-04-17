@@ -95,6 +95,12 @@ https://chrony.tuxfamily.org/doc/devel/chrony.conf.html
 * 查看 IP：`hostname -I`。
 * 使用 `nc` 指令可以调试 TCP 或 UDP 协议。
   * `nc -u <IP> <port>` 连接到 UDP 服务。之后直接输入字符串然后回车可以发出数据包。
+* TCP Socket in C(sys/socket.h, netinet/in.h) or Python(socket module):
+  * Both server and client need an int value for socket descriptor.
+  * Both server and client need a sockadd_in for server address.
+  * Server side initialization workflow: bind, listen, accept.
+  * Client side initialization workflow: connect.
+  * For UDP server the only step in its initialization workflow: bind.
 * 网络管理命令行工具 nmcli：
   * 18.04 重新扫描 wifi：`nmcli device wifi rescan`。
   * 20.04 列出 wifi：`nmcli device wifi list`。
