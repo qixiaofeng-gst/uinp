@@ -50,6 +50,9 @@ redux/mobox
   * `command -v foo >/dev/null 2>&1 || { echo 'Requiring foo but missing it.'; exit 1; }`
 * `screen` command could be used to split terminal. Use `ctrl-a ?` to check help.
 * `stty` check the terminal line settings, `tput cols` and `tput lines` check columns and rows of terminal.
+* `date` command:
+  * Parse a timestamp: `date -d @1267619929`.
+  * Nice print: `date +%Y%m%d_%H-%M-%S`.
 
 ### 配置开发工具
 * 为 git 设置 ssh 密钥。
