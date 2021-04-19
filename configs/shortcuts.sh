@@ -166,3 +166,9 @@ start_yii() { ## Start the yes-it-is server.
     cd ~/Documents/git-repos/yes-it-is
     node server/index.js
 }
+
+reinstall_nvidia_driver() {
+    local driver_name=($(dpkg -l | grep nvidia-driver | tail -n 1 | awk '{print $3}' | sed 's/-/ /'))
+    echo "Check the strange syntax here: ${#driver_name[@]}, ${#driver_name}, ${#driver_name[1]}, ${driver_name[1]}"
+    sudo dkms install -m nvidia -v "${driver_name[1]}"
+}
