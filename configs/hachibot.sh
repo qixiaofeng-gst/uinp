@@ -310,7 +310,7 @@ dk-speaker() {
         --net=host --name=ai-speaker \
         -v /hachi/runtime/wave-data:/hachi/runtime/wave-data \
         -v /hachi/runtime/input-data/keyword_spotting_model:/hachi/kws \
-        d.corp.hachibot.com/ai-speaker:1.12.respeaker
+        d.corp.hachibot.com/ai-speaker:1.12
     # "/bin/zsh" "-c" "source ~/.zshrc && bash /hachi/catkin_ws/src/kaldi-speaker-recognizer/startup.sh"
 }
 dk-xunfei() {
