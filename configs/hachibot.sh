@@ -130,7 +130,9 @@ to-lt() {
 }
 ssh-pod1() {
     sshpass -p $(cat ~/pass/hc) ssh runner@192.168.200.10
-    # sshpass -p $(cat ~/pass/hc) ssh runner@192.168.80.50
+}
+scp-from-pod1() {
+    sshpass -p $(cat ~/pass/hc) scp $3 runner@192.168.200.10:$1 $2
 }
 ssh-orange-II() {
     sshpass -p $(cat ~/pass/hc) ssh runner@192.168.200.248
