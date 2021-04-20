@@ -199,6 +199,14 @@ ssh-200-to() {
     sshpass -p $(cat ~/pass/hc) ssh -X runner@$(lan-200-prefix).$1
 }
 ssh-respeaker() {
+    local is_connected=0
+    local check_count=0
+    while [[ $is_connected -eq 0 ]]; do
+        is_connected=$(lsusb | grep '1d6b:0104' | wc -l)
+        check_count=$(expr $check_count + 1)
+        sleep 1
+        echo "Waiting for ReSpeaker device. Check count: ${check_count}"
+    done
     sshpass -p respeaker ssh -X respeaker@$(lan-respeaker)
 }
 scp-from-respeaker() {
@@ -303,7 +311,7 @@ dk-speaker() {
         -v /hachi/runtime/wave-data:/hachi/runtime/wave-data \
         -v /hachi/runtime/input-data/keyword_spotting_model:/hachi/kws \
         d.corp.hachibot.com/ai-speaker:1.12.respeaker
-        # "/bin/zsh" "-c" "source ~/.zshrc && bash /hachi/catkin_ws/src/kaldi-speaker-recognizer/startup.sh"
+    # "/bin/zsh" "-c" "source ~/.zshrc && bash /hachi/catkin_ws/src/kaldi-speaker-recognizer/startup.sh"
 }
 dk-xunfei() {
     docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 --privileged=true -it --rm \
