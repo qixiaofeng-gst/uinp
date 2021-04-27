@@ -20,7 +20,7 @@ RGB颜色红：199，绿：237，蓝：204；
 # 接触任意程序语言的关注点
 1. 语法要素。变量（全局、局部）、方法、类、模块、分支和循环、文件、运算符。
 1. 时间要素。预处理时、编译时、链接时、运行时。
-1. 标准库。集合库，输入输出库，多线程库。  
+1. 标准库。集合库，输入输出库，多线程库。
 1. 适用范围。语言本身性能侧重，生态侧重。
 
 redux/mobox
@@ -280,6 +280,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 需要先使用 `v4l2-ctl --list-devices` 确认 v4l2 设备存在，不存在的按提示进行安装即可。
   * 同时播放 `ffmpeg -f v4l2 -framerate 25 -video_size 640x480 -i /dev/video0 -map 0 -c:v libx264 -f tee "output.mp4|[f=nut]pipe:" | ffplay pipe:`。
 * 转换音频格式 `ffmpeg -i input.flv -f s16le -acodec pcm_s16le output.raw`，使用 `ffmpeg -formats` 查看格式支持。
+* 从音频选取声道重新生成文件 `ffmpeg -i <input-audio> -af "channelmap=map=0|1|2|3|4|5" <output-audio>`。
 * Under ubuntu use `cat /etc/X11/default-display-manager` to check using which display manager.
 * Under ubuntu use `nautilus /path/to/folder` to open folder with GUI file manager.
 * Under ubuntu use `eog <picture-path>` to view picture. Alternatives: `feh/xdg-open/display`.
