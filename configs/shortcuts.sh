@@ -33,7 +33,7 @@ play_list() { ## Play wall wav files under current directory.
         played_count=$(expr $played_count + 1) # I have to write it down: `echo "1.1 + 1.1" | bc` support float math.
         printf "Playing (%${count_width}s/%s), file: %s\n" $played_count $wav_count $wav_file
         ffplay -autoexit $wav_file >temporary.log 2>&1
-        sleep 1.3
+        # sleep 1.3
     done
 }
 
