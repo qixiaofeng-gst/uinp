@@ -237,7 +237,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * `cat /etc/passwd | cut -d: -f1` 或 `cat /etc/passwd | awk -F: '{print $1}'`。
 * `getent passwd`。
 * `who`。
-* 列出用户组 `cat /etc/group`，格式：groupname:password:GID:users。
+* 列出用户组 `cat /etc/group`，格式：groupname:password:GID:users。使用 `groups` 命令可以查看当前用户所属的组列表。
 * 查看超级用户的配置 `cat /etc/sudoers`
 * 查看系统支持的 shell 类型： `cat /etc/shells`
 * 查看系统用户的登录 shell 类型： `cat /etc/passwd`
