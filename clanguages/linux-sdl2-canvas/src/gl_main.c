@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <GL/glew.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
 
 #define WinWidth 1000
 #define WinHeight 1000
@@ -32,6 +32,10 @@ int main() {
     assert(window);
     SDL_GLContext context = SDL_GL_CreateContext(window);
     SDL_GL_MakeCurrent(window, context);
+    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    char const *gl_version = (char *) glGetString(GL_VERSION);
+    printf("OpenGL Version: %s\n", gl_version);
+    // glCreateProgram();
 
     bool Running = true;
     while (Running) {
