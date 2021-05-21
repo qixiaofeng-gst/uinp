@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
+// sudo apt install -y libglew-dev
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 
