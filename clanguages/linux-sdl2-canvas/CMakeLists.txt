@@ -29,6 +29,7 @@ target_link_libraries(
 
         SDL2
         GL
+        GLEW
 )
 
 add_executable(
