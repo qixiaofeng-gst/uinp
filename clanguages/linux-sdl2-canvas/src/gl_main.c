@@ -38,81 +38,81 @@ void read_file(char const *file_path, char *buffer, int buffer_size) {
     // or rewind(fp);
     */
     FILE *file = fopen(file_path, "r");
-    fread(buffer, sizeof(char), buffer_size, file);
+    uint64_t readed_count = fread(buffer, sizeof(char), buffer_size, file);
+    if (feof(file)) {
+        buffer[readed_count] = '\0'; /** XXX Something strange happens while missing this. */
+    } else {
+        printf("The file is not fully readed. There might be runtime issues.\n");
+    }
     fclose(file);
 }
 
-GLuint LoadShaders(char const *vertex_file_path, char const *fragment_file_path) {
+GLuint load_shaders(char const *vertex_file_path, char const *fragment_file_path) {
+    char log_buffer[1024];
+    char shader_source[1024];
+    GLint gl_operation_result = GL_FALSE;
+    int gl_log_length;
+
     // Create the shaders
-    GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-    GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
-    // Read the Vertex Shader code from the file
-    char VertexShaderCode[1024];
-    read_file(vertex_file_path, VertexShaderCode, 1024);
-    // Read the Fragment Shader code from the file
-    char FragmentShaderCode[1024];
-    read_file(fragment_file_path, FragmentShaderCode, 1024);
-
-    GLint Result = GL_FALSE;
-    int InfoLogLength;
+    GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
+    GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
 
     // Compile Vertex Shader
-    printf("Compiling shader : %s\n%s\n", vertex_file_path, VertexShaderCode);
-    char const *VertexSourcePointer = VertexShaderCode;
-    glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
-    glCompileShader(VertexShaderID);
-
+    read_file(vertex_file_path, shader_source, 1024);
+    char const *vertex_source_pointer = shader_source;
+    glShaderSource(vertex_shader_id, 1, &vertex_source_pointer, NULL);
+    glCompileShader(vertex_shader_id);
     // Check Vertex Shader
-    glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-    glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    if (InfoLogLength > 0) {
-        char *VertexShaderErrorMessage = malloc(sizeof(char) * (InfoLogLength + 1));
-        glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, VertexShaderErrorMessage);
-        printf("%s\n", &VertexShaderErrorMessage[0]);
-        free(VertexShaderErrorMessage);
+    glGetShaderiv(vertex_shader_id, GL_COMPILE_STATUS, &gl_operation_result);
+    glGetShaderiv(vertex_shader_id, GL_INFO_LOG_LENGTH, &gl_log_length);
+    if (gl_log_length > 0) {
+        glGetShaderInfoLog(vertex_shader_id, gl_log_length, NULL, log_buffer);
+        printf(
+                "Failed to compile vertex shader : %s\n%s\nGL log:%s\n",
+                vertex_file_path, shader_source, log_buffer
+        );
     }
 
     // Compile Fragment Shader
-    printf("Compiling shader : %s\n", fragment_file_path);
-    char const *FragmentSourcePointer = FragmentShaderCode;
-    glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
-    glCompileShader(FragmentShaderID);
-
+    read_file(fragment_file_path, shader_source, 1024);
+    char const *FragmentSourcePointer = shader_source;
+    glShaderSource(fragment_shader_id, 1, &FragmentSourcePointer, NULL);
+    glCompileShader(fragment_shader_id);
     // Check Fragment Shader
-    glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-    glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    if (InfoLogLength > 0) {
-        char *FragmentShaderErrorMessage = malloc(sizeof(char) * (InfoLogLength + 1));
-        glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, FragmentShaderErrorMessage);
-        printf("%s\n", &FragmentShaderErrorMessage[0]);
-        free(FragmentShaderErrorMessage);
+    glGetShaderiv(fragment_shader_id, GL_COMPILE_STATUS, &gl_operation_result);
+    glGetShaderiv(fragment_shader_id, GL_INFO_LOG_LENGTH, &gl_log_length);
+    if (gl_log_length > 0) {
+        glGetShaderInfoLog(fragment_shader_id, gl_log_length, NULL, log_buffer);
+        printf(
+                "Failed to compile fragment shader : %s\n%s\nGL log:%s\n",
+                fragment_file_path, shader_source, log_buffer
+        );
     }
 
     // Link the program
     printf("Linking program\n");
-    GLuint ProgramID = glCreateProgram();
-    glAttachShader(ProgramID, VertexShaderID);
-    glAttachShader(ProgramID, FragmentShaderID);
-    glLinkProgram(ProgramID);
+    GLuint program_id = glCreateProgram();
+    glAttachShader(program_id, vertex_shader_id);
+    glAttachShader(program_id, fragment_shader_id);
+    glLinkProgram(program_id);
 
     // Check the program
-    glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
-    glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-    if (InfoLogLength > 0) {
-        char *ProgramErrorMessage = malloc(sizeof(char) * (InfoLogLength + 1));
-        glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+    glGetProgramiv(program_id, GL_LINK_STATUS, &gl_operation_result);
+    glGetProgramiv(program_id, GL_INFO_LOG_LENGTH, &gl_log_length);
+    if (gl_log_length > 0) {
+        char *ProgramErrorMessage = malloc(sizeof(char) * (gl_log_length + 1));
+        glGetProgramInfoLog(program_id, gl_log_length, NULL, &ProgramErrorMessage[0]);
         printf("%s\n", &ProgramErrorMessage[0]);
         free(ProgramErrorMessage);
     }
 
-    glDetachShader(ProgramID, VertexShaderID);
-    glDetachShader(ProgramID, FragmentShaderID);
+    glDetachShader(program_id, vertex_shader_id);
+    glDetachShader(program_id, fragment_shader_id);
 
-    glDeleteShader(VertexShaderID);
-    glDeleteShader(FragmentShaderID);
+    glDeleteShader(vertex_shader_id);
+    glDeleteShader(fragment_shader_id);
 
-    return ProgramID;
+    return program_id;
 }
 
 int main() {
@@ -126,7 +126,7 @@ int main() {
     printf("OpenGL Version: %s\n", gl_version);
 
     glewInit();
-    GLuint program_id = LoadShaders(
+    GLuint program_id = load_shaders(
             "/home/qixiaofeng/Documents/git-repos/uinp/clanguages/linux-sdl2-canvas/shaders/first.vs",
             "/home/qixiaofeng/Documents/git-repos/uinp/clanguages/linux-sdl2-canvas/shaders/first.fs"
     );
