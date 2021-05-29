@@ -7,9 +7,12 @@
 // sudo apt install -y libglew-dev
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
+#include "cglm/types.h"
+#include "cglm/mat4.h"
 
 #define WinWidth 1000
 #define WinHeight 1000
+#define print_vec4(v) printf("[%f, %f, %f, %f]\n", v[0], v[1], v[2], v[3])
 
 static uint32_t const g_base_flag = SDL_WINDOW_OPENGL;
 char gl_log_buffer[1024];
@@ -128,6 +131,30 @@ int main() {
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_buffer_data), vertex_buffer_data, GL_STATIC_DRAW);
+
+    mat4 translation_matrix = {
+            {1, 0, 0, 10},
+            {0, 1, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 1},
+    };
+    glm_mat4_transpose(translation_matrix);
+
+    vec4 vector = {10, 10, 10, 1};
+    vec4 transformed_vector;
+
+    glm_mat4_mulv(translation_matrix, vector, transformed_vector);
+    print_vec4(transformed_vector);
+
+    mat4 scaling_matrix = {
+            {2, 0, 0, 0},
+            {0, 2, 0, 0},
+            {0, 0, 2, 0},
+            {0, 0, 0, 1},
+    };
+    glm_mat4_transpose(scaling_matrix);
+    glm_mat4_mulv(scaling_matrix, vector, transformed_vector);
+    print_vec4(transformed_vector);
 
     bool Running = true;
     while (Running) {

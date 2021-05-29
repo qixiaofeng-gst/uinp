@@ -31,6 +31,11 @@ target_link_libraries(
         GL
         GLEW
 )
+target_include_directories(
+        gl_canvas PRIVATE
+
+        cglm/include
+)
 
 add_executable(
         canvas
