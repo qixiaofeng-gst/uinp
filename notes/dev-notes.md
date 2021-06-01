@@ -176,6 +176,8 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
   * 然后使用 `sudo update-grub` 更新 grub 信息。
 
 ## 系统管理
+* 查看进程路径： `ps` 知道 PID 之后，`ls -l /proc/<PID>/exe` 可得知路径。在 `/proc/<PID>` 之下可以看到许多进程的细节信息。
+* 查看系统信息： `cat /proc/version`。
 * 查看系统版本信息 `lsb_release -a`，使用 `arch`、`file /sbin/init`、`lscpu` 或 `uname -m` 来查看 architecture。
 * Configure timezone:
   * `timedatectl list-timezones`
