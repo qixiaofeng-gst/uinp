@@ -205,7 +205,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 ## 应用程序
 * 通过 deb 文件安装 `sudo dpkg -i /path/to/deb/file && sudo apt install -f`。
 * 截屏工具 shutter。
-* 音频录制和播放 `arecord/aplay`，编辑 `audacity`。
+* 音频录制和播放 `arecord/aplay`，编辑 `audacity`，音频设备管理 `amixer`。
 * 应用图标面板配置位置：~/.local/share/applications/;/usr/share/applications/。
 * 应用相关配置指令 `gsettings`。
   * 查看已有目录 `gsettings get org.gnome.desktop.app-folders folder-children`。
