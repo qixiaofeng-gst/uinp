@@ -92,8 +92,8 @@ https://chrony.tuxfamily.org/doc/devel/chrony.conf.html
   * v2rayL may replace Qv2ray + v2ray-core.
   * With trojan:
     * `apt install trojan` -> `vim /etc/trojan/config.json`
-    * Check https://trojan-gfw.github.io/trojan/config , and use client config.
-    * 查看系统日志 `journalctl --unit trojan --boot`
+    * Check `https://trojan-gfw.github.io/trojan/config` , and use client config.
+    * 查看系统日志 `journalctl --unit trojan --boot -f`
     * `systemctl enable/start/stop trojan`
 * 检查网络 ifconfig, hostname, netstat, nslookup。
 * 更有效的 ping：`ping <ip> -s $((60 * 1024)) -D`。
