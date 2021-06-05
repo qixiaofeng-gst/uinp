@@ -90,6 +90,9 @@ https://chrony.tuxfamily.org/doc/devel/chrony.conf.html
   * https://github.com/Qv2ray/Qv2ray download AppImage from it.
   * https://github.com/v2ray/v2ray-core download the pre-built binary zip file.
   * v2rayL may replace Qv2ray + v2ray-core.
+  * With trojan:
+    * `apt install trojan` -> `vim /etc/trojan/config.json`
+    * Check https://trojan-gfw.github.io/trojan/config , and use client version.
 * 检查网络 ifconfig, hostname, netstat, nslookup。
 * 更有效的 ping：`ping <ip> -s $((60 * 1024)) -D`。
 * 查已占用端口 `sudo lsof -i -P -n | grep LISTEN`。
