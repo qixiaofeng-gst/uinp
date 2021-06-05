@@ -92,7 +92,9 @@ https://chrony.tuxfamily.org/doc/devel/chrony.conf.html
   * v2rayL may replace Qv2ray + v2ray-core.
   * With trojan:
     * `apt install trojan` -> `vim /etc/trojan/config.json`
-    * Check https://trojan-gfw.github.io/trojan/config , and use client version.
+    * Check https://trojan-gfw.github.io/trojan/config , and use client config.
+    * 查看系统日志 `journalctl --unit trojan --boot`
+    * `systemctl enable/start/stop trojan`
 * 检查网络 ifconfig, hostname, netstat, nslookup。
 * 更有效的 ping：`ping <ip> -s $((60 * 1024)) -D`。
 * 查已占用端口 `sudo lsof -i -P -n | grep LISTEN`。
@@ -204,6 +206,7 @@ The shorthand for that would be: wget -rEDpkH -l inf domainA,domainB domainA
 * 系统级环境变量设置在 `/etc/profile.d/*.sh` 或 `/etc/environment`，推荐前者。
 * 文件系统的挂载配置在 /etc/fstab 中。修改后重新载入：`mount -a`。
 * 系统日志在 `/var/log/syslog` 路径。`dmesg | less` 可查看 kernel ring buffer，这里存的是 bootup 有关的信息。
+* 查看服务 `service --status-all`，`systemctl status <service-name>`。
 
 ## 应用程序
 * 通过 deb 文件安装 `sudo dpkg -i /path/to/deb/file && sudo apt install -f`。
