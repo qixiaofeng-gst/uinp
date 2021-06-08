@@ -93,8 +93,10 @@ https://chrony.tuxfamily.org/doc/devel/chrony.conf.html
   * With trojan:
     * `apt install trojan` -> `vim /etc/trojan/config.json`
     * Check `https://trojan-gfw.github.io/trojan/config` , and use client config.
+    * SwitchyOmega: Rule List URL https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt , AutoProxy
     * 查看系统日志 `journalctl --unit trojan --boot -f`
     * `systemctl enable/start/stop trojan`
+  * 命令行代理 `export http_proxy="socks5://127.0.0.1:1080" https_proxy="socks5://127.0.0.1:1080"`
 * 检查网络 ifconfig, hostname, netstat, nslookup。
 * 更有效的 ping：`ping <ip> -s $((60 * 1024)) -D`。
 * 查已占用端口 `sudo lsof -i -P -n | grep LISTEN`。
