@@ -14,6 +14,13 @@
 #define WinHeight 1000
 #define print_vec4(v) printf("[%f, %f, %f, %f]\n", v[0], v[1], v[2], v[3])
 
+/** https://www.codeproject.com/Articles/199525/Drawing-nearly-perfect-2D-line-segments-in-OpenGL */
+/** https://www.shadertoy.com/browse */
+/**
+https://www.shadertoy.com/view/tsXBzS
+    llt3R4 4s2SRt stlGWs 7ljGzR XsXXDn ttKGDt wlVGWd 7lB3zz 3l23Rh slj3RR WdVXWy
+    MdX3zr NlfGDX XslGRr sllGRB tlGfzd WtScDt NlsGDl 4dfGzs ltffzl ldfyzl 7tX3Dj
+*/
 static uint32_t const g_base_flag = SDL_WINDOW_OPENGL;
 char gl_log_buffer[1024];
 
