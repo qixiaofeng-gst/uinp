@@ -17,6 +17,8 @@
 /** https://www.codeproject.com/Articles/199525/Drawing-nearly-perfect-2D-line-segments-in-OpenGL */
 /** https://www.shadertoy.com/browse */
 /**
+ * TODO Implement a shader platform like shadertoy.
+ *
 https://www.shadertoy.com/view/tsXBzS
     Nt23zh
     llt3R4 4s2SRt stlGWs 7ljGzR XsXXDn ttKGDt wlVGWd 7lB3zz 3l23Rh slj3RR WdVXWy
@@ -122,18 +124,19 @@ int main() {
     printf("OpenGL Version: %s\n", gl_version);
 
     glewInit();
-    GLuint program_id = load_shaders(
-            "/home/qixiaofeng/Documents/git-repos/uinp/clanguages/linux-sdl2-canvas/shaders/first.vs",
-            "/home/qixiaofeng/Documents/git-repos/uinp/clanguages/linux-sdl2-canvas/shaders/first.fs"
-    );
+
+    #define m__folder "/home/qixiaofeng/Documents/git-repos/uinp/clanguages/linux-sdl2-canvas/shaders/"
+    GLuint program_id = load_shaders(m__folder"first.vs", m__folder"first.fs");
+    #undef m__folder
 
     GLuint vertex_array_id;
     glGenVertexArrays(1, &vertex_array_id);
     glBindVertexArray(vertex_array_id);
     GLfloat const vertex_buffer_data[] = {
-            -1.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            1.0f, 1.0f, 0.0f,
+            0.99f, 0.99f, 0.0f,
+            0.99f, -.99f, 0.0f,
+            -.99f, 0.99f, 0.0f,
+            -.99f, -.99f, 0.0f,
     };
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
@@ -193,7 +196,7 @@ int main() {
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glDisableVertexAttribArray(0);
 
         SDL_GL_SwapWindow(window);

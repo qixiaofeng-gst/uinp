@@ -1,7 +1,9 @@
-#version 330 core
+#version 460 core
 
 out vec3 color;
 
+smooth in vec3 smooth_color;
+
 void main() {
-  color = vec3(0.5,0.5,0);
+  color.xyz = smooth_color;
 }
