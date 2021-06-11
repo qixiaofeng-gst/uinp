@@ -18,6 +18,7 @@
 /** https://www.shadertoy.com/browse */
 /**
 https://www.shadertoy.com/view/tsXBzS
+    Nt23zh
     llt3R4 4s2SRt stlGWs 7ljGzR XsXXDn ttKGDt wlVGWd 7lB3zz 3l23Rh slj3RR WdVXWy
     MdX3zr NlfGDX XslGRr sllGRB tlGfzd WtScDt NlsGDl 4dfGzs ltffzl ldfyzl 7tX3Dj
 */
@@ -132,7 +133,7 @@ int main() {
     GLfloat const vertex_buffer_data[] = {
             -1.0f, -1.0f, 0.0f,
             1.0f, -1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
+            1.0f, 1.0f, 0.0f,
     };
     GLuint vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
