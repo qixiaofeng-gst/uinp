@@ -114,6 +114,7 @@ GLuint load_shaders(char const *vertex_file_path, char const *fragment_file_path
 }
 
 int main() {
+    /** Belows initialize SDL and GL. */
     // SDL_Init(SDL_INIT_VIDEO);
     SDL_Window *window = SDL_CreateWindow("OpenGL Test", 0, 0, WinWidth, WinHeight, g_base_flag);
     assert(window);
@@ -129,6 +130,7 @@ int main() {
     GLuint program_id = load_shaders(m__folder"first.vs", m__folder"first.fs");
     #undef m__folder
 
+    /** Belows create a square mesh. */
     GLuint vertex_array_id;
     glGenVertexArrays(1, &vertex_array_id);
     glBindVertexArray(vertex_array_id);
@@ -143,6 +145,29 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_buffer_data), vertex_buffer_data, GL_STATIC_DRAW);
 
+    /** Belows create a texture. */
+    uint8_t texture_data[16 * 16 * 3];
+    memset(texture_data, 0xff, sizeof(texture_data));
+    GLuint texture_id;
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 16, 16, 0, GL_BGR, GL_UNSIGNED_BYTE, texture_data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    /** Belows create UV for the square mesh above. */
+    GLfloat const uv_buffer_data[] = {
+            1.0f, 0.0f,
+            1.0f, 1.0f,
+            0.0f, 0.0f,
+            0.0f, 1.0f,
+    };
+    GLuint uv_buffer;
+    glGenBuffers(1, &uv_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(uv_buffer_data), uv_buffer_data, GL_STATIC_DRAW);
+
+    /** Belows play with GLM.  */
     mat4 translation_matrix = {
             {1, 0, 0, 10},
             {0, 1, 0, 0},
@@ -167,6 +192,7 @@ int main() {
     glm_mat4_mulv(scaling_matrix, vector, transformed_vector);
     print_vec4(transformed_vector);
 
+    /** Belows are main loop. */
     bool Running = true;
     while (Running) {
         SDL_Event event;
@@ -196,10 +222,23 @@ int main() {
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
 
         SDL_GL_SwapWindow(window);
     }
+
+    glDeleteBuffers(1, &vertex_buffer);
+    glDeleteBuffers(1, &uv_buffer);
+    glDeleteProgram(program_id);
+    glDeleteTextures(1, &texture_id);
+    glDeleteVertexArrays(1, &vertex_array_id);
+
+    SDL_DestroyWindow(window);
     return 0;
 }
