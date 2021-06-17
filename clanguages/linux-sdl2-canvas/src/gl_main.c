@@ -196,6 +196,7 @@ int main() {
     print_vec4(transformed_vector);
 
     /** Belows are main loop. */
+    GLint first_uniform = glGetUniformLocation(program_id, "first_uniform");
     bool Running = true;
     while (Running) {
         SDL_Event event;
@@ -228,6 +229,8 @@ int main() {
         glEnableVertexAttribArray(1);
         glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+        glProgramUniform1f(program_id, first_uniform, 0.5);
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glDisableVertexAttribArray(0);
