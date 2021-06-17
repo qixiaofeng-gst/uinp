@@ -19,10 +19,13 @@
 /**
  * TODO Implement a shader platform like shadertoy.
  *
-https://www.shadertoy.com/view/tsXBzS
-    Nt23zh
-    llt3R4 4s2SRt stlGWs 7ljGzR XsXXDn ttKGDt wlVGWd 7lB3zz 3l23Rh slj3RR WdVXWy
-    MdX3zr NlfGDX XslGRr sllGRB tlGfzd WtScDt NlsGDl 4dfGzs ltffzl ldfyzl 7tX3Dj
+https://www.shadertoy.com/view/tsXBzS  -  tsXBzS(66, shining purple fragments)
+    7ljGzR(7, towers) XsXXDn(21, shining) wlVGWd(44, purple water) MdX3zr(64, flame) Nt23zh(65, stars)
+    ttKGDt(73, snow flakes) ldfyzl(79, rain on the water) llt3R4(86, red cycle) WtScDt(87, cloth pattern)
+    tlGfzd(96, liberation) sllGRB(25 + 104, patterns) 4s2SRt(136, radar) 3l23Rh(145, protean clouds) NlsGDl(163, sea)
+    WdVXWy(61 + 25 + 84 + 15, molten bismuth) 7tX3Dj(22 + 62 + 111, aquarelle) XslGRr(207, clouds)
+    ltffzl(213, rain on the window) stlGWs(118 + 127, neon hall) 4dfGzs(299, voxel edges)
+    slj3RR(241 + 111, morphing sphere) NlfGDX(421 + 95, bezier curve) 7lB3zz(357 + 489 * 3, blocks impact)
 */
 static uint32_t const g_base_flag = SDL_WINDOW_OPENGL;
 char gl_log_buffer[1024];
