@@ -12,11 +12,10 @@
 #include "cglm/mat4.h"
 
 #define LONG_STRING_SIZE 8192
-#define WinWidth 1000
-#define WinHeight 1000
+#define WinWidth 256
+#define WinHeight 256
 #define print_vec4(v) printf("[%f, %f, %f, %f]\n", v[0], v[1], v[2], v[3])
 
-/** https://stackoverflow.com/questions/10192903/time-in-milliseconds-in-c */
 /** https://stackoverflow.com/questions/5141960/get-the-current-time-in-c/31646117 */
 /** https://www.codeproject.com/Articles/199525/Drawing-nearly-perfect-2D-line-segments-in-OpenGL */
 /** https://www.shadertoy.com/browse */
