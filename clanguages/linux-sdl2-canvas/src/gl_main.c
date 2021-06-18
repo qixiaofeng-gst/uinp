@@ -3,6 +3,7 @@
 //
 #include <stdint.h>
 #include <stdbool.h>
+#include <sys/time.h>
 #include <assert.h>
 // sudo apt install -y libglew-dev
 #include <GL/glew.h>
@@ -10,10 +11,13 @@
 #include "cglm/types.h"
 #include "cglm/mat4.h"
 
+#define LONG_STRING_SIZE 8192
 #define WinWidth 1000
 #define WinHeight 1000
 #define print_vec4(v) printf("[%f, %f, %f, %f]\n", v[0], v[1], v[2], v[3])
 
+/** https://stackoverflow.com/questions/10192903/time-in-milliseconds-in-c */
+/** https://stackoverflow.com/questions/5141960/get-the-current-time-in-c/31646117 */
 /** https://www.codeproject.com/Articles/199525/Drawing-nearly-perfect-2D-line-segments-in-OpenGL */
 /** https://www.shadertoy.com/browse */
 /**
@@ -27,8 +31,10 @@ https://www.shadertoy.com/view/tsXBzS  -  tsXBzS(66, shining purple fragments)
     ltffzl(213, rain on the window) stlGWs(118 + 127, neon hall) 4dfGzs(299, voxel edges)
     slj3RR(241 + 111, morphing sphere) NlfGDX(421 + 95, bezier curve) 7lB3zz(357 + 489 * 3, blocks impact)
 */
+typedef struct timeval sys_time;
+
 static uint32_t const g_base_flag = SDL_WINDOW_OPENGL;
-char gl_log_buffer[1024];
+char gl_log_buffer[LONG_STRING_SIZE];
 
 void toggle_full_screen(SDL_Window *window) {
     static uint32_t const full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -65,13 +71,13 @@ void read_file(char const *file_path, char *buffer, int buffer_size) {
 }
 
 void load_shader(GLuint shader_id, char const *source_path) {
-    char shader_source[1024];
+    char shader_source[LONG_STRING_SIZE];
     char const *source_pointer = shader_source;
     int gl_log_length = 0;
     GLint gl_operation_result = GL_FALSE;
 
     // Compile Shader
-    read_file(source_path, shader_source, 1024);
+    read_file(source_path, shader_source, LONG_STRING_SIZE);
     glShaderSource(shader_id, 1, &source_pointer, NULL);
     glCompileShader(shader_id);
     // Check Shader
@@ -196,8 +202,11 @@ int main() {
     print_vec4(transformed_vector);
 
     /** Belows are main loop. */
-    GLint first_uniform = glGetUniformLocation(program_id, "first_uniform");
+    GLint uniform_time = glGetUniformLocation(program_id, "uniform_time");
+    sys_time start, current;
+    float running_time;
     bool Running = true;
+    gettimeofday(&start, NULL);
     while (Running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -230,7 +239,9 @@ int main() {
         glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 
-        glProgramUniform1f(program_id, first_uniform, 0.5);
+        gettimeofday(&current, NULL);
+        running_time = (float) (current.tv_sec - start.tv_sec) + 1e-6f * (float) (current.tv_usec - start.tv_usec);
+        glProgramUniform1f(program_id, uniform_time, running_time);
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         glDisableVertexAttribArray(0);
