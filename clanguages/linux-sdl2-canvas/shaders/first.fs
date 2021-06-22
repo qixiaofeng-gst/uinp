@@ -39,6 +39,13 @@ vec3 draw_halo(vec2 pixel_position, float time) {
   return vec3(sin(length(pixel_position - cycle_origin) * 1e2 * y));
 }
 
+vec3 draw_parabola(vec2 pixel_position) {
+  if (abs((pixel_position.x * pixel_position.x) - pixel_position.y) < 1e-2) {
+    return vec3(0.0);
+  }
+  return vec3(1.0);
+}
+
 // https://www.shadertoy.com/view/______
 void main() {
   // color = vec3(1.0, 0, mod(uniform_time, 1.0));
@@ -46,5 +53,6 @@ void main() {
   // color = draw_quater_circle(uv);
   // color = draw_towers_7ljGzR(uv, vec3(0.0, 0.0, 0.0), uniform_time);
   // color = draw_shining_XsXXDn(uv, uniform_time);
-  color = draw_halo(uv, uniform_time);
+  // color = draw_halo(uv, uniform_time);
+  color = draw_parabola(uv);
 }
