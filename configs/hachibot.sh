@@ -310,19 +310,25 @@ dk-login-ubt16() { ## Login into a container with /bin/bash.
 dk-speaker() {
     docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -it --rm \
         --net=host --name=ai-speaker \
+        -e ROS_MASTER_URI=${ROS_MASTER_URI} \
+        -e ROS_HOSTNAME=${ROS_HOSTNAME} \
+        -e ROS_IP=${ROS_IP} \
         -v /hachi/runtime/wave-data:/hachi/runtime/wave-data \
         -v /hachi/runtime/input-data/keyword_spotting_model:/hachi/kws \
-        d.corp.hachibot.com/ai-speaker:1.15 zsh
+        d.corp.hachibot.com/ai-speaker:1.17
     # "/bin/zsh" "-c" "source ~/.zshrc && bash /hachi/catkin_ws/src/kaldi-speaker-recognizer/startup.sh"
 }
 dk-xunfei() {
     docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 --privileged=true -it --rm \
         --net=host --name=ai-xunfei \
+        -e ROS_MASTER_URI=${ROS_MASTER_URI} \
+        -e ROS_HOSTNAME=${ROS_HOSTNAME} \
+        -e ROS_IP=${ROS_IP} \
         -v /dev:/dev \
         -v /etc/udev/rules.d:/etc/udev/rules.d \
         -v /hachi/prod/ai-xunfei-runtime/log:/root/.ros/log \
         -v /hachi/prod/ai-xunfei-runtime/audio:/hachi/workspace/audio \
-        d.corp.hachibot.com/ai-xunfei:1.10
+        d.corp.hachibot.com/ai-xunfei:1.11
 }
 dk-clear() {
     docker rmi $(docker images -f "dangling=true" -q)
