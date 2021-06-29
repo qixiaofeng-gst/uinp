@@ -48,7 +48,7 @@ const vec3 colors[3] = vec3[3](
   vec3(0.8, 0.0, 1.0)
 );
 
-vec3 draw_newton_fractal_p3(vec2 pixel_position, float time) {
+vec3 draw_newton_fractal_p3_scaling(vec2 pixel_position, float time) {
     float c = (sin(time * 0.5) + 1.001) * 50.0;
     // float c = 1.0 / (time + 1e-3);
     vec2 z = pixel_position * c - vec2(c * 0.5);
@@ -65,5 +65,5 @@ vec3 draw_newton_fractal_p3(vec2 pixel_position, float time) {
 }
 
 void main() {
-  color = draw_newton_fractal_p3(uv, uniform_time);
+  color = draw_newton_fractal_p3_scaling(uv, uniform_time);
 }
