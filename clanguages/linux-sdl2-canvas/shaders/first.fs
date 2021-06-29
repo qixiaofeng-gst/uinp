@@ -47,8 +47,9 @@ const vec3 colors[3] = vec3[3](
   vec3(0.8, 0.0, 1.0)
 );
 
-vec3 draw_newton_fractal(vec2 pixel_position) {
-    vec2 z = pixel_position * 3.5 - 1.0;
+vec3 draw_newton_fractal(vec2 pixel_position, float time) {
+    float c = (sin(time) + 1.001) * 50.0;
+    vec2 z = pixel_position * c - vec2(c * 0.5);
     for (int i = 0; i < 1024; ++i) {
         z -= complex_divide(f_for_newton_fractal(z), fd_for_newton_fractal(z));
         for (int j = 0; j < 3; ++j) {
@@ -62,5 +63,5 @@ vec3 draw_newton_fractal(vec2 pixel_position) {
 }
 
 void main() {
-  color = draw_newton_fractal(uv);
+  color = draw_newton_fractal(uv, uniform_time);
 }
