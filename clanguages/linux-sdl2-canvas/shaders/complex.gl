@@ -1,0 +1,17 @@
+vec2 complex_multiply(vec2 a, vec2 b) {
+    return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+}
+
+vec2 complex_power(vec2 z, int p) {
+    vec2 result = z;
+    for (int i = 0; i < (p - 1); ++i) {
+        result = complex_multiply(result, z);
+    }
+    return result;
+}
+
+vec2 complex_divide(vec2 a, vec2 b) {
+    vec2 b2 = b * b;
+    float c = 1.0 / (b2.x + b2.y);
+    return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) * c;
+}

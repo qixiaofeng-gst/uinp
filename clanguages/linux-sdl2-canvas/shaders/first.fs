@@ -1,6 +1,7 @@
 #version 460 core
 #extension GL_ARB_shading_language_include : require
 //https://stackoverflow.com/questions/10754437/how-to-using-the-include-in-glsl-support-arb-shading-language-include
+//#include "/home/qixiaofeng/Documents/git-repos/uinp/clanguages/linux-sdl2-canvas/shaders/complex.gl"
 
 in vec2 uv;
 
@@ -48,7 +49,8 @@ const vec3 colors[3] = vec3[3](
 );
 
 vec3 draw_newton_fractal(vec2 pixel_position, float time) {
-    float c = (sin(time) + 1.001) * 50.0;
+    float c = (sin(time * 0.5) + 1.001) * 50.0;
+    // float c = 1.0 / (time + 1e-3);
     vec2 z = pixel_position * c - vec2(c * 0.5);
     for (int i = 0; i < 1024; ++i) {
         z -= complex_divide(f_for_newton_fractal(z), fd_for_newton_fractal(z));
