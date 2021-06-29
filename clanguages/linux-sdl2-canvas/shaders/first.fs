@@ -36,7 +36,7 @@ vec2 fd_for_newton_fractal(vec2 z) {
   return 3.0 * complex_power(z, 2);
 }
 
-const vec2 roots[3] = vec2[3](
+const vec2 roots_p3[3] = vec2[3](
   vec2(1, 0),
   vec2(-0.5, 0.866),
   vec2(-0.5, -0.866)
@@ -48,14 +48,14 @@ const vec3 colors[3] = vec3[3](
   vec3(0.8, 0.0, 1.0)
 );
 
-vec3 draw_newton_fractal(vec2 pixel_position, float time) {
+vec3 draw_newton_fractal_p3(vec2 pixel_position, float time) {
     float c = (sin(time * 0.5) + 1.001) * 50.0;
     // float c = 1.0 / (time + 1e-3);
     vec2 z = pixel_position * c - vec2(c * 0.5);
     for (int i = 0; i < 1024; ++i) {
         z -= complex_divide(f_for_newton_fractal(z), fd_for_newton_fractal(z));
         for (int j = 0; j < 3; ++j) {
-            vec2 d = z - roots[j];
+            vec2 d = z - roots_p3[j];
             if (length(d) < 1e-5) {
                 return colors[j];
             }
@@ -65,5 +65,5 @@ vec3 draw_newton_fractal(vec2 pixel_position, float time) {
 }
 
 void main() {
-  color = draw_newton_fractal(uv, uniform_time);
+  color = draw_newton_fractal_p3(uv, uniform_time);
 }
