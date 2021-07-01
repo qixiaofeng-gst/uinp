@@ -315,7 +315,7 @@ dk-speaker() {
         -e ROS_IP=${ROS_IP} \
         -v /hachi/runtime/wave-data:/hachi/runtime/wave-data \
         -v /hachi/runtime/input-data/keyword_spotting_model:/hachi/kws \
-        d.corp.hachibot.com/ai-speaker:1.17
+        d.corp.hachibot.com/ai-speaker:1.17 $1
     # "/bin/zsh" "-c" "source ~/.zshrc && bash /hachi/catkin_ws/src/kaldi-speaker-recognizer/startup.sh"
 }
 dk-xunfei() {
@@ -328,7 +328,7 @@ dk-xunfei() {
         -v /etc/udev/rules.d:/etc/udev/rules.d \
         -v /hachi/prod/ai-xunfei-runtime/log:/root/.ros/log \
         -v /hachi/prod/ai-xunfei-runtime/audio:/hachi/workspace/audio \
-        d.corp.hachibot.com/ai-xunfei:1.11
+        d.corp.hachibot.com/ai-xunfei:1.11 $1
 }
 dk-clear() {
     docker rmi $(docker images -f "dangling=true" -q)
