@@ -172,3 +172,8 @@ reinstall_nvidia_driver() {
     echo "Check the strange syntax here: ${#driver_name[@]}, ${#driver_name}, ${#driver_name[1]}, ${driver_name[1]}"
     sudo dkms install -m nvidia -v "${driver_name[1]}"
 }
+
+switch_trojan() {
+    sudo python3 /home/qixiaofeng/Documents/git-repos/uinp/pythons/trojan_helper.py $1
+    curl -v --socks5 127.0.0.1:1080 --connect-timeout 3 http://www.youtube.com
+}
