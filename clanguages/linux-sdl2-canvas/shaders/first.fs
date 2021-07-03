@@ -49,11 +49,10 @@ const vec3 colors[3] = vec3[3](
 );
 
 vec3 draw_newton_fractal_p3_scaling(vec2 pixel_position, float time) {
-    float c = (sin(time * 0.5) + 1.001) * 50.0;
-    // float c = 1.0 / (time + 1e-3);
-    vec2 z = pixel_position * c - vec2(c * 0.5);
+    float a = (sin(time * 0.1) + 1.0) * 0.99 + 0.01;
+    vec2 z = pixel_position * 5 - 2.5;
     for (int i = 0; i < 1024; ++i) {
-        z -= complex_divide(f_for_newton_fractal(z), fd_for_newton_fractal(z));
+        z -= complex_divide(f_for_newton_fractal(z), fd_for_newton_fractal(z)) * a;
         for (int j = 0; j < 3; ++j) {
             vec2 d = z - roots_p3[j];
             if (length(d) < 1e-5) {
