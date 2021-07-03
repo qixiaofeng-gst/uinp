@@ -63,6 +63,15 @@ vec3 draw_newton_fractal_p3_scaling(vec2 pixel_position, float time) {
     return vec3(0.0);
 }
 
+/**
+Play with Mandelbrot set: z_{n+1} = z_n^2 + c, z_0 = 0 + 0i
+The 'c' is the given pixel position, render the iteration count that make z_n > 2
+*/
+
+/**
+TODO: Play with Julia set.
+*/
+
 void main() {
   color = draw_newton_fractal_p3_scaling(uv, uniform_time);
 }
