@@ -151,7 +151,7 @@ int main() {
     printf("OpenGL Version: %s\n", gl_version);
 
     glewInit();
-    GLuint program_id = load_shaders(PROJECT_ROOT_"/shaders/first.vs", PROJECT_ROOT_"/shaders/first.fs");
+    GLuint program_id = load_shaders(PROJECT_ROOT_"/shaders/first.vs", PROJECT_ROOT_"/shaders/mandelbrot.fs");
 
     /** Belows create a square mesh. */
     GLuint vertex_array_id;
