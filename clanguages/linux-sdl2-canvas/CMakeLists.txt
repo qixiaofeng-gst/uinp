@@ -36,6 +36,10 @@ target_include_directories(
 
         cglm/include
 )
+target_compile_definitions(
+        gl_canvas
+        PUBLIC PROJECT_ROOT_="${CMAKE_SOURCE_DIR}"
+)
 
 add_executable(
         canvas

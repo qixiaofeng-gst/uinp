@@ -78,7 +78,10 @@ void load_shader(GLuint shader_id, char const *source_path) {
     // Compile Shader
     read_file(source_path, shader_source, LONG_STRING_SIZE);
     glShaderSource(shader_id, 1, &source_pointer, NULL);
-    glCompileShader(shader_id);
+    // glCompileShader(shader_id);
+    char const *root_path = "/";
+    char const *pathes[] = {root_path};
+    glCompileShaderIncludeARB(shader_id, 1, pathes, NULL);
     // Check Shader
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &gl_operation_result);
     glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &gl_log_length);
@@ -91,9 +94,19 @@ void load_shader(GLuint shader_id, char const *source_path) {
     }
 }
 
+void load_includes() {
+    char include_content[LONG_STRING_SIZE];
+    char const *shared_code = PROJECT_ROOT_"/shaders/complex.gl";
+    char const *name = "/complex";
+    read_file(shared_code, include_content, LONG_STRING_SIZE);
+    glNamedStringARB(GL_SHADER_INCLUDE_ARB, strlen(name), name, strlen(include_content), include_content);
+}
+
 GLuint load_shaders(char const *vertex_file_path, char const *fragment_file_path) {
     GLint gl_operation_result = GL_FALSE;
     int gl_log_length;
+
+    load_includes();
 
     // Create the shaders
     GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
@@ -133,10 +146,7 @@ int main() {
     printf("OpenGL Version: %s\n", gl_version);
 
     glewInit();
-
-    #define m__folder "/home/qixiaofeng/Documents/git-repos/uinp/clanguages/linux-sdl2-canvas/shaders/"
-    GLuint program_id = load_shaders(m__folder"first.vs", m__folder"first.fs");
-    #undef m__folder
+    GLuint program_id = load_shaders(PROJECT_ROOT_"/shaders/first.vs", PROJECT_ROOT_"/shaders/first.fs");
 
     /** Belows create a square mesh. */
     GLuint vertex_array_id;

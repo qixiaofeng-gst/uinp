@@ -1,7 +1,6 @@
 #version 460 core
 #extension GL_ARB_shading_language_include : require
-//https://stackoverflow.com/questions/10754437/how-to-using-the-include-in-glsl-support-arb-shading-language-include
-//#include "/home/qixiaofeng/Documents/git-repos/uinp/clanguages/linux-sdl2-canvas/shaders/complex.gl"
+#include "complex"
 
 in vec2 uv;
 
@@ -9,24 +8,6 @@ out vec3 color;
 
 uniform float uniform_time;
 uniform sampler2D texture_sampler;
-
-vec2 complex_multiply(vec2 a, vec2 b) {
-    return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
-}
-
-vec2 complex_power(vec2 z, int p) {
-    vec2 result = z;
-    for (int i = 0; i < (p - 1); ++i) {
-        result = complex_multiply(result, z);
-    }
-    return result;
-}
-
-vec2 complex_divide(vec2 a, vec2 b) {
-    vec2 b2 = b * b;
-    float c = 1.0 / (b2.x + b2.y);
-    return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) * c;
-}
 
 vec2 f_for_newton_fractal(vec2 z) {
   return complex_power(z, 3) - vec2(1, 0);
