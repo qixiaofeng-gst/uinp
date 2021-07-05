@@ -96,9 +96,14 @@ void load_shader(GLuint shader_id, char const *source_path) {
 
 void load_includes() {
     char include_content[LONG_STRING_SIZE];
-    char const *shared_code = PROJECT_ROOT_"/shaders/complex.gl";
-    char const *name = "/complex";
-    read_file(shared_code, include_content, LONG_STRING_SIZE);
+    char const *name = NULL;
+
+    name = "/complex";
+    read_file(PROJECT_ROOT_"/shaders/complex.gl", include_content, LONG_STRING_SIZE);
+    glNamedStringARB(GL_SHADER_INCLUDE_ARB, strlen(name), name, strlen(include_content), include_content);
+
+    name = "/colormap";
+    read_file(PROJECT_ROOT_"/shaders/colormap.gl", include_content, LONG_STRING_SIZE);
     glNamedStringARB(GL_SHADER_INCLUDE_ARB, strlen(name), name, strlen(include_content), include_content);
 }
 
