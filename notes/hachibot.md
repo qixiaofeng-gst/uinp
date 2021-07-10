@@ -1,50 +1,29 @@
 Next TODO:
 ```
 // wlVGWd(44, purple water)
-float rand(vec2 n) {
-    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
-}
 
-float noise(vec2 p) {
-    vec2 ip = floor(p);
-    vec2 u = fract(p);
-    u = u*u*(3.0-2.0*u);
+lat.1.gz is a lattice file, you can view it with
+lattice-copy "ark:gunzip -c lat.1.gz|" ark,t:- | less
+or (depending on the lang/ directory), something like
+lattice-copy "ark:gunzip -c lat.1.gz|" ark,t:- | utils/int2sym.pl -f 3 data/lang/words.txt | less
+if you want to see the words instead of integers.
 
-    float res = mix(
-        mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
-        mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
-    return res*res;
-}
+you can use
+cat lattice.txt | lattice-to-fst --rm-eps=true --acoustic-scale=1.0 --lm-scale=1.0 ark,t:- ark,t:- | tail -n+2 | \
+    fstcompile | fstdraw --portrait=true --osymbols=data/lang/words.txt | dot -Tpdf > lattice.pdf
+for print that
+lattice.txt is one of the lattice in lat.1
 
-const mat2 m2 = mat2(0.8,-0.6,0.6,0.8);
+ target_path: /var/local/anaconda3/pkgs/pytorch-1.8.1-py3.7_cuda11.1_cudnn8.0.5_0.tar.bz2
+  Content-Length: 1367039025
+  downloaded bytes: 1093322288
 
-float fbm( in vec2 p ){
-    float f = 0.0;
-    f += 0.5000 * noise(p); p = m2 * p * 2.02;
-    f += 0.2500 * noise(p); p = m2 * p * 2.03;
-    f += 0.1250 * noise(p); p = m2 * p * 2.01;
-    f += 0.0625 * noise(p);
+Downloaded bytes did not match Content-Length
+  url: http://repo.corp.hachibot.com/repository/conda/cloud/conda-forge/linux-64/cudatoolkit-11.1.1-h6406543_8.tar.bz2
+  target_path: /var/local/anaconda3/pkgs/cudatoolkit-11.1.1-h6406543_8.tar.bz2
+  Content-Length: 1291919472
+  downloaded bytes: 1091992688
 
-    return f/0.769;
-}
-
-float pattern( in vec2 p ) {
-  vec2 q = vec2(fbm(p + vec2(0.0,0.0)));
-  vec2 r = vec2( fbm( p + 4.0*q + vec2(1.7,9.2)));
-  r+= iTime * 0.15;
-  return fbm( p + 1.760*r );
-}
-
-void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-  	vec2 uv = fragCoord/iResolution.xy;
-    
-    uv *= 4.5; // Scale UV to make it nicer in that big screen !
-  	float displacement = pattern(uv);
-  	vec4 color = vec4(displacement * 1.2, 0.2, displacement * 5., 1.);
-    
-    color.a = min(color.r * 0.25, 1.); // Depth for CineShader
-    fragColor = color;
-}
 ```
 - 可视化工具改进：
   - 依据根目录配置自动扫描并列出可选工作目录和目录的状态（稀疏、已压缩和正在压缩）；
